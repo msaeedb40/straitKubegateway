@@ -1,0 +1,64 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "straitKubegateway.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "straitKubegateway.labels" . | nindent 4 }}
+data:
+  config.json: |
+    {
+      "clusterName": {{ .Values.cluster.name | quote }},
+      "region": {{ .Values.cluster.region | quote }},
+      "zone": {{ .Values.cluster.zone | quote }},
+      "podCIDRs": {{ toJson .Values.cluster.podCIDRs }},
+      "serviceCIDRs": {{ toJson .Values.cluster.serviceCIDRs }},
+      "encapsulation": {{ .Values.cluster.encapsulation | quote }},
+      "mtu": {{ .Values.cluster.mtu }},
+      "kubeProxyReplacement": {{ .Values.agent.kubeProxyReplacement }},
+      "maglevLookupTableSize": {{ .Values.agent.maglevLookupTableSize }},
+      "directServerReturn": {{ .Values.agent.directServerReturn }},
+      "masqueradePodCIDRs": {{ .Values.agent.masqueradePodCIDRs }},
+      "nat64": {
+        "enabled": {{ .Values.agent.nat64.enabled }},
+        "prefix": {{ .Values.agent.nat64.prefix | quote }}
+      },
+      "transit": {
+        "enabled": {{ .Values.transit.enabled }},
+        "defaultASN": {{ .Values.transit.defaultASN }},
+        "defaultTopology": {{ .Values.transit.defaultTopology | quote }}
+      },
+      "bgp": {
+        "enabled": {{ .Values.bgp.enabled }},
+        "localASN": {{ .Values.bgp.localASN }}
+      }
+    }
+  cni-conf.json: |
+    {
+      "cniVersion": "1.1.0",
+      "name": "strait-cni",
+      "plugins": [
+        {
+          "type": "strait",
+          "ipam": {
+            "type": "host-local",
+            "ranges": [
+              [
+                {
+                  "subnet": "usePodCidr"
+                }
+              ]
+            ],
+            "routes": [
+              { "dst": "0.0.0.0/0" }
+            ]
+          }
+        },
+        {
+          "type": "portmap",
+          "capabilities": {
+            "portMappings": true
+          }
+        }
+      ]
+    }

@@ -1,0 +1,23 @@
+{
+  "api": {
+    "baseUrl": "/api",
+    "grpcWebUrl": "/grpc",
+    "websocketUrl": "/ws",
+    "sseUrl": "/events"
+  },
+  "features": {
+    "topology": true,
+    "flows": true,
+    "observability": true,
+    "policies": true,
+    "gateways": true,
+    "transit": true,
+    "bgp": true
+  },
+  "cluster": {
+    "name": "primary-cluster",
+    "region": "default-region",
+    "zone": "zone-1"
+  },
+  "refreshIntervalMs": 5000
+}

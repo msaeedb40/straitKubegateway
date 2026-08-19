@@ -1,0 +1,106 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "straitKubegateway.fullname" . }}
+  labels:
+    {{- include "straitKubegateway.labels" . | nindent 4 }}
+rules:
+  # Core Kubernetes Resources
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - nodes/status
+      - pods
+      - pods/status
+      - namespaces
+      - services
+      - services/status
+      - endpoints
+      - configmaps
+      - secrets
+      - events
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # EndpointSlices for kube-proxy replacement
+  - apiGroups: ["discovery.k8s.io"]
+    resources:
+      - endpointslices
+    verbs: ["get", "list", "watch"]
+  # Standard NetworkPolicies
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - networkpolicies
+    verbs: ["get", "list", "watch"]
+  # Kubernetes Gateway API
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources:
+      - gatewayclasses
+      - gatewayclasses/status
+      - gateways
+      - gateways/status
+      - httproutes
+      - httproutes/status
+      - grpcroutes
+      - grpcroutes/status
+      - tcproutes
+      - tcproutes/status
+      - udproutes
+      - udproutes/status
+      - tlsroutes
+      - tlsroutes/status
+      - referencegrants
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # strait.io CRDs
+  - apiGroups: ["strait.io"]
+    resources:
+      - gateways
+      - gateways/status
+      - straitnetworkpolicies
+      - straitnetworkpolicies/status
+      - transitgateways
+      - transitgateways/status
+      - transitattachments
+      - transitattachments/status
+      - segments
+      - segments/status
+      - bgppeers
+      - bgppeers/status
+      - ipampools
+      - ipampools/status
+      - clusterlinks
+      - clusterlinks/status
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Coordination for Leader Election
+  - apiGroups: ["coordination.k8s.io"]
+    resources:
+      - leases
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "straitKubegateway.fullname" . }}-agent
+  labels:
+    {{- include "straitKubegateway.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "straitKubegateway.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "straitKubegateway.agentServiceAccount" . }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "straitKubegateway.fullname" . }}-controller
+  labels:
+    {{- include "straitKubegateway.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "straitKubegateway.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "straitKubegateway.controllerServiceAccount" . }}
+    namespace: {{ .Release.Namespace }}

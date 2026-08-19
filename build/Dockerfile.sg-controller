@@ -1,0 +1,18 @@
+# syntax=docker/dockerfile:1
+FROM golang:1.26-alpine AS builder
+
+WORKDIR /workspace
+RUN apk add --no-cache git make
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /bin/sg-controller ./cmd/sg-controller
+
+FROM gcr.io/distroless/static:nonroot
+
+COPY --from=builder /bin/sg-controller /usr/local/bin/sg-controller
+
+USER 65532:65532
+ENTRYPOINT ["/usr/local/bin/sg-controller"]

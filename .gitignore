@@ -1,0 +1,17 @@
+# Binaries and build artifacts
+bin/
+dist/
+coverage.out
+*.o
+*.so
+
+# Node & Frontend
+node_modules/
+.angular/
+
+# IDE and OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store

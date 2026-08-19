@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package policy.v1;
+
+option go_package = "github.com/straitKubegateway/straitKubegateway/proto/policy/v1;policyv1";
+
+import "common/v1/common.proto";
+
+// PolicyDecision represents the evaluation outcome.
+enum PolicyDecision {
+  POLICY_DECISION_UNSPECIFIED = 0;
+  POLICY_DECISION_ALLOW = 1;
+  POLICY_DECISION_DENY = 2;
+  POLICY_DECISION_REJECT = 3;
+}
+
+// PolicyService manages network policies and evaluation simulation.
+service PolicyService {
+  rpc EvaluateTraffic(EvaluateTrafficRequest) returns (EvaluateTrafficResponse);
+  rpc ListCompiledPolicies(ListCompiledPoliciesRequest) returns (ListCompiledPoliciesResponse);
+}
+
+message EvaluateTrafficRequest {
+  string source_ip = 1;
+  string dest_ip = 2;
+  uint32 dest_port = 3;
+  common.v1.Protocol protocol = 4;
+  common.v1.TrafficDirection direction = 5;
+  string namespace = 6;
+  uint32 segment_id = 7;
+}
+
+message EvaluateTrafficResponse {
+  PolicyDecision decision = 1;
+  string matching_policy_id = 2;
+  uint32 matching_rule_no = 3;
+  uint32 matching_priority = 4;
+  double evaluation_latency_us = 5;
+}
+
+message ListCompiledPoliciesRequest {
+  string namespace = 1;
+  uint32 segment_id = 2;
+}
+
+message ListCompiledPoliciesResponse {
+  repeated CompiledPolicy policies = 1;
+  int32 total_count = 2;
+}
+
+message CompiledPolicy {
+  string policy_id = 1;
+  string name = 2;
+  string namespace = 3;
+  uint32 priority = 4;
+  string scope = 5;
+  int32 rule_count = 6;
+  int32 enforced_endpoints = 7;
+}

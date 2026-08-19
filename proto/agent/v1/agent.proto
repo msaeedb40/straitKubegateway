@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package agent.v1;
+
+option go_package = "github.com/straitKubegateway/straitKubegateway/proto/agent/v1;agentv1";
+
+import "common/v1/common.proto";
+
+// AgentService defines communication between straitd node agents and sg-controller.
+service AgentService {
+  // RegisterNode registers a node agent with the controller.
+  rpc RegisterNode(RegisterNodeRequest) returns (RegisterNodeResponse);
+
+  // Heartbeat sends periodic liveness and status reports.
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+
+  // SyncEndpoints streams endpoint updates from node agent to controller.
+  rpc SyncEndpoints(SyncEndpointsRequest) returns (SyncEndpointsResponse);
+
+  // StreamPolicyUpdates streams compiled policies from controller to node agent.
+  rpc StreamPolicyUpdates(StreamPolicyRequest) returns (stream PolicyUpdate);
+}
+
+message RegisterNodeRequest {
+  string node_id = 1;
+  string node_name = 2;
+  string node_ip = 3;
+  string pod_cidr = 4;
+  string kernel_version = 5;
+  repeated string capabilities = 6;
+  common.v1.TelemetryContext context = 7;
+}
+
+message RegisterNodeResponse {
+  bool registered = 1;
+  uint32 cluster_id_num = 2;
+  string error_message = 3;
+}
+
+message HeartbeatRequest {
+  string node_id = 1;
+  common.v1.HealthState health = 2;
+  common.v1.TrafficMetrics metrics = 3;
+  int32 active_endpoints = 4;
+  common.v1.TelemetryContext context = 5;
+}
+
+message HeartbeatResponse {
+  bool acknowledged = 1;
+  bool resync_required = 2;
+}
+
+message SyncEndpointsRequest {
+  string node_id = 1;
+  repeated EndpointInfo endpoints = 2;
+}
+
+message SyncEndpointsResponse {
+  bool success = 1;
+  int32 synced_count = 2;
+}
+
+message EndpointInfo {
+  uint64 id = 1;
+  uint32 identity = 2;
+  string ipv4 = 3;
+  string ipv6 = 4;
+  string namespace = 5;
+  string pod_name = 6;
+  string container_id = 7;
+  uint32 segment_id = 8;
+  map<string, string> labels = 9;
+}
+
+message StreamPolicyRequest {
+  string node_id = 1;
+  uint64 last_sequence = 2;
+}
+
+message PolicyUpdate {
+  uint64 sequence = 1;
+  string policy_id = 2;
+  string action = 3; // ADD, UPDATE, DELETE
+  bytes compiled_bpf_rules = 4;
+}

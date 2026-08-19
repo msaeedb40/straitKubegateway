@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package gateway.v1;
+
+option go_package = "github.com/straitKubegateway/straitKubegateway/proto/gateway/v1;gatewayv1";
+
+import "common/v1/common.proto";
+
+// GatewayService manages Gateway API resources and routing status.
+service GatewayService {
+  rpc ListGateways(ListGatewaysRequest) returns (ListGatewaysResponse);
+  rpc GetGatewayDetails(GetGatewayDetailsRequest) returns (GetGatewayDetailsResponse);
+  rpc RestartGateway(RestartGatewayRequest) returns (RestartGatewayResponse);
+}
+
+message ListGatewaysRequest {
+  string namespace = 1;
+}
+
+message ListGatewaysResponse {
+  repeated GatewaySummary gateways = 1;
+}
+
+message GatewaySummary {
+  string id = 1;
+  string name = 2;
+  string namespace = 3;
+  string mode = 4;
+  uint32 segment_id = 5;
+  string phase = 6;
+  int32 active_listeners = 7;
+  common.v1.LatencyPercentiles latency = 8;
+  common.v1.TrafficMetrics traffic = 9;
+}
+
+message GetGatewayDetailsRequest {
+  string id = 1;
+  string namespace = 2;
+}
+
+message GetGatewayDetailsResponse {
+  GatewaySummary summary = 1;
+  repeated RouteInfo routes = 2;
+}
+
+message RouteInfo {
+  string route_type = 1; // HTTPRoute, TCPRoute, etc.
+  string name = 2;
+  string namespace = 3;
+  repeated string hostnames = 4;
+  int32 rule_count = 5;
+}
+
+message RestartGatewayRequest {
+  string id = 1;
+  string namespace = 2;
+}
+
+message RestartGatewayResponse {
+  string command_id = 1;
+  string status = 2;
+  string trace_id = 3;
+}

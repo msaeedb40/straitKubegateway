@@ -1,0 +1,17 @@
+# syntax=docker/dockerfile:1
+FROM golang:1.26-alpine AS builder
+
+WORKDIR /workspace
+RUN apk add --no-cache git make
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /bin/sg-cli ./cmd/sg-cli
+
+FROM alpine:3.20
+RUN apk add --no-cache ca-certificates bash
+COPY --from=builder /bin/sg-cli /usr/local/bin/sg-cli
+
+ENTRYPOINT ["/usr/local/bin/sg-cli"]

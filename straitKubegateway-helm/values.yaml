@@ -1,0 +1,139 @@
+# Default values for straitKubegateway Helm Chart.
+# Declare variables to be passed into templates.
+
+global:
+  imageRegistry: "ghcr.io/straitkubegateway"
+  imagePullSecrets: []
+
+# Cluster Networking Configuration
+cluster:
+  name: "primary-cluster"
+  region: "default-region"
+  zone: "zone-1"
+  podCIDRs:
+    - "10.244.0.0/16"
+  serviceCIDRs:
+    - "10.96.0.0/12"
+  # Encapsulation mode: geneve, vxlan, wireguard, direct
+  encapsulation: "geneve"
+  mtu: 1500
+
+# eBPF Dataplane & Node Agent (straitd DaemonSet)
+agent:
+  image:
+    repository: "ghcr.io/straitkubegateway/straitd"
+    pullPolicy: IfNotPresent
+    tag: "v1.0.0"
+
+  kubeProxyReplacement: true
+  kubeProxyMode: "none"
+  disableDefaultCNI: true
+  maglevLookupTableSize: 128
+  directServerReturn: true
+  masqueradePodCIDRs: true
+  nat64:
+    enabled: false
+    prefix: "64:ff9b::/96"
+
+  cni:
+    binDir: "/opt/cni/bin"
+    confDir: "/etc/cni/net.d"
+    confFileName: "10-strait.conflist"
+    ipamType: "host-local"
+
+  bpf:
+    bpffsMount: "/sys/fs/bpf"
+    cgroupMount: "/sys/fs/cgroup"
+    logLevel: "info"
+    conntrackMaxEntries: 131072
+    snatMaxEntries: 65536
+    policyMaxEntries: 65536
+
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1024Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+  tolerations:
+    - operator: Exists
+
+# Control Plane Controller (sg-controller Deployment)
+controller:
+  replicas: 2
+  image:
+    repository: "ghcr.io/straitkubegateway/sg-controller"
+    pullPolicy: IfNotPresent
+    tag: "v1.0.0"
+
+  leaderElection:
+    enabled: true
+    leaseDuration: "15s"
+    renewDeadline: "10s"
+    retryPeriod: "2s"
+
+  grpc:
+    port: 50051
+
+  metrics:
+    port: 9090
+    enabled: true
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Angular UI Dashboard
+ui:
+  enabled: true
+  replicas: 1
+  image:
+    repository: "ghcr.io/straitkubegateway/ui"
+    pullPolicy: IfNotPresent
+    tag: "v1.0.0"
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    hosts:
+      - host: strait-ui.local
+        paths:
+          - path: /
+            pathType: Prefix
+
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+# Feature Toggles
+transit:
+  enabled: true
+  defaultASN: 64512
+  defaultTopology: "mesh"
+
+bgp:
+  enabled: true
+  localASN: 64512
+  speakerPort: 179
+
+monitoring:
+  serviceMonitor:
+    enabled: false
+    namespace: ""
+    interval: "15s"

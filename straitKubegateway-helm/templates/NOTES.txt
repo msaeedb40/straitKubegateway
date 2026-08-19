@@ -1,0 +1,26 @@
+========================================================================================
+straitKubegateway v{{ .Chart.AppVersion }} has been successfully installed!
+========================================================================================
+
+1. Check the status of the eBPF Dataplane DaemonSet:
+   kubectl rollout status daemonset/{{ include "straitKubegateway.fullname" . }}-agent -n {{ .Release.Namespace }}
+
+2. Check the status of the Control Plane Controller:
+   kubectl rollout status deployment/{{ include "straitKubegateway.fullname" . }}-controller -n {{ .Release.Namespace }}
+
+{{- if .Values.ui.enabled }}
+3. Access the Angular 22 Zoneless UI Dashboard:
+   kubectl port-forward svc/{{ include "straitKubegateway.fullname" . }}-ui 8080:80 -n {{ .Release.Namespace }}
+   Open your browser to: http://localhost:8080
+{{- end }}
+
+4. Verify eBPF Dataplane and kube-proxy replacement:
+   kubectl exec -it daemonset/{{ include "straitKubegateway.fullname" . }}-agent -n {{ .Release.Namespace }} -- sg-cli status
+
+5. View active Gateway API instances and Routes:
+   kubectl get gateways.strait.io -A
+   kubectl get httproutes.gateway.networking.k8s.io -A
+   kubectl get straitnetworkpolicies.strait.io -A
+
+For documentation and guides, visit: https://github.com/straitKubegateway/straitKubegateway
+========================================================================================

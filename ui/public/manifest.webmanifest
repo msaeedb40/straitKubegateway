@@ -1,0 +1,16 @@
+{
+  "name": "straitKubegateway UI",
+  "short_name": "straitKube",
+  "theme_color": "#020617",
+  "background_color": "#020617",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/straitKubegateway.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package health.v1;
+
+option go_package = "github.com/straitKubegateway/straitKubegateway/proto/health/v1;healthv1";
+
+import "common/v1/common.proto";
+
+// HealthService provides system-wide health checking for all components.
+service HealthService {
+  rpc CheckHealth(CheckHealthRequest) returns (CheckHealthResponse);
+  rpc WatchHealth(WatchHealthRequest) returns (stream HealthUpdate);
+}
+
+message CheckHealthRequest {
+  string service = 1;
+}
+
+message CheckHealthResponse {
+  common.v1.HealthState state = 1;
+  string message = 2;
+  map<string, SubsystemHealth> subsystems = 3;
+}
+
+message SubsystemHealth {
+  common.v1.HealthState state = 1;
+  string message = 2;
+  double latency_ms = 3;
+}
+
+message WatchHealthRequest {
+  string service = 1;
+}
+
+message HealthUpdate {
+  string service = 1;
+  common.v1.HealthState state = 2;
+  string message = 3;
+  int64 timestamp_unix_ms = 4;
+}
