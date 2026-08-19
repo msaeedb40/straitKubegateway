@@ -2,10 +2,9 @@ name: straitKubegateway CI
 
 on:
   push:
-    branches: [ main, developer, "release/*" ]
+    branches: [ main, developer ]
   pull_request:
-    branches: [ main, developer, "release/*" ]
-
+    branches: [ main, developer ]
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
