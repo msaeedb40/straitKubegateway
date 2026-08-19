@@ -94,45 +94,43 @@ build-bpf:
 		$(LLVM_STRIP) -g $$obj 2>/dev/null || true; \
 	done
 
+# Cluster configuration
+CLUSTER_NAME    ?= strait-0
+PUSH            ?= false
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Container images
 # ──────────────────────────────────────────────────────────────────────────────
 
-.PHONY: build-images build-image-straitd build-image-controller build-image-cli build-image-ui
+.PHONY: build-images docker-build docker-build-local kind-load build-image-straitd build-image-controller build-image-cli build-image-ui
 
-build-images: build-image-straitd build-image-controller build-image-cli build-image-ui
+docker-build: docker-build-local
 
-build-image-straitd:
-	@echo "Building straitd image..."
-	docker buildx build \
-		--platform $(PLATFORMS) \
-		-t $(REGISTRY)/straitd:$(IMAGE_TAG) \
-		-f $(BUILD_DIR)/Dockerfile.straitd \
-		--push .
+docker-build-local:
+	@echo "Building container images locally for host architecture..."
+	docker build -t $(REGISTRY)/straitd:$(IMAGE_TAG) -f $(BUILD_DIR)/Dockerfile.straitd .
+	docker build -t $(REGISTRY)/sg-controller:$(IMAGE_TAG) -f $(BUILD_DIR)/Dockerfile.sg-controller .
+	docker build -t $(REGISTRY)/sg-cli:$(IMAGE_TAG) -f $(BUILD_DIR)/Dockerfile.sg-cli .
+	docker build -t $(REGISTRY)/ui:$(IMAGE_TAG) -f $(BUILD_DIR)/Dockerfile.ui .
 
-build-image-controller:
-	@echo "Building sg-controller image..."
-	docker buildx build \
-		--platform $(PLATFORMS) \
-		-t $(REGISTRY)/sg-controller:$(IMAGE_TAG) \
-		-f $(BUILD_DIR)/Dockerfile.sg-controller \
-		--push .
+kind-load: docker-build-local
+	@echo "Loading images into KinD cluster '$(CLUSTER_NAME)'..."
+	kind load docker-image $(REGISTRY)/straitd:$(IMAGE_TAG) --name $(CLUSTER_NAME)
+	kind load docker-image $(REGISTRY)/sg-controller:$(IMAGE_TAG) --name $(CLUSTER_NAME)
+	kind load docker-image $(REGISTRY)/sg-cli:$(IMAGE_TAG) --name $(CLUSTER_NAME)
+	kind load docker-image $(REGISTRY)/ui:$(IMAGE_TAG) --name $(CLUSTER_NAME)
+	@echo "Images successfully loaded into '$(CLUSTER_NAME)'."
 
-build-image-cli:
-	@echo "Building sg-cli image..."
-	docker buildx build \
-		--platform $(PLATFORMS) \
-		-t $(REGISTRY)/sg-cli:$(IMAGE_TAG) \
-		-f $(BUILD_DIR)/Dockerfile.sg-cli \
-		--push .
-
-build-image-ui:
-	@echo "Building UI image..."
-	docker buildx build \
-		--platform $(PLATFORMS) \
-		-t $(REGISTRY)/ui:$(IMAGE_TAG) \
-		-f $(BUILD_DIR)/Dockerfile.ui \
-		--push .
+build-images:
+ifeq ($(PUSH),true)
+	@echo "Building and pushing multi-arch container images..."
+	docker buildx build --platform $(PLATFORMS) -t $(REGISTRY)/straitd:$(IMAGE_TAG) -f $(BUILD_DIR)/Dockerfile.straitd --push .
+	docker buildx build --platform $(PLATFORMS) -t $(REGISTRY)/sg-controller:$(IMAGE_TAG) -f $(BUILD_DIR)/Dockerfile.sg-controller --push .
+	docker buildx build --platform $(PLATFORMS) -t $(REGISTRY)/sg-cli:$(IMAGE_TAG) -f $(BUILD_DIR)/Dockerfile.sg-cli --push .
+	docker buildx build --platform $(PLATFORMS) -t $(REGISTRY)/ui:$(IMAGE_TAG) -f $(BUILD_DIR)/Dockerfile.ui --push .
+else
+	$(MAKE) docker-build-local
+endif
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Code generation
@@ -281,7 +279,9 @@ help:
 	@echo "  make build-sg-cli       Build CLI tool"
 	@echo "  make build-cni          Build CNI plugin"
 	@echo "  make build-bpf          Build BPF programs"
-	@echo "  make build-images       Build all container images"
+	@echo "  make docker-build-local Build container images for local arch"
+	@echo "  make build-images       Build all container images (PUSH=true to push)"
+	@echo "  make kind-load          Build and load images into KinD cluster"
 	@echo ""
 	@echo "Generate:"
 	@echo "  make generate           Run all code generation"

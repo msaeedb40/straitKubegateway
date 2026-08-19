@@ -300,15 +300,17 @@ spec:
             spec:
               type: object
               required:
-                - segmentID
+                - id
               properties:
-                segmentID:
+                id:
                   type: integer
                   minimum: 0
                   maximum: 4294967295
                 vni:
                   type: integer
                 isolated:
+                  type: boolean
+                backboneConnected:
                   type: boolean
                 subnets:
                   type: array
@@ -386,13 +388,20 @@ spec:
             spec:
               type: object
               required:
-                - cidr
-                - blockSize
+                - cidrs
+                - perNodeMaskSize
               properties:
-                cidr:
-                  type: string
-                blockSize:
+                cidrs:
+                  type: array
+                  items:
+                    type: string
+                perNodeMaskSize:
                   type: integer
+                addressFamily:
+                  type: string
+                  enum:
+                    - IPv4
+                    - IPv6
                 segmentID:
                   type: integer
                   minimum: 0
