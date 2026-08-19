@@ -2,9 +2,9 @@ name: straitKubegateway CI
 
 on:
   push:
-    branches: [ main, developer, "release/*" ]
+    branches: [ main, developer ]
   pull_request:
-    branches: [ main, developer, "release/*" ]
+    branches: [ main, developer ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -150,3 +150,35 @@ jobs:
         with:
           name: angular-ui-dist
           path: ui/dist/ui
+
+  build-docker-images:
+    name: Validate Container Image Builds
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: straitd
+            dockerfile: ./build/Dockerfile.straitd
+          - name: sg-controller
+            dockerfile: ./build/Dockerfile.sg-controller
+          - name: sg-cli
+            dockerfile: ./build/Dockerfile.sg-cli
+          - name: ui
+            dockerfile: ./build/Dockerfile.ui
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build ${{ matrix.name }} Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: false
+          tags: straitkubegateway/${{ matrix.name }}:ci-test
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+

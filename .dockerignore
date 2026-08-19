@@ -1,0 +1,15 @@
+.git
+.github
+bin
+dist
+dist-chart
+release-assets
+coverage.out
+*.o
+*.so
+ui/node_modules
+ui/.angular
+ui/dist
+.vscode
+.idea
+*.log

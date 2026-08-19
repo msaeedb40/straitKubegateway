@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"time"
 
@@ -48,6 +49,28 @@ func main() {
 
 	logger.Info("starting straitd node agent daemon", ctx)
 
+	metricsMux := http.NewServeMux()
+	metricsMux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ok"))
+	})
+	metricsMux.HandleFunc("/readyz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ok"))
+	})
+	metricsServer := &http.Server{
+		Addr:    ":9090",
+		Handler: metricsMux,
+	}
+	go func() {
+		if err := metricsServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Error("metrics server error", &types.ErrorInfo{Code: "METRICS_ERR", Message: err.Error()}, ctx)
+		}
+	}()
+	defer func() {
+		_ = metricsServer.Close()
+	}()
+
 	// 1. Detect environment and validate kernel prerequisites
 	env, err := kernel.DetectEnvironment()
 	if err != nil {
@@ -78,6 +101,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	// 5. Start CNI daemon socket server for persistent IPAM/dataplane state
+	cniServer := dataplane.NewServer(dpManager, dataplane.DefaultSocketPath)
+	if err := cniServer.Start(); err != nil {
+		logger.Error("failed to start CNI daemon socket", &types.ErrorInfo{Code: "CNI_SOCK_ERR", Message: err.Error()}, ctx)
+		// Non-fatal: CNI plugin can fall back to local mode
+	}
+	defer cniServer.Stop()
+
 	nodeState := NodeState{
 		CNIReady:     true, // CNI dataplane initialized
 		ServiceReady: false,
@@ -88,7 +119,7 @@ func main() {
 	logger.Info(fmt.Sprintf("straitd CNI initialized. Readiness state: CNI=%v, Service=%v, Policy=%v, Gateway=%v",
 		nodeState.CNIReady, nodeState.ServiceReady, nodeState.PolicyReady, nodeState.GatewayReady), ctx)
 
-	// 5. Bootstrap verification in background (non-blocking)
+	// 6. Bootstrap verification in background (non-blocking)
 	sup := process.NewSupervisor(5 * time.Second)
 	sup.Go(func(gCtx context.Context) {
 		verifyBootstrapInvariants(gCtx, *apiServerAddr, logger, ctx)
