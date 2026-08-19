@@ -5,10 +5,7 @@ on:
     branches: [ main, developer ]
   pull_request:
     branches: [ main, developer ]
-<<<<<<< HEAD
-=======
 
->>>>>>> developer
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
