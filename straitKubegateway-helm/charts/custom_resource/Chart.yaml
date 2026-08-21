@@ -1,6 +1,0 @@
-apiVersion: v2
-name: custom_resource
-description: Default Custom Resources for straitKubegateway
-type: application
-version: 1.0.0
-appVersion: "1.0.0"
