@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package policy.v1;
+
+import "common/v1/common.proto";
+
+option go_package = "github.com/straitkubegateway/straitkubegateway/proto/policy/v1;policyv1";
+
+service PolicyService {
+  rpc SyncPolicies(PolicySyncRequest) returns (PolicySyncResponse);
+  rpc QueryPolicyVerdict(PolicyVerdictRequest) returns (PolicyVerdictResponse);
+}
+
+message PolicySyncRequest {
+  uint64 generation = 1;
+  repeated PolicyRule rules = 2;
+}
+
+message PolicyRule {
+  string id = 1;
+  uint32 priority = 2;
+  string direction = 3;
+  repeated uint32 source_identities = 4;
+  repeated uint32 dest_identities = 5;
+  common.v1.Protocol protocol = 6;
+  uint32 port = 7;
+  common.v1.PolicyAction action = 8;
+}
+
+message PolicySyncResponse {
+  bool success = 1;
+  uint32 active_rules = 2;
+}
+
+message PolicyVerdictRequest {
+  uint32 src_identity = 1;
+  uint32 dst_identity = 2;
+  uint32 port = 3;
+  common.v1.Protocol protocol = 4;
+  string direction = 5;
+}
+
+message PolicyVerdictResponse {
+  common.v1.PolicyAction action = 1;
+  string matched_rule_id = 2;
+}

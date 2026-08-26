@@ -1,0 +1,118 @@
+# Default values for straitKubegateway. 
+# override  default value   
+# This is a YAML-formatted file.
+
+global:
+  imageRegistry: ghcr.io/straitkubegateway
+  imagePullPolicy: IfNotPresent
+  clusterName:  ""
+
+# straitd Node Agent DaemonSet configuration
+straitd:
+  enabled: true
+  image:
+    repository: ghcr.io/straitkubegateway/straitd
+    tag: straitd
+    pullPolicy: IfNotPresent
+
+  # Architectural invariant: complete kube-proxy replacement enabled by default
+  kubeProxyReplacement: true
+  kubeProxyMode: "none"
+  disableDefaultCNI: true
+
+  # bpffs mount point on host
+  bpffs:
+    hostPath: /sys/fs/bpf
+    mountPath: /sys/fs/bpf
+    automount: true
+
+  # Network configuration
+  networking:
+    tunnelMode: vxlan # vxlan, geneve, gre, disabled
+    mtu: 0            # 0 for auto-discovery
+    enableIPv6: false
+    podCIDR: ""       # discovered dynamically from Kubernetes API if empty
+    serviceCIDR: ""   # discovered dynamically from Kubernetes API if empty
+
+  # WireGuard encryption
+  wireguard:
+    enabled: true
+    port: 51820
+
+  # Linux capabilities: least privilege for eBPF/CNI
+  securityContext:
+    privileged: true
+    capabilities:
+      add:
+        - NET_ADMIN
+        - SYS_ADMIN
+        - NET_RAW
+        - PERFMON
+        - BPF
+        - SYS_RESOURCE
+        - SYS_PTRACE
+      drop:
+        - ALL
+
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1024Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+  metrics:
+    enabled: true
+    port: 9090
+
+# sg-controller Controller Manager Deployment configuration
+sgController:
+  enabled: true
+  replicas: 2
+  image:
+    repository: ghcr.io/straitkubegateway/sg-controller
+    tag: sg-controller
+    pullPolicy: IfNotPresent
+
+  leaderElection:
+    enabled: true
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  metrics:
+    enabled: true
+    port: 8080
+
+# Gateway API v1.6.1 integration
+gatewayAPI:
+  enabled: false
+  gatewayClassName: strait-class
+  controllerName: gateway.straitkubegateway.io/controller
+
+# Multi-cluster Transit Gateway configuration
+transit:
+  enabled: false
+  segmentID: 0
+  topology: hub-spoke # hub-spoke, mesh, peer-to-peer
+
+# Dashboard / UI
+ui:
+  enabled: false
+  image:
+    repository: ghcr.io/straitkubegateway/ui
+    tag: latest
+  service:
+    type: ClusterIP
+    port: 80
+
+# Secrets
+secret:
+  create: false
+  data: {}

@@ -1,0 +1,53 @@
+# Git
+.git
+.gitignore
+
+# Binaries
+bin/
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Test
+test/
+*_test.go
+coverage.*
+*.coverprofile
+
+# Docs
+docs/
+*.md
+!README.md
+
+# CI
+.github/
+
+# UI node_modules (built inside container)
+ui/node_modules/
+ui/.angular/
+ui/dist/
+
+# Hack/Scripts (not needed in image)
+hack/
+scripts/
+
+# Logo
+logo/
+
+# Proto source (generated files are included)
+proto/
+
+# Helm (not needed in image)
+straitKubegateway-helm-repo/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Agent/skill files
+.agents/

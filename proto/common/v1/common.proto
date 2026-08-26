@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package common.v1;
+
+option go_package = "github.com/straitkubegateway/straitkubegateway/proto/common/v1;commonv1";
+
+enum Protocol {
+  PROTOCOL_UNSPECIFIED = 0;
+  PROTOCOL_TCP = 1;
+  PROTOCOL_UDP = 2;
+  PROTOCOL_ICMP = 3;
+}
+
+enum PolicyAction {
+  POLICY_ACTION_UNSPECIFIED = 0;
+  POLICY_ACTION_ALLOW = 1;
+  POLICY_ACTION_DENY = 2;
+  POLICY_ACTION_REJECT = 3;
+}
+
+enum TunnelMode {
+  TUNNEL_MODE_UNSPECIFIED = 0;
+  TUNNEL_MODE_VXLAN = 1;
+  TUNNEL_MODE_GENEVE = 2;
+  TUNNEL_MODE_GRE = 3;
+  TUNNEL_MODE_WIREGUARD = 4;
+  TUNNEL_MODE_DISABLED = 5;
+}
+
+// ObservabilityMetadata is carried on every major wire event.
+message ObservabilityMetadata {
+  string cluster_id = 1;
+  string node_id = 2;
+  string namespace = 3;
+  string pod = 4;
+  string service = 5;
+  string endpoint = 6;
+  string flow_id = 7;
+  string trace_id = 8;
+  string policy_id = 9;
+  uint32 segment_id = 10;
+  string gateway_id = 11;
+}

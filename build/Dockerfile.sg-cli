@@ -1,0 +1,47 @@
+# syntax=docker/dockerfile:1
+# Build stage
+FROM golang:1.26-alpine AS builder
+
+ARG VERSION=dev
+ARG GIT_COMMIT=unknown
+ARG TARGETARCH
+
+WORKDIR /src
+
+RUN apk add --no-cache git
+
+# Cache Go module downloads separately from source
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod,id=sg-cli-gomod \
+    go mod download
+
+COPY . .
+
+RUN --mount=type=cache,target=/go/pkg/mod,id=sg-cli-gomod \
+    --mount=type=cache,target=/root/.cache/go-build,id=sg-cli-gobuild \
+    CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} go build -trimpath \
+    -ldflags "-s -w \
+      -X github.com/straitkubegateway/straitkubegateway/internal/version.Version=${VERSION} \
+      -X github.com/straitkubegateway/straitkubegateway/internal/version.GitCommit=${GIT_COMMIT}" \
+    -o /bin/sg-cli ./cmd/sg-cli/
+
+# Production stage — minimal image for CLI tool
+FROM alpine:3.24 AS production
+
+ARG VERSION=dev
+
+RUN apk add --no-cache ca-certificates \
+    && rm -rf /var/cache/apk/*
+
+COPY --from=builder /bin/sg-cli /usr/local/bin/sg-cli
+
+# OCI image labels
+LABEL org.opencontainers.image.title="sg-cli" \
+      org.opencontainers.image.description="straitKubegateway CLI tool" \
+      org.opencontainers.image.source="https://github.com/straitkubegateway/straitkubegateway" \
+      org.opencontainers.image.version="${VERSION}"
+
+# Run as non-root
+USER 65534:65534
+
+ENTRYPOINT ["/usr/local/bin/sg-cli"]

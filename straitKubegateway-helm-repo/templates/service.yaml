@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "straitKubegateway-helm-repo.fullname" . }}-controller
+  labels:
+    {{- include "straitKubegateway-helm-repo.labels" . | nindent 4 }}
+    app.kubernetes.io/component: controller
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.sgController.metrics.port }}
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+  selector:
+    {{- include "straitKubegateway-helm-repo.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: controller
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "straitKubegateway-helm-repo.fullname" . }}-ui
+  labels:
+    {{- include "straitKubegateway-helm-repo.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ui
+spec:
+  type: {{ .Values.ui.service.type }}
+  ports:
+    - port: {{ .Values.ui.service.port }}
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "straitKubegateway-helm-repo.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: ui

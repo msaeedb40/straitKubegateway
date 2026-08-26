@@ -1,0 +1,99 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "straitKubegateway-helm-repo.fullname" . }}-controller
+  labels:
+    {{- include "straitKubegateway-helm-repo.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "services", "namespaces", "configmaps", "endpoints"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+  - apiGroups: ["discovery.k8s.io"]
+    resources: ["endpointslices"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources:
+      - gatewayclasses
+      - gatewayclasses/status
+      - gateways
+      - gateways/status
+      - httproutes
+      - httproutes/status
+      - tcproutes
+      - tcproutes/status
+      - udproutes
+      - udproutes/status
+      - grpcroutes
+      - grpcroutes/status
+      - tlsroutes
+      - tlsroutes/status
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["straitkubegateway.io"]
+    resources:
+      - straitnetworks
+      - straitnetworks/status
+      - straitnodes
+      - straitnodes/status
+      - straitnetworkpolicies
+      - straitnetworkpolicies/status
+      - transitgateways
+      - transitgateways/status
+      - transitsegmentattachments
+      - transitsegmentattachments/status
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "straitKubegateway-helm-repo.fullname" . }}-controller
+  labels:
+    {{- include "straitKubegateway-helm-repo.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "straitKubegateway-helm-repo.fullname" . }}-controller
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "straitKubegateway-helm-repo.fullname" . }}-controller
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "straitKubegateway-helm-repo.fullname" . }}-straitd
+  labels:
+    {{- include "straitKubegateway-helm-repo.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "nodes/status", "pods", "namespaces", "configmaps"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["straitkubegateway.io"]
+    resources:
+      - straitnodes
+      - straitnodes/status
+      - straitnetworks
+      - straitnetworks/status
+      - straitnetworkpolicies
+      - straitnetworkpolicies/status
+    verbs: ["get", "list", "watch", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "straitKubegateway-helm-repo.fullname" . }}-straitd
+  labels:
+    {{- include "straitKubegateway-helm-repo.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "straitKubegateway-helm-repo.fullname" . }}-straitd
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "straitKubegateway-helm-repo.fullname" . }}-straitd
+    namespace: {{ .Release.Namespace }}

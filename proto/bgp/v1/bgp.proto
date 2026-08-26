@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package bgp.v1;
+
+option go_package = "github.com/straitkubegateway/straitkubegateway/proto/bgp/v1;bgpv1";
+
+service BGPService {
+  rpc GetBGPStatus(BGPStatusRequest) returns (BGPStatusResponse);
+}
+
+message BGPStatusRequest {}
+
+message BGPStatusResponse {
+  uint32 local_asn = 1;
+  string router_id = 2;
+  repeated BGPNeighbor neighbors = 3;
+}
+
+message BGPNeighbor {
+  string peer_address = 1;
+  uint32 peer_asn = 2;
+  string state = 3;
+  uint32 routes_received = 4;
+  uint32 routes_advertised = 5;
+}

@@ -1,0 +1,16 @@
+{{- if .Values.gatewayAPI.enabled }}
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TLSRoute
+metadata:
+  name: {{ include "straitKubegateway-helm-repo.fullname" . }}-tls-route
+  labels:
+    {{- include "straitKubegateway-helm-repo.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: {{ include "straitKubegateway-helm-repo.fullname" . }}-gateway
+      sectionName: https
+  rules:
+    - backendRefs:
+        - name: {{ include "straitKubegateway-helm-repo.fullname" . }}-ui
+          port: 443
+{{- end }}

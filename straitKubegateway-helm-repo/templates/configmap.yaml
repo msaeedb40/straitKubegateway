@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "straitKubegateway-helm-repo.fullname" . }}-config
+  labels:
+    {{- include "straitKubegateway-helm-repo.labels" . | nindent 4 }}
+data:
+  runtime-config.json: |
+    {
+      "clusterName": "{{ .Values.global.clusterName }}",
+      "tunnelMode": "{{ .Values.straitd.networking.tunnelMode }}",
+      "kubeProxyReplacement": {{ .Values.straitd.kubeProxyReplacement }},
+      "wireguardEnabled": {{ .Values.straitd.wireguard.enabled }},
+      "wireguardPort": {{ .Values.straitd.wireguard.port }}
+    }
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "straitKubegateway-helm-repo.fullname" . }}-secrets
+  labels:
+    {{- include "straitKubegateway-helm-repo.labels" . | nindent 4 }}
+type: Opaque
+data:
+  cluster-token: {{ "strait-token-secret-init" | b64enc | quote }}

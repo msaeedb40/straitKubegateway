@@ -1,0 +1,23 @@
+{{- if .Values.gatewayAPI.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ include "straitKubegateway-helm-repo.fullname" . }}-gateway
+  labels:
+    {{- include "straitKubegateway-helm-repo.labels" . | nindent 4 }}
+spec:
+  gatewayClassName: {{ .Values.gatewayAPI.gatewayClassName }}
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+    - name: https
+      protocol: HTTPS
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+{{- end }}

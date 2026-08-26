@@ -1,0 +1,35 @@
+# syntax=docker/dockerfile:1
+# Build stage — Angular UI
+FROM node:24-alpine AS uibuilder
+
+WORKDIR /app
+
+# Cache npm downloads separately from source
+COPY ui/package*.json ./
+RUN --mount=type=cache,target=/root/.npm,id=ui-npm \
+    npm ci --no-audit --no-fund
+
+COPY ui/ ./
+RUN npm run build -- --configuration production
+
+# Production stage — nginx serving static assets
+FROM nginx:1.27-alpine AS production
+
+RUN rm -rf /usr/share/nginx/html/*
+
+COPY build/nginx.conf /etc/nginx/nginx.conf
+COPY --from=uibuilder /app/dist/ui/browser /usr/share/nginx/html
+
+RUN chmod -R 755 /usr/share/nginx/html
+
+# OCI image labels
+LABEL org.opencontainers.image.title="straitKubegateway-ui" \
+      org.opencontainers.image.description="straitKubegateway web management UI" \
+      org.opencontainers.image.source="https://github.com/straitkubegateway/straitkubegateway"
+
+EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget -qO- http://localhost:80/ || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]

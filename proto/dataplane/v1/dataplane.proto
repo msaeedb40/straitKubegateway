@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package dataplane.v1;
+
+import "common/v1/common.proto";
+
+option go_package = "github.com/straitkubegateway/straitkubegateway/proto/dataplane/v1;dataplanev1";
+
+message EndpointIR {
+  uint64 id = 1;
+  uint32 identity = 2;
+  string ip = 3;
+  string ipv6 = 4;
+  string namespace = 5;
+  string pod_name = 6;
+  uint32 segment_id = 7;
+}
+
+message ServiceIR {
+  string namespace = 1;
+  string name = 2;
+  string cluster_ip = 3;
+  string type = 4;
+  repeated ServicePortIR ports = 5;
+  repeated BackendIR backends = 6;
+}
+
+message ServicePortIR {
+  common.v1.Protocol protocol = 1;
+  uint32 port = 2;
+  uint32 node_port = 3;
+  uint32 target_port = 4;
+}
+
+message BackendIR {
+  uint32 id = 1;
+  string ip = 2;
+  uint32 port = 3;
+  uint32 weight = 4;
+  bool healthy = 5;
+}
+
+message PolicyIR {
+  string id = 1;
+  uint32 priority = 2;
+  string direction = 3;
+  repeated uint32 source_identities = 4;
+  repeated uint32 dest_identities = 5;
+  common.v1.PolicyAction action = 6;
+}
+
+message RouteIR {
+  string destination = 1;
+  string next_hop = 2;
+  string dev = 3;
+  string type = 4;
+  uint32 metric = 5;
+}
+
+message NATRuleIR {
+  string type = 1;
+  string match = 2;
+  string rewrite_ip = 3;
+  uint32 rewrite_port = 4;
+}
