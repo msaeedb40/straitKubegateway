@@ -69,9 +69,9 @@ flowchart TB
         GWC["Spoke Gateway C<br/>Node / Pods"]
     end
 
-    GWA <===>|WireGuard Tunnel / BGP| HubGW
-    GWB <===>|WireGuard Tunnel / BGP| HubGW
-    GWC <===>|WireGuard Tunnel / BGP| HubGW
+    GWA <-->|WireGuard Tunnel / BGP| HubGW
+    GWB <-->|WireGuard Tunnel / BGP| HubGW
+    GWC <-->|WireGuard Tunnel / BGP| HubGW
 
     classDef hub fill:#ede7f6,stroke:#7e57c2,stroke-width:2px,color:#311b92;
     classDef spoke fill:#e8f5e9,stroke:#43a047,stroke-width:2px,color:#1b5e20;
@@ -105,9 +105,9 @@ flowchart TD
         GWC["Gateway Gamma<br/>Segment 30"]
     end
 
-    GWA <===>|Direct Tunnel (Low Latency)| GWB
-    GWB <===>|Direct Tunnel (Low Latency)| GWC
-    GWC <===>|Direct Tunnel (Low Latency)| GWA
+    GWA <-->|Direct Tunnel (Low Latency)| GWB
+    GWB <-->|Direct Tunnel (Low Latency)| GWC
+    GWC <-->|Direct Tunnel (Low Latency)| GWA
 
     classDef mesh fill:#fff3e0,stroke:#fb8c00,stroke-width:2px,color:#e65100;
     class ClusterA,ClusterB,ClusterC,GWA,GWB,GWC mesh;
@@ -138,8 +138,8 @@ flowchart LR
         GW_DR["DR Gateway<br/>Segment 100-Replica"]
     end
 
-    GW_P <===>|Restricted P2P Tunnel<br/>(Specific Service CIDRs Only)| GW_A
-    GW_A <===>|Replication P2P Tunnel<br/>(Continuous Sync)| GW_DR
+    GW_P <-->|Restricted P2P Tunnel<br/>(Specific Service CIDRs Only)| GW_A
+    GW_A <-->|Replication P2P Tunnel<br/>(Continuous Sync)| GW_DR
 
     classDef p2p fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#01579b;
     class PartnerCluster,PrimaryCluster,DRCluster,GW_P,GW_A,GW_DR p2p;
@@ -170,9 +170,9 @@ flowchart TB
         GWDC["On-Prem Gateway Node<br/>• Linux Kernel 6.12 LTS<br/>• BGP ASN 65000 + BFD"]
     end
 
-    GWEKS <===>|Encrypted Cross-Cloud Tunnel| GWGKE
-    GWEKS <===>|Direct Connect / IPSec VPN| GWDC
-    GWGKE <===>|Cloud Interconnect / IPSec VPN| GWDC
+    GWEKS <-->|Encrypted Cross-Cloud Tunnel| GWGKE
+    GWEKS <-->|Direct Connect / IPSec VPN| GWDC
+    GWGKE <-->|Cloud Interconnect / IPSec VPN| GWDC
 
     classDef cloud fill:#ede7f6,stroke:#7e57c2,stroke-width:2px,color:#311b92;
     classDef onprem fill:#e8f5e9,stroke:#43a047,stroke-width:2px,color:#1b5e20;
