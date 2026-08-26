@@ -40,30 +40,28 @@ StraitKubeGateway splits controller and daemon permissions across two distinct S
 
 `StraitNetworkPolicy` provides advanced multi-dimensional identity-based firewall rules enforced at the eBPF layer.
 
-```
-                      Packet Ingress
-                            │
-                            ▼
-              ┌───────────────────────────┐
-              │ Conntrack Lookup (ct_map) │
-              └─────────────┬─────────────┘
-                            │
-              ┌─────────────┴─────────────┐
-              │                           │
-          New Flow                 Established Flow
-              │                           │
-              ▼                           │
-   ┌──────────────────────┐               │
-   │ Policy Map Lookup    │               │
-   │ (priority-ordered)   │               │
-   └──────────┬───────────┘               │
-              │                           │
-      ┌───────┴───────┐                   │
-      ▼               ▼                   ▼
-    Deny            Allow ─────────► Fast Path Forwarding
-      │                                   │
-      ▼                                   ▼
-Packet Drop (Log)                    Destination
+```mermaid
+flowchart TD
+    Ingress[Packet Ingress] --> Conntrack[Conntrack Lookup: ct_map]
+    
+    Conntrack -->|Established Flow| FastFwd[Fast Path Forwarding]
+    Conntrack -->|New Flow| PolicyEval[Policy Map Lookup: policy_map<br/>Priority Order 0..255]
+    
+    PolicyEval --> Verdict{Verdict}
+    Verdict -->|Allow| FastFwd
+    Verdict -->|Deny / Drop| Drop[Packet Drop & Log Telemetry]
+    
+    FastFwd --> Destination[Destination Pod / Socket]
+
+    classDef conntrack fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#f57f17;
+    classDef policy fill:#fff3e0,stroke:#fb8c00,stroke-width:2px,color:#e65100;
+    classDef allow fill:#e8f5e9,stroke:#43a047,stroke-width:2px,color:#1b5e20;
+    classDef drop fill:#ffebee,stroke:#e53935,stroke-width:2px,color:#b71c1c;
+
+    class Ingress,Conntrack conntrack;
+    class PolicyEval,Verdict policy;
+    class FastFwd,Destination allow;
+    class Drop drop;
 ```
 
 ### Deterministic Compiler Rules:

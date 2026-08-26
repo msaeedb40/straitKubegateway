@@ -129,6 +129,7 @@ sg-cli status
 | [Overview](docs/overview.md) | Platform summary and feature pillars |
 | [Architecture](docs/architecture.md) | System components and Mermaid diagrams |
 | [Workflow](docs/workflow.md) | Traffic lifecycle with color-coded flow diagrams |
+| [Multi-Cluster Transit](docs/transit.md) | 32-bit segment architecture, 4 transit topologies & CRDs |
 | [Capabilities](docs/capability.md) | Comprehensive feature matrix |
 | [Security](docs/security.md) | RBAC, capabilities, encryption, and policy engine |
 | [Observability](docs/observability.md) | Metrics, logging, tracing, and flow events |

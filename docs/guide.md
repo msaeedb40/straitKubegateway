@@ -33,6 +33,34 @@ ls /sys/fs/bpf/                               # BPF filesystem should be mounted
 
 ## 2. Installation
 
+### Installation & Bootstrap Flowchart
+
+```mermaid
+flowchart TD
+    PreReq[1. Verify Linux Kernel 6.7+ & BPF fs] --> HelmInstall[2. Helm Install / sg-cli install]
+    HelmInstall --> CRDDeploy[3. Deploy CRDs & Gateway API v1.6.1]
+    CRDDeploy --> ControllerStart[4. sg-controller Leader Election & Informers]
+    CRDDeploy --> DaemonStart[5. straitd DaemonSet on each Node]
+    
+    DaemonStart --> BPFMount[6. Mount /sys/fs/bpf & Load eBPF Programs]
+    DaemonStart --> CNIInstall[7. Install CNI Binaries & NetKit Setup]
+    DaemonStart --> HealthCheck[8. Health Probe Active :9090 /readyz]
+    
+    ControllerStart --> ReconcileIR[9. Reconcile Resources -> Generate IR]
+    ReconcileIR --> DataplaneCompiler[10. Dataplane Compiler writes BPF Maps]
+    
+    HealthCheck --> Ready[11. Cluster Network Fully Operational]
+    DataplaneCompiler --> Ready
+
+    classDef step fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#01579b;
+    classDef daemon fill:#e8f5e9,stroke:#43a047,stroke-width:2px,color:#1b5e20;
+    classDef ready fill:#ede7f6,stroke:#7e57c2,stroke-width:2px,color:#311b92;
+
+    class PreReq,HelmInstall,CRDDeploy,ControllerStart step;
+    class DaemonStart,BPFMount,CNIInstall,HealthCheck daemon;
+    class ReconcileIR,DataplaneCompiler,Ready ready;
+```
+
 ### Option A: Helm Chart (Recommended)
 
 ```bash
@@ -41,7 +69,7 @@ helm repo add straitkubegateway https://charts.straitkubegateway.io
 helm repo update
 
 # Install with default configuration
-helm instaupgrade --install straitkubegateway straitkubegateway/straitkubegateway \
+helm upgrade --install straitkubegateway straitkubegateway/straitkubegateway \
   --namespace kube-system \
   --create-namespace
 

@@ -68,6 +68,7 @@ StraitKubeGateway enforces 15 strict architectural invariants to guarantee stabi
 
 - [Architecture & Diagrams](architecture.md): Deep dive into system components, dataflow, and kernel subsystems.
 - [Lifecycle & Workflows](workflow.md): Detailed CNI ADD/DEL, packet path, and transit routing workflows with color-coded Mermaid diagrams.
+- [Multi-Cluster Transit](transit.md): 32-bit segment architecture, 4 transit topologies (Hub-Spoke, Mesh, P2P, GW-to-GW), and CRDs.
 - [Capabilities](capability.md): Comprehensive feature inventory and protocol support.
 - [Security](security.md): Linux capabilities, RBAC, stateful firewall, and encryption architecture.
 - [Observability](observability.md): Metadata model, Prometheus metrics, distributed tracing, and flow logs.

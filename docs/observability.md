@@ -22,6 +22,45 @@ Every telemetry signal emitted by StraitKubeGateway carries a standardized 11-at
 | `segment_id` | `uint32` | Transit segment ID (0 = backbone) |
 | `gateway_id` | `string` | Gateway API resource name for north-south traffic |
 
+### Telemetry Pipeline Architecture
+
+```mermaid
+flowchart TD
+    subgraph DataSources["eBPF Dataplane & Runtime Sources"]
+        BPF_Maps["BPF Maps & Ring Buffers<br/>(Drop events, flow logs)"]
+        CNI_Ops["CNI Plugin<br/>(ADD/DEL durations, IP allocations)"]
+        Controllers["sg-controller<br/>(Reconciliation, leader status)"]
+        Daemon["straitd Daemon<br/>(Health, IPAM pool capacity)"]
+    end
+
+    subgraph Normalization["Metadata Enrichment Engine"]
+        CanonicalEngine["Canonical Metadata Injector<br/>(11-Attribute Standard)"]
+    end
+
+    subgraph Sinks["Observability Sinks & Exporters"]
+        Prometheus[":9090 /metrics<br/>(Prometheus / VictoriaMetrics)"]
+        OTel["OTLP gRPC / HTTP Exporter<br/>(Tempo / Jaeger Traces)"]
+        ZapLogs["Zap Structured JSON Logs<br/>(stdout / Fluentbit / Loki)"]
+    end
+
+    BPF_Maps --> CanonicalEngine
+    CNI_Ops --> CanonicalEngine
+    Controllers --> CanonicalEngine
+    Daemon --> CanonicalEngine
+
+    CanonicalEngine --> Prometheus
+    CanonicalEngine --> OTel
+    CanonicalEngine --> ZapLogs
+
+    classDef src fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#01579b;
+    classDef engine fill:#ede7f6,stroke:#7e57c2,stroke-width:2px,color:#311b92;
+    classDef sink fill:#e8f5e9,stroke:#43a047,stroke-width:2px,color:#1b5e20;
+
+    class DataSources,BPF_Maps,CNI_Ops,Controllers,Daemon src;
+    class Normalization,CanonicalEngine engine;
+    class Sinks,Prometheus,OTel,ZapLogs sink;
+```
+
 ---
 
 ## 2. Prometheus Metrics
