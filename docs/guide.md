@@ -65,7 +65,7 @@ flowchart TD
 
 ```bash
 # Add the StraitKubeGateway Helm repository
-helm repo add straitkubegateway https://charts.straitkubegateway.io
+helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway
 helm repo update
 
 # Install with default configuration

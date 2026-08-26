@@ -18,6 +18,18 @@ spec:
         app.kubernetes.io/component: controller
     spec:
       serviceAccountName: {{ include "straitKubegateway-helm-repo.fullname" . }}-controller
+      {{- with .Values.sgController.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.sgController.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.sgController.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: sg-controller
           image: "{{ .Values.sgController.image.repository }}:{{ .Values.sgController.image.tag }}"
