@@ -223,7 +223,7 @@ helm-package: ## Package Helm chart
 	$(HELM) package $(HELM_DIR) -d dist/charts
 
 .PHONY: helm-index
-helm-index: ## Build and index Helm repository for charts.straitkubegateway.io
+helm-index: ## Build and index Helm repository for GitHub Pages (https://msaeedb40.github.io/straitKubegateway)
 	@chmod +x scripts/publish-helm-repo.sh
 	./scripts/publish-helm-repo.sh dist/charts
 

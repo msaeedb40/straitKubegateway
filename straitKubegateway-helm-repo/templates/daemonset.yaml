@@ -19,6 +19,12 @@ spec:
       hostNetwork: true
       hostPID: true
       serviceAccountName: {{ include "straitKubegateway-helm-repo.fullname" . }}-straitd
+      tolerations:
+        {{- if .Values.straitd.tolerations }}
+        {{- toYaml .Values.straitd.tolerations | nindent 8 }}
+        {{- else }}
+        - operator: Exists
+        {{- end }}
       containers:
         - name: straitd
           image: "{{ .Values.straitd.image.repository }}:{{ .Values.straitd.image.tag }}"

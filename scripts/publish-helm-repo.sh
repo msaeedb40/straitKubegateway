@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # StraitKubeGateway Helm Chart Repository Hosting & Publishing Script
-# Generates static assets for https://charts.straitkubegateway.io
+# Generates static assets for GitHub Pages (https://msaeedb40.github.io/straitKubegateway)
 # ==============================================================================
 
 set -euo pipefail
@@ -10,14 +10,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 CHART_DIR="${ROOT_DIR}/straitKubegateway-helm-repo"
 OUTPUT_DIR="${1:-${ROOT_DIR}/dist/charts}"
-REPO_URL="${HELM_REPO_URL:-https://charts.straitkubegateway.io}"
-CUSTOM_DOMAIN="${CUSTOM_DOMAIN:-charts.straitkubegateway.io}"
+REPO_URL="${HELM_REPO_URL:-https://msaeedb40.github.io/straitKubegateway}"
+CUSTOM_DOMAIN="${CUSTOM_DOMAIN:-}"
 
 echo "==> Preparing StraitKubeGateway Helm Chart Repository"
 echo "    Chart directory: ${CHART_DIR}"
 echo "    Output directory: ${OUTPUT_DIR}"
 echo "    Repository URL:   ${REPO_URL}"
-echo "    Custom Domain:    ${CUSTOM_DOMAIN}"
+echo "    Custom Domain:    ${CUSTOM_DOMAIN:-none (GitHub Pages default)}"
 
 mkdir -p "${OUTPUT_DIR}"
 
@@ -37,331 +37,199 @@ else
     helm repo index "${OUTPUT_DIR}" --url "${REPO_URL}"
 fi
 
-# 4. Create CNAME file for GitHub Pages / DNS routing
-echo "==> Writing CNAME file (${CUSTOM_DOMAIN})..."
-echo "${CUSTOM_DOMAIN}" > "${OUTPUT_DIR}/CNAME"
+# 4. Create CNAME file only if CUSTOM_DOMAIN is provided
+if [ -n "${CUSTOM_DOMAIN}" ]; then
+    echo "==> Writing CNAME file (${CUSTOM_DOMAIN})..."
+    echo "${CUSTOM_DOMAIN}" > "${OUTPUT_DIR}/CNAME"
+else
+    echo "==> No custom domain set; using GitHub Pages URL: ${REPO_URL}"
+    rm -f "${OUTPUT_DIR}/CNAME"
+fi
 
 # 5. Create .nojekyll to prevent GitHub Pages Jekyll processing
 touch "${OUTPUT_DIR}/.nojekyll"
 
-# 6. Extract chart version and metadata for the landing page
 CHART_VERSION=$(grep '^version:' "${CHART_DIR}/Chart.yaml" | awk '{print $2}')
 APP_VERSION=$(grep '^appVersion:' "${CHART_DIR}/Chart.yaml" | awk '{print $2}' | tr -d '"')
 CHART_NAME=$(grep '^name:' "${CHART_DIR}/Chart.yaml" | awk '{print $2}')
 
-# 7. Generate beautiful modern index.html landing page
+# 7. Generate beautiful modern index.html landing page with Tailwind CSS v4
 cat <<EOF > "${OUTPUT_DIR}/index.html"
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StraitKubeGateway Helm Charts Repository</title>
+    <meta name="description" content="Official Helm chart repository for StraitKubeGateway: Kubernetes-native eBPF Transit Gateway, CNI, and Multi-Cluster Service Networking.">
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS v4 Browser CDN -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --color-brand-cyan: #38bdf8;
+            --color-brand-blue: #3b82f6;
+            --color-brand-indigo: #6366f1;
+            --color-brand-emerald: #10b981;
+        }
+    </style>
     <style>
-        :root {
-            --bg-primary: #0a0d14;
-            --bg-card: rgba(18, 24, 38, 0.85);
-            --bg-code: #0d111a;
-            --border-color: rgba(56, 189, 248, 0.2);
-            --border-glow: rgba(56, 189, 248, 0.4);
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-            --accent-cyan: #38bdf8;
-            --accent-blue: #3b82f6;
-            --accent-purple: #818cf8;
-            --accent-green: #10b981;
-            --radius-lg: 16px;
-            --radius-md: 10px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem 1.5rem;
-            position: relative;
-            overflow-x: hidden;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
-
-        body::before {
-            content: '';
-            position: absolute;
-            top: -20%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 800px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(59, 130, 246, 0.08) 50%, transparent 80%);
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        .container {
-            max-width: 880px;
-            width: 100%;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 2.5rem;
-        }
-
-        .badge-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            border-radius: 9999px;
-            background: rgba(56, 189, 248, 0.1);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            color: var(--accent-cyan);
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 1.25rem;
-            letter-spacing: 0.02em;
-        }
-
-        .badge-pill::before {
-            content: '';
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: var(--accent-green);
-            box-shadow: 0 0 10px var(--accent-green);
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            line-height: 1.2;
-            background: linear-gradient(135deg, #ffffff 30%, var(--accent-cyan) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 0.75rem;
-        }
-
-        p.subtitle {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            line-height: 1.6;
-            max-width: 640px;
-            margin: 0 auto;
-        }
-
-        .card {
-            background: var(--bg-card);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
-            margin-bottom: 2rem;
-        }
-
-        .card h2 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .step-num {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 28px;
-            height: 28px;
-            background: rgba(56, 189, 248, 0.15);
-            color: var(--accent-cyan);
-            border-radius: 50%;
-            font-size: 0.85rem;
-            font-weight: 700;
-        }
-
-        .code-block {
-            position: relative;
-            background: var(--bg-code);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: var(--radius-md);
-            padding: 1.1rem 1.25rem;
-            margin-bottom: 1.5rem;
-            overflow-x: auto;
-        }
-
-        .code-block code {
+        code, pre {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.95rem;
-            color: #38bdf8;
-            white-space: pre-wrap;
-            word-break: break-all;
         }
-
-        .copy-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 6px;
-            color: var(--text-muted);
-            padding: 4px 10px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .copy-btn:hover {
-            background: rgba(56, 189, 248, 0.2);
-            color: #ffffff;
-            border-color: var(--accent-cyan);
-        }
-
-        .meta-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .meta-item {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: var(--radius-md);
-            padding: 1rem;
-        }
-
-        .meta-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-
-        .meta-value {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #ffffff;
-        }
-
-        .links-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1.5rem;
-            margin-top: 1.5rem;
-        }
-
-        .links-row a {
-            color: var(--accent-cyan);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: color 0.2s ease;
-        }
-
-        .links-row a:hover {
-            color: #ffffff;
-            text-decoration: underline;
-        }
-
-        footer {
-            margin-top: 2rem;
-            text-align: center;
-            color: #64748b;
-            font-size: 0.85rem;
+        .bg-grid-pattern {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="badge-pill">Official Helm Repository Active</div>
-            <h1>StraitKubeGateway Charts</h1>
-            <p class="subtitle">
-                Kubernetes-native eBPF Transit Gateway, CNI, and Multi-Cluster Service Networking.
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-10 relative overflow-x-hidden selection:bg-cyan-500/30 selection:text-cyan-200">
+    
+    <!-- Background Glow Effects & Grid Pattern -->
+    <div class="fixed inset-0 bg-grid-pattern pointer-events-none -z-20 opacity-70"></div>
+    <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-br from-cyan-500/15 via-blue-600/10 to-transparent blur-[120px] rounded-full pointer-events-none -z-10"></div>
+    <div class="fixed bottom-0 right-10 w-[500px] h-[350px] bg-gradient-to-tl from-indigo-500/10 via-emerald-500/10 to-transparent blur-[100px] rounded-full pointer-events-none -z-10"></div>
+
+    <div class="max-w-4xl w-full my-auto">
+        <!-- Header -->
+        <header class="text-center mb-8 sm:mb-10">
+            <!-- Badge -->
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs sm:text-sm font-semibold mb-5 shadow-sm shadow-cyan-950">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>Official Helm Repository Active</span>
+                <span class="text-slate-600">•</span>
+                <span class="font-mono text-cyan-300">v${CHART_VERSION}</span>
+            </div>
+
+            <!-- Title -->
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-4 bg-gradient-to-r from-white via-slate-100 to-cyan-400 bg-clip-text text-transparent">
+                StraitKubeGateway Charts
+            </h1>
+
+            <!-- Subtitle -->
+            <p class="text-slate-400 text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+                Kubernetes-native eBPF Transit Gateway, Production CNI, and Multi-Cluster Service Mesh with zero kube-proxy overhead.
             </p>
-        </div>
+        </header>
 
-        <div class="card">
-            <h2><span class="step-num">1</span> Add Helm Repository</h2>
-            <div class="code-block">
-                <button class="copy-btn" onclick="copyCode(this, 'helm repo add straitkubegateway https://charts.straitkubegateway.io\nhelm repo update')">Copy</button>
-                <code>helm repo add straitkubegateway https://charts.straitkubegateway.io
-helm repo update</code>
+        <!-- Main Card Container -->
+        <main class="bg-slate-900/80 backdrop-blur-xl border border-slate-800/90 rounded-2xl p-6 sm:p-8 md:p-10 shadow-2xl shadow-black/60 relative overflow-hidden">
+            <!-- Card accent top highlight -->
+            <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500"></div>
+
+            <!-- Step 1 -->
+            <section class="mb-8">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="flex items-center justify-center w-7 h-7 rounded-full bg-cyan-500/15 border border-cyan-500/40 text-cyan-400 font-mono text-xs font-bold">1</span>
+                    <h2 class="text-base sm:text-lg font-bold text-white tracking-wide">Add Helm Repository</h2>
+                </div>
+                <div class="relative group bg-slate-950/90 border border-slate-800 rounded-xl p-4 sm:p-4.5 overflow-x-auto shadow-inner">
+                    <button class="copy-btn absolute top-3 right-3 bg-slate-800/90 hover:bg-cyan-500/20 hover:text-cyan-300 text-slate-400 border border-slate-700/80 hover:border-cyan-500/50 rounded-lg px-2.5 py-1 text-xs font-medium transition-all duration-200 flex items-center gap-1.5 cursor-pointer z-10" onclick="copyCode(this, 'helm repo add straitkubegateway ${REPO_URL}\nhelm repo update')">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        <span>Copy</span>
+                    </button>
+                    <pre class="font-mono text-xs sm:text-sm text-cyan-400 leading-relaxed pr-16 whitespace-pre"><code>helm repo add straitkubegateway ${REPO_URL}
+helm repo update</code></pre>
+                </div>
+            </section>
+
+            <!-- Step 2 -->
+            <section class="mb-8">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="flex items-center justify-center w-7 h-7 rounded-full bg-cyan-500/15 border border-cyan-500/40 text-cyan-400 font-mono text-xs font-bold">2</span>
+                    <h2 class="text-base sm:text-lg font-bold text-white tracking-wide">Install StraitKubeGateway Chart</h2>
+                </div>
+                <div class="relative group bg-slate-950/90 border border-slate-800 rounded-xl p-4 sm:p-4.5 overflow-x-auto shadow-inner">
+                    <button class="copy-btn absolute top-3 right-3 bg-slate-800/90 hover:bg-cyan-500/20 hover:text-cyan-300 text-slate-400 border border-slate-700/80 hover:border-cyan-500/50 rounded-lg px-2.5 py-1 text-xs font-medium transition-all duration-200 flex items-center gap-1.5 cursor-pointer z-10" onclick="copyCode(this, 'helm install straitkubegateway straitkubegateway/straitkubegateway \\\n  --namespace kube-system \\\n  --create-namespace')">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        <span>Copy</span>
+                    </button>
+                    <pre class="font-mono text-xs sm:text-sm text-cyan-400 leading-relaxed pr-16 whitespace-pre"><code>helm install straitkubegateway straitkubegateway/straitkubegateway \\
+  --namespace kube-system \\
+  --create-namespace</code></pre>
+                </div>
+            </section>
+
+            <!-- Metadata Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-4 border-t border-slate-800/80">
+                <div class="bg-slate-950/60 border border-slate-800/60 rounded-xl p-3.5 transition-colors hover:border-slate-700">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Chart Name</div>
+                    <div class="text-sm sm:text-base font-bold text-white font-mono truncate">${CHART_NAME}</div>
+                </div>
+                <div class="bg-slate-950/60 border border-slate-800/60 rounded-xl p-3.5 transition-colors hover:border-slate-700">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Chart Version</div>
+                    <div class="text-sm sm:text-base font-bold text-cyan-400 font-mono">v${CHART_VERSION}</div>
+                </div>
+                <div class="bg-slate-950/60 border border-slate-800/60 rounded-xl p-3.5 transition-colors hover:border-slate-700">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">App Version</div>
+                    <div class="text-sm sm:text-base font-bold text-emerald-400 font-mono">v${APP_VERSION}</div>
+                </div>
+                <div class="bg-slate-950/60 border border-slate-800/60 rounded-xl p-3.5 transition-colors hover:border-slate-700">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Package (.tgz)</div>
+                    <div class="text-sm sm:text-base font-bold truncate">
+                        <a href="${CHART_NAME}-${CHART_VERSION}.tgz" class="text-cyan-400 hover:text-cyan-300 hover:underline font-mono inline-flex items-center gap-1">
+                            <span>Download</span>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        </a>
+                    </div>
+                </div>
             </div>
 
-            <h2><span class="step-num">2</span> Install StraitKubeGateway Chart</h2>
-            <div class="code-block">
-                <button class="copy-btn" onclick="copyCode(this, 'helm install straitkubegateway straitkubegateway/straitkubegateway --namespace kube-system --create-namespace')">Copy</button>
-                <code>helm install straitkubegateway straitkubegateway/straitkubegateway \
-  --namespace kube-system \
-  --create-namespace</code>
+            <!-- Feature Tags -->
+            <div class="mt-6 pt-4 border-t border-slate-800/50 flex flex-wrap items-center justify-center gap-2 text-xs">
+                <span class="px-2.5 py-1 rounded-md bg-slate-800/80 border border-slate-700/60 text-slate-300">⚡ eBPF CO-RE Dataplane</span>
+                <span class="px-2.5 py-1 rounded-md bg-slate-800/80 border border-slate-700/60 text-slate-300">🛡️ Built-in CNI & NetKit</span>
+                <span class="px-2.5 py-1 rounded-md bg-slate-800/80 border border-slate-700/60 text-slate-300">🚀 Kube-Proxy Replacement</span>
+                <span class="px-2.5 py-1 rounded-md bg-slate-800/80 border border-slate-700/60 text-slate-300">🌐 Gateway API v1.6.1</span>
+                <span class="px-2.5 py-1 rounded-md bg-slate-800/80 border border-slate-700/60 text-slate-300">🔒 WireGuard & IPsec</span>
             </div>
+        </main>
 
-            <div class="meta-grid">
-                <div class="meta-item">
-                    <div class="meta-label">Chart Name</div>
-                    <div class="meta-value">${CHART_NAME}</div>
-                </div>
-                <div class="meta-item">
-                    <div class="meta-label">Latest Chart Version</div>
-                    <div class="meta-value">v${CHART_VERSION}</div>
-                </div>
-                <div class="meta-item">
-                    <div class="meta-label">App Version</div>
-                    <div class="meta-value">v${APP_VERSION}</div>
-                </div>
-                <div class="meta-item">
-                    <div class="meta-label">Direct Download</div>
-                    <div class="meta-value"><a href="${CHART_NAME}-${CHART_VERSION}.tgz" style="color: var(--accent-cyan); text-decoration: none;">${CHART_NAME}-${CHART_VERSION}.tgz</a></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="links-row">
-            <a href="https://github.com/msaeedb40/straitKubegateway" target="_blank" rel="noopener noreferrer">
-                <span>GitHub Repository</span> →
+        <!-- Navigation Links -->
+        <nav class="flex flex-wrap items-center justify-center gap-6 sm:gap-8 mt-8 text-sm font-medium">
+            <a href="https://github.com/msaeedb40/straitKubegateway" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:text-white transition-colors flex items-center gap-1.5 group">
+                <span>GitHub Repository</span>
+                <span class="transition-transform group-hover:translate-x-0.5">→</span>
             </a>
-            <a href="index.yaml" target="_blank">
-                <span>Raw index.yaml</span> →
+            <a href="index.yaml" target="_blank" class="text-cyan-400 hover:text-white transition-colors flex items-center gap-1.5 group">
+                <span>Raw index.yaml</span>
+                <span class="transition-transform group-hover:translate-x-0.5">→</span>
             </a>
-        </div>
+            <a href="https://github.com/msaeedb40/straitKubegateway/tree/main/docs" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 group">
+                <span>Documentation</span>
+                <span class="transition-transform group-hover:translate-x-0.5">→</span>
+            </a>
+        </nav>
 
-        <footer>
-            &copy; $(date +%Y) StraitKubeGateway Project. All rights reserved.
+        <!-- Footer -->
+        <footer class="mt-8 text-center text-xs text-slate-400">
+            &copy; $(date +%Y) StraitKubeGateway Project. Distributed under Apache 2.0 / Open Source License.
         </footer>
     </div>
 
+    <!-- Script for copy to clipboard -->
     <script>
         function copyCode(btn, text) {
             navigator.clipboard.writeText(text).then(() => {
-                const original = btn.textContent;
-                btn.textContent = 'Copied!';
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span class="text-emerald-400">Copied!</span>';
+                btn.classList.add('border-emerald-500/50', 'bg-emerald-500/10');
                 setTimeout(() => {
-                    btn.textContent = original;
+                    btn.innerHTML = originalHtml;
+                    btn.classList.remove('border-emerald-500/50', 'bg-emerald-500/10');
                 }, 2000);
             });
         }

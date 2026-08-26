@@ -71,7 +71,7 @@ Designed for public clouds, bare-metal, edge, hybrid-cloud, multi-cloud, and air
 ### Install via Helm
 
 ```bash
-helm repo add straitkubegateway https://charts.straitkubegateway.io
+helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway
 helm repo update
 
 helm install straitkubegateway straitkubegateway/straitkubegateway \

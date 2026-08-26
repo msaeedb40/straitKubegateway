@@ -66,6 +66,9 @@ straitd:
     enabled: true
     port: 9090
 
+  tolerations:
+    - operator: Exists
+
 # sg-controller Controller Manager Deployment configuration
 sgController:
   enabled: true
@@ -77,6 +80,10 @@ sgController:
 
   leaderElection:
     enabled: true
+
+  tolerations: []
+  affinity: {}
+  nodeSelector: {}
 
   resources:
     limits:
@@ -92,9 +99,9 @@ sgController:
 
 # Gateway API v1.6.1 integration
 gatewayAPI:
-  enabled: false
-  gatewayClassName: strait-class
-  controllerName: gateway.straitkubegateway.io/controller
+  enabled: true
+  gatewayClassName: skgateway  
+  controllerName: gateway.straitkubegateway.io/skgateway
 
 # Multi-cluster Transit Gateway configuration
 transit:

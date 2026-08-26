@@ -58,10 +58,22 @@ require_cmds() {
 }
 
 # ---------------------------------------------------------------------------
+# Gateway API CRDs Helper
+# ---------------------------------------------------------------------------
+export GATEWAY_API_CRDS_URL="${GATEWAY_API_CRDS_URL:-https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/experimental-install.yaml}"
+
+install_gateway_api_crds() {
+  log_info "Ensuring Gateway API experimental CRDs are installed ..."
+  kubectl apply -f "${GATEWAY_API_CRDS_URL}"
+}
+
+# ---------------------------------------------------------------------------
 # Helm Helpers
 # ---------------------------------------------------------------------------
 helm_install() {
   local extra_args=("$@")
+
+  install_gateway_api_crds
 
   log_info "Installing Helm release '${HELM_RELEASE}' in namespace '${NAMESPACE}' ..."
   helm upgrade --install "${HELM_RELEASE}" "${HELM_CHART}" \
