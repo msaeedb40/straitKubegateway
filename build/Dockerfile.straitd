@@ -39,6 +39,8 @@ RUN --mount=type=cache,target=/go/pkg/mod,id=straitd-gomod \
 # Production stage — minimal runtime with networking tools
 FROM alpine:3.24 AS production
 
+ARG VERSION=dev
+
 RUN apk add --no-cache \
     iproute2 \
     iptables \

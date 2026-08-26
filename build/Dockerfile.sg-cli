@@ -28,6 +28,8 @@ RUN --mount=type=cache,target=/go/pkg/mod,id=sg-cli-gomod \
 # Production stage — minimal image for CLI tool
 FROM alpine:3.24 AS production
 
+ARG VERSION=dev
+
 RUN apk add --no-cache ca-certificates \
     && rm -rf /var/cache/apk/*
 
