@@ -75,9 +75,9 @@ flowchart TD
 
     subgraph Transit_Routing["Multi-Cluster Transit & Forwarding"]
         FastFwd --> SegmentCheck{Destination Scope?}
-        SegmentCheck -->|Local Node Pod| NetKitHost[NetKit Host Endpoint]
-        SegmentCheck -->|Remote Node (Same Cluster)| Overlay[Overlay Tunnel: VXLAN / WireGuard]
-        SegmentCheck -->|Cross-Cluster (Segment 0..N)| TransitGW[Transit Gateway Forwarding]
+        SegmentCheck -->|"Local Node Pod"| NetKitHost[NetKit Host Endpoint]
+        SegmentCheck -->|"Remote Node (Same Cluster)"| Overlay[Overlay Tunnel: VXLAN / WireGuard]
+        SegmentCheck -->|"Cross-Cluster (Segment 0..N)"| TransitGW[Transit Gateway Forwarding]
         
         TransitGW -->|Attachment Route Lookup| SegPeer[Peer Gateway Endpoint]
         SegPeer -->|Encrypted WireGuard / IPsec| RemoteCluster[Remote Cluster Ingress]
