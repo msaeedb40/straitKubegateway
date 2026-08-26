@@ -10,9 +10,43 @@ permissions:
   packages: write
 
 jobs:
+  validate:
+    name: Pre-Release Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          args: --timeout=5m
+
+      - name: Run unit tests
+        run: go test -race -count=1 ./...
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+
+      - name: Lint Helm chart
+        run: helm lint straitKubegateway-helm-repo
+
   build-and-release:
     name: Build & Publish Release
     runs-on: ubuntu-latest
+    needs: [validate]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -49,7 +83,7 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/ui
 
       - name: Build and push straitd image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: build/Dockerfile.straitd
@@ -60,7 +94,7 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/straitd:latest
 
       - name: Build and push sg-controller image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: build/Dockerfile.sg-controller
@@ -71,7 +105,7 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/sg-controller:latest
 
       - name: Build and push sg-cli image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: build/Dockerfile.sg-cli
@@ -82,7 +116,7 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/sg-cli:latest
 
       - name: Build and push UI image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: build/Dockerfile.ui
@@ -107,6 +141,15 @@ jobs:
               -o dist/sg-cli-${{ github.ref_name }}-linux-$arch ./cmd/sg-cli/
           done
           cd dist && sha256sum * > checksums.txt
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+
+      - name: Package Helm chart
+        run: |
+          helm package straitKubegateway-helm-repo --destination dist/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

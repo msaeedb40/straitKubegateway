@@ -22,7 +22,7 @@ import (
 )
 
 // GatewayControllerName is the controller name used in GatewayClass.
-const GatewayControllerName = "gateway.straitkubegateway.io/controller"
+const GatewayControllerName = "gateway.straitkubegateway.io/skubegateway"
 
 // Condition Types & Reasons per Gateway API v1.6.1 spec
 const (

@@ -9,6 +9,9 @@ dist/
 # IDE
 .idea/
 .vscode/
+*.swp
+*.swo
+*~
 
 # Test
 test/
@@ -24,12 +27,14 @@ docs/
 # CI
 .github/
 
-# UI node_modules (built separately)
+# UI node_modules (built inside container)
 ui/node_modules/
 ui/.angular/
+ui/dist/
 
-# Hack scripts
+# Hack/Scripts (not needed in image)
 hack/
+scripts/
 
 # Logo
 logo/
@@ -37,6 +42,12 @@ logo/
 # Proto source (generated files are included)
 proto/
 
+# Helm (not needed in image)
+straitKubegateway-helm-repo/
+
 # OS
 .DS_Store
 Thumbs.db
+
+# Agent/skill files
+.agents/

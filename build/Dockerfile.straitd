@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Build stage
 FROM golang:1.26-alpine AS builder
 
@@ -20,24 +21,37 @@ RUN apk add --no-cache \
     musl-dev \
     git
 
+# Cache Go module downloads separately from source
 COPY go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod,id=straitd-gomod \
+    go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} go build -trimpath \
-    -ldflags "-s -w -X github.com/straitkubegateway/straitkubegateway/internal/version.Version=${VERSION} -X github.com/straitkubegateway/straitkubegateway/internal/version.GitCommit=${GIT_COMMIT}" \
+RUN --mount=type=cache,target=/go/pkg/mod,id=straitd-gomod \
+    --mount=type=cache,target=/root/.cache/go-build,id=straitd-gobuild \
+    CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} go build -trimpath \
+    -ldflags "-s -w \
+      -X github.com/straitkubegateway/straitkubegateway/internal/version.Version=${VERSION} \
+      -X github.com/straitkubegateway/straitkubegateway/internal/version.GitCommit=${GIT_COMMIT}" \
     -o /bin/straitd ./cmd/straitd/
 
-# Production stage
-FROM alpine:3.24
+# Production stage — minimal runtime with networking tools
+FROM alpine:3.24 AS production
 
 RUN apk add --no-cache \
     iproute2 \
     iptables \
     wireguard-tools \
-    ca-certificates
+    ca-certificates \
+    && rm -rf /var/cache/apk/*
 
 COPY --from=builder /bin/straitd /usr/local/bin/straitd
+
+# OCI image labels
+LABEL org.opencontainers.image.title="straitd" \
+      org.opencontainers.image.description="straitKubegateway node agent — eBPF dataplane, CNI, transit gateway" \
+      org.opencontainers.image.source="https://github.com/straitkubegateway/straitkubegateway" \
+      org.opencontainers.image.version="${VERSION}"
 
 ENTRYPOINT ["/usr/local/bin/straitd"]
