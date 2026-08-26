@@ -20,4 +20,22 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
+    - name: grpc
+      protocol: HTTP
+      port: 8080
+      allowedRoutes:
+        namespaces:
+          from: All
+    - name: tcp
+      protocol: TCP
+      port: 8080
+      allowedRoutes:
+        namespaces:
+          from: All
+    - name: udp
+      protocol: UDP
+      port: 8080
+      allowedRoutes:
+        namespaces:
+          from: All
 {{- end }}
