@@ -23,6 +23,10 @@ jobs:
           go-version-file: 'go.mod'
           cache: true
 
+      - name: Verify gofmt
+        run: |
+          diff -u <(echo -n) <(gofmt -s -d $(find . -type f -name '*.go' -not -path './vendor/*'))
+
       - name: Run go vet
         run: go vet ./...
 
