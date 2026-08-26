@@ -1,9 +1,9 @@
 # Binaries
 /bin/
 /dist/
-straitd
-sg-cli
-sg-controller
+/straitd
+/sg-cli
+/sg-controller
 
 # Go build
 *.o
