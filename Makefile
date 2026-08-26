@@ -220,7 +220,19 @@ helm-template: ## Render Helm chart templates
 
 .PHONY: helm-package
 helm-package: ## Package Helm chart
-	$(HELM) package $(HELM_DIR)
+	$(HELM) package $(HELM_DIR) -d dist/charts
+
+.PHONY: helm-index
+helm-index: ## Build and index Helm repository for charts.straitkubegateway.io
+	@chmod +x scripts/publish-helm-repo.sh
+	./scripts/publish-helm-repo.sh dist/charts
+
+.PHONY: helm-serve
+helm-serve: helm-index ## Start local HTTP server to test charts repository on port 8080
+	@echo "Starting local chart repository server at http://localhost:8080 ..."
+	@echo "Test with: helm repo add local-test http://localhost:8080 && helm repo update"
+	python3 -m http.server 8080 --directory dist/charts
+
 
 # ============================================================================
 # Proto
