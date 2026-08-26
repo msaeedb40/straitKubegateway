@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package gateway.v1;
+
+import "common/v1/common.proto";
+
+option go_package = "github.com/straitkubegateway/straitkubegateway/proto/gateway/v1;gatewayv1";
+
+service GatewayService {
+  rpc SyncGateways(GatewaySyncRequest) returns (GatewaySyncResponse);
+}
+
+message GatewaySyncRequest {
+  uint64 generation = 1;
+  repeated GatewayInstance gateways = 2;
+}
+
+message GatewayInstance {
+  string namespace = 1;
+  string name = 2;
+  string class_name = 3;
+  repeated string addresses = 4;
+  repeated RouteAttachment routes = 5;
+}
+
+message RouteAttachment {
+  string route_kind = 1;
+  string namespace = 2;
+  string name = 3;
+  repeated RouteRuleSpec rules = 4;
+}
+
+message RouteRuleSpec {
+  string path_prefix = 1;
+  map<string, string> headers = 2;
+  repeated BackendReference backends = 3;
+}
+
+message BackendReference {
+  string namespace = 1;
+  string service = 2;
+  uint32 port = 3;
+  int32 weight = 4;
+}
+
+message GatewaySyncResponse {
+  bool success = 1;
+  uint32 programmed_gateways = 2;
+}

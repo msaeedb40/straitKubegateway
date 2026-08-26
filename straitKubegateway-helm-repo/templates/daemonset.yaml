@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "straitKubegateway-helm-repo.fullname" . }}-straitd
+  labels:
+    {{- include "straitKubegateway-helm-repo.labels" . | nindent 4 }}
+    app.kubernetes.io/component: node-agent
+spec:
+  selector:
+    matchLabels:
+      {{- include "straitKubegateway-helm-repo.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: node-agent
+  template:
+    metadata:
+      labels:
+        {{- include "straitKubegateway-helm-repo.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: node-agent
+    spec:
+      hostNetwork: true
+      hostPID: true
+      serviceAccountName: {{ include "straitKubegateway-helm-repo.fullname" . }}-straitd
+      containers:
+        - name: straitd
+          image: "{{ .Values.straitd.image.repository }}:{{ .Values.straitd.image.tag }}"
+          imagePullPolicy: {{ .Values.straitd.image.pullPolicy }}
+          command:
+            - /usr/local/bin/straitd
+          args:
+            - --node-name=$(NODE_NAME)
+            - --node-ip=$(NODE_IP)
+            - --bpffs-path={{ .Values.straitd.bpffs.mountPath }}
+            - --tunnel-mode={{ .Values.straitd.networking.tunnelMode }}
+            - --kube-proxy-mode={{ .Values.straitd.kubeProxyMode }}
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          securityContext:
+            privileged: {{ .Values.straitd.securityContext.privileged | default false }}
+            capabilities:
+              add:
+                {{- toYaml .Values.straitd.securityContext.capabilities.add | nindent 16 }}
+              drop:
+                {{- toYaml .Values.straitd.securityContext.capabilities.drop | nindent 16 }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.straitd.metrics.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.straitd.metrics.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: {{ .Values.straitd.metrics.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.straitd.resources | nindent 12 }}
+          volumeMounts:
+            - name: bpf-fs
+              mountPath: {{ .Values.straitd.bpffs.mountPath }}
+              mountPropagation: Bidirectional
+            - name: proc
+              mountPath: /host/proc
+              readOnly: true
+            - name: cni-bin
+              mountPath: /opt/cni/bin
+            - name: cni-conf
+              mountPath: /etc/cni/net.d
+      volumes:
+        - name: bpf-fs
+          hostPath:
+            path: {{ .Values.straitd.bpffs.hostPath }}
+        - name: proc
+          hostPath:
+            path: /proc
+        - name: cni-bin
+          hostPath:
+            path: /opt/cni/bin
+        - name: cni-conf
+          hostPath:
+            path: /etc/cni/net.d

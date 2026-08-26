@@ -1,0 +1,60 @@
+# Binaries
+/bin/
+/dist/
+straitd
+sg-cli
+sg-controller
+
+# Go build
+*.o
+*.a
+*.so
+*.exe
+*.test
+*.out
+*.prof
+*.pprof
+
+# Go module
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# eBPF build artifacts
+bpf/**/*.o
+bpf/**/*.d
+ebpf/generated/
+
+# Test
+coverage.out
+coverage.html
+*.coverprofile
+
+# Docker
+docker-compose.override.yml
+
+# Helm
+straitKubegateway-helm-repo/charts/*.tgz
+
+# Proto generated
+**/*.pb.go
+**/*.pb.gw.go
+
+# UI
+ui/node_modules/
+ui/dist/
+ui/.angular/
+
+# OS
+Thumbs.db
+.Spotlight-V100
+.Trashes
+
+# Logs
+*.log

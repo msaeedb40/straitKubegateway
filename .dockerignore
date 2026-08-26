@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+
+# Binaries
+bin/
+dist/
+
+# IDE
+.idea/
+.vscode/
+
+# Test
+test/
+*_test.go
+coverage.*
+*.coverprofile
+
+# Docs
+docs/
+*.md
+!README.md
+
+# CI
+.github/
+
+# UI node_modules (built separately)
+ui/node_modules/
+ui/.angular/
+
+# Hack scripts
+hack/
+
+# Logo
+logo/
+
+# Proto source (generated files are included)
+proto/
+
+# OS
+.DS_Store
+Thumbs.db

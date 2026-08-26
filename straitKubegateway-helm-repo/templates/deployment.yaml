@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "straitKubegateway-helm-repo.fullname" . }}-controller
+  labels:
+    {{- include "straitKubegateway-helm-repo.labels" . | nindent 4 }}
+    app.kubernetes.io/component: controller
+spec:
+  replicas: {{ .Values.sgController.replicas }}
+  selector:
+    matchLabels:
+      {{- include "straitKubegateway-helm-repo.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: controller
+  template:
+    metadata:
+      labels:
+        {{- include "straitKubegateway-helm-repo.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: controller
+    spec:
+      serviceAccountName: {{ include "straitKubegateway-helm-repo.fullname" . }}-controller
+      containers:
+        - name: sg-controller
+          image: "{{ .Values.sgController.image.repository }}:{{ .Values.sgController.image.tag }}"
+          imagePullPolicy: {{ .Values.sgController.image.pullPolicy }}
+          command:
+            - /usr/local/bin/sg-controller
+          args:
+            - --leader-elect={{ .Values.sgController.leaderElection.enabled }}
+            - --metrics-bind-address=:{{ .Values.sgController.metrics.port }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.sgController.metrics.port }}
+              protocol: TCP
+            - name: health
+              containerPort: 8081
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.sgController.resources | nindent 12 }}

@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package agent.v1;
+
+import "common/v1/common.proto";
+
+option go_package = "github.com/straitkubegateway/straitkubegateway/proto/agent/v1;agentv1";
+
+service AgentService {
+  rpc SyncNetworkState(stream NetworkStateUpdate) returns (stream NetworkStateAck);
+  rpc ReportNodeStatus(NodeStatusReport) returns (NodeStatusResponse);
+}
+
+message NetworkStateUpdate {
+  uint64 generation = 1;
+  common.v1.ObservabilityMetadata metadata = 2;
+  bytes payload = 3;
+}
+
+message NetworkStateAck {
+  uint64 generation = 1;
+  bool success = 2;
+  string error = 3;
+}
+
+message NodeStatusReport {
+  string node_name = 1;
+  string internal_ip = 2;
+  string pod_cidr = 3;
+  bool cni_ready = 4;
+  bool service_ready = 5;
+  bool policy_ready = 6;
+  bool gateway_ready = 7;
+  uint32 allocated_identities = 8;
+  string kernel_version = 9;
+}
+
+message NodeStatusResponse {
+  bool acknowledged = 1;
+}

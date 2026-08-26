@@ -1,0 +1,65 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: straitnetworks.straitkubegateway.io
+spec:
+  group: straitkubegateway.io
+  names:
+    kind: StraitNetwork
+    listKind: StraitNetworkList
+    plural: straitnetworks
+    singular: straitnetwork
+    shortNames:
+      - snet
+  scope: Cluster
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                podCIDR:
+                  type: string
+                serviceCIDR:
+                  type: string
+                ipv6PodCIDR:
+                  type: string
+                ipv6ServiceCIDR:
+                  type: string
+                tunnelMode:
+                  type: string
+                  enum: [vxlan, geneve, gre, disabled]
+                  default: vxlan
+                enableIPv6:
+                  type: boolean
+                  default: false
+                kubeProxyReplacement:
+                  type: boolean
+                  default: true
+                mtu:
+                  type: integer
+                encryption:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      enum: [wireguard, ipsec, disabled]
+                      default: disabled
+            status:
+              type: object
+              properties:
+                phase:
+                  type: string
+                observedGeneration:
+                  type: integer
+                discoveredPodCIDR:
+                  type: string
+                discoveredServiceCIDR:
+                  type: string
+      subresources:
+        status: {}

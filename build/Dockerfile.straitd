@@ -1,0 +1,43 @@
+# Build stage
+FROM golang:1.26-alpine AS builder
+
+ARG VERSION=dev
+ARG GIT_COMMIT=unknown
+ARG TARGETARCH
+
+WORKDIR /src
+
+RUN apk add --no-cache \
+    clang \
+    llvm \
+    lld \
+    bpftool \
+    libbpf-dev \
+    elfutils-dev \
+    linux-headers \
+    make \
+    gcc \
+    musl-dev \
+    git
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} go build -trimpath \
+    -ldflags "-s -w -X github.com/straitkubegateway/straitkubegateway/internal/version.Version=${VERSION} -X github.com/straitkubegateway/straitkubegateway/internal/version.GitCommit=${GIT_COMMIT}" \
+    -o /bin/straitd ./cmd/straitd/
+
+# Production stage
+FROM alpine:3.24
+
+RUN apk add --no-cache \
+    iproute2 \
+    iptables \
+    wireguard-tools \
+    ca-certificates
+
+COPY --from=builder /bin/straitd /usr/local/bin/straitd
+
+ENTRYPOINT ["/usr/local/bin/straitd"]

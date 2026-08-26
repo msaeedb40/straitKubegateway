@@ -1,0 +1,24 @@
+========================================================================
+straitKubegateway has been installed successfully!
+========================================================================
+
+Components Deployed:
+  1. straitd Node Agent (DaemonSet) - eBPF Dataplane & CNI Plugin
+  2. sg-controller Controller Manager (Deployment) - Gateway API & Multi-Cluster Transit
+
+Verify Node Agent Status:
+  kubectl get daemonset -l app.kubernetes.io/component=node-agent -n {{ .Release.Namespace }}
+
+Verify Gateway API Resources:
+  kubectl get gatewayclasses
+  kubectl get gateways
+
+Check StraitNode Status:
+  kubectl get straitnodes
+
+For troubleshooting and detailed metrics:
+  sg-cli status
+  sg-cli gateway
+  sg-cli transit
+
+========================================================================

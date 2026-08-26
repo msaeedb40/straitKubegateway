@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package service.v1;
+
+import "common/v1/common.proto";
+
+option go_package = "github.com/straitkubegateway/straitkubegateway/proto/service/v1;servicev1";
+
+service ServiceLBService {
+  rpc SyncServices(ServiceSyncRequest) returns (ServiceSyncResponse);
+}
+
+message ServiceSyncRequest {
+  uint64 generation = 1;
+  repeated ServiceEntry services = 2;
+}
+
+message ServiceEntry {
+  string namespace = 1;
+  string name = 2;
+  string cluster_ip = 3;
+  string type = 4;
+  repeated common.v1.Protocol protocols = 5;
+  repeated ServicePortMapping ports = 6;
+  repeated BackendTarget backends = 7;
+}
+
+message ServicePortMapping {
+  uint32 port = 1;
+  uint32 target_port = 2;
+  uint32 node_port = 3;
+}
+
+message BackendTarget {
+  uint32 id = 1;
+  string ip = 2;
+  uint32 port = 3;
+  uint32 weight = 4;
+  bool healthy = 5;
+}
+
+message ServiceSyncResponse {
+  bool success = 1;
+  uint32 programmed_services = 2;
+}

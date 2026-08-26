@@ -1,0 +1,9 @@
+{
+  "apiEndpoint": "/api/v1",
+  "metricsEndpoint": "/metrics",
+  "wsEndpoint": "/ws",
+  "clusterName": "",
+  "refreshIntervalMs": 5000,
+  "enableD3Topology": true,
+  "theme": "dark"
+}

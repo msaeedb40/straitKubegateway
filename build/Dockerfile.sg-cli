@@ -1,0 +1,28 @@
+# Build stage
+FROM golang:1.26-alpine AS builder
+
+ARG VERSION=dev
+ARG GIT_COMMIT=unknown
+ARG TARGETARCH
+
+WORKDIR /src
+
+RUN apk add --no-cache git
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} go build -trimpath \
+    -ldflags "-s -w -X github.com/straitkubegateway/straitkubegateway/internal/version.Version=${VERSION} -X github.com/straitkubegateway/straitkubegateway/internal/version.GitCommit=${GIT_COMMIT}" \
+    -o /bin/sg-cli ./cmd/sg-cli/
+
+# Production stage
+FROM alpine:3.24
+
+RUN apk add --no-cache ca-certificates
+
+COPY --from=builder /bin/sg-cli /usr/local/bin/sg-cli
+
+ENTRYPOINT ["/usr/local/bin/sg-cli"]
