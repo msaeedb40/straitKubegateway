@@ -27,10 +27,10 @@ const (
 
 // Neighbor represents a configured BGP peer.
 type Neighbor struct {
-	Address         netip.Addr
-	ASN             uint32
-	State           NeighborState
-	RoutesReceived  uint32
+	Address          netip.Addr
+	ASN              uint32
+	State            NeighborState
+	RoutesReceived   uint32
 	RoutesAdvertised uint32
 }
 

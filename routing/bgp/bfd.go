@@ -25,14 +25,14 @@ const (
 
 // BFDSession represents a single BFD tracking session for a BGP peer.
 type BFDSession struct {
-	mu                   sync.Mutex
-	Peer                 netip.Addr
-	State                BFDState
-	DesiredMinTxInterval time.Duration
+	mu                    sync.Mutex
+	Peer                  netip.Addr
+	State                 BFDState
+	DesiredMinTxInterval  time.Duration
 	RequiredMinRxInterval time.Duration
-	DetectMultiplier     uint8
-	missedPackets        uint8
-	lastRx               time.Time
+	DetectMultiplier      uint8
+	missedPackets         uint8
+	lastRx                time.Time
 }
 
 // BFDManager manages fast failure detection sessions for routing peers.
@@ -58,12 +58,12 @@ func (m *BFDManager) AddSession(peer netip.Addr, txInterval, rxInterval time.Dur
 	defer m.mu.Unlock()
 
 	s := &BFDSession{
-		Peer:                 peer,
-		State:                BFDStateInit,
-		DesiredMinTxInterval: txInterval,
+		Peer:                  peer,
+		State:                 BFDStateInit,
+		DesiredMinTxInterval:  txInterval,
 		RequiredMinRxInterval: rxInterval,
-		DetectMultiplier:     multiplier,
-		lastRx:               time.Now(),
+		DetectMultiplier:      multiplier,
+		lastRx:                time.Now(),
 	}
 	m.sessions[peer] = s
 	m.log.Info("BFD session added",

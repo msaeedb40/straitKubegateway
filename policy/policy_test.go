@@ -338,7 +338,7 @@ func TestReconcileAndGetAll(t *testing.T) {
 			Name:      "policy-a",
 		},
 		Spec: apiv1.StraitNetworkPolicySpec{
-			Priority: 10,
+			Priority:    10,
 			PolicyTypes: []apiv1.PolicyType{apiv1.PolicyTypeIngress},
 			EndpointSelector: apiv1.EndpointSelector{
 				PodSelector: &metav1.LabelSelector{MatchLabels: map[string]string{"app": "a"}},

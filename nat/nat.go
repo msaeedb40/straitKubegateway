@@ -108,8 +108,8 @@ func (m *Manager) AddNAT64Rule(ipv6Prefix netip.Prefix, ipv4Pool netip.Prefix) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.rules = append(m.rules, &ir.NATRule{
-		Type:    ir.NATTypeNAT64,
-		Match:   ipv6Prefix,
+		Type:  ir.NATTypeNAT64,
+		Match: ipv6Prefix,
 		// RewriteIP holds the first address of the IPv4 pool
 		RewriteIP: ipv4Pool.Addr(),
 	})

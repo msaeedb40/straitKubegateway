@@ -34,17 +34,17 @@ import (
 // major event, log entry, metric label set, trace span, and flow event.
 // Invariant: every major object carries ALL of these fields.
 type Metadata struct {
-	ClusterID  sgtypes.ClusterID `json:"clusterID"`
-	NodeID     sgtypes.NodeID    `json:"nodeID"`
-	Namespace  string            `json:"namespace,omitempty"`
-	Pod        string            `json:"pod,omitempty"`
-	Service    string            `json:"service,omitempty"`
-	Endpoint   string            `json:"endpoint,omitempty"`
-	FlowID     string            `json:"flowID,omitempty"`
-	TraceID    string            `json:"traceID,omitempty"`
-	PolicyID   string            `json:"policyID,omitempty"`
-	SegmentID  sgtypes.SegmentID `json:"segmentID"`
-	GatewayID  string            `json:"gatewayID,omitempty"`
+	ClusterID sgtypes.ClusterID `json:"clusterID"`
+	NodeID    sgtypes.NodeID    `json:"nodeID"`
+	Namespace string            `json:"namespace,omitempty"`
+	Pod       string            `json:"pod,omitempty"`
+	Service   string            `json:"service,omitempty"`
+	Endpoint  string            `json:"endpoint,omitempty"`
+	FlowID    string            `json:"flowID,omitempty"`
+	TraceID   string            `json:"traceID,omitempty"`
+	PolicyID  string            `json:"policyID,omitempty"`
+	SegmentID sgtypes.SegmentID `json:"segmentID"`
+	GatewayID string            `json:"gatewayID,omitempty"`
 }
 
 // ZapFields converts the metadata to zap log fields.
@@ -67,13 +67,13 @@ func (m Metadata) ZapFields() []zap.Field {
 // PrometheusLabels returns the metadata as Prometheus label values.
 func (m Metadata) PrometheusLabels() prometheus.Labels {
 	return prometheus.Labels{
-		"cluster_id":  string(m.ClusterID),
-		"node_id":     string(m.NodeID),
-		"namespace":   m.Namespace,
-		"pod":         m.Pod,
-		"service":     m.Service,
-		"segment_id":  m.SegmentID.String(),
-		"gateway_id":  m.GatewayID,
+		"cluster_id": string(m.ClusterID),
+		"node_id":    string(m.NodeID),
+		"namespace":  m.Namespace,
+		"pod":        m.Pod,
+		"service":    m.Service,
+		"segment_id": m.SegmentID.String(),
+		"gateway_id": m.GatewayID,
 	}
 }
 
@@ -90,25 +90,25 @@ type Metrics struct {
 	CNIErrors      prometheus.Counter
 
 	// Service LB metrics
-	ServiceTotal    prometheus.Gauge
-	BackendTotal    prometheus.Gauge
-	LBPacketsTotal  prometheus.Counter
+	ServiceTotal   prometheus.Gauge
+	BackendTotal   prometheus.Gauge
+	LBPacketsTotal prometheus.Counter
 
 	// Policy metrics
 	PolicyTotal      prometheus.Gauge
 	PolicyDropsTotal prometheus.Counter
 
 	// NAT metrics
-	NATRulesTotal     prometheus.Gauge
-	ConntrackTotal    prometheus.Gauge
+	NATRulesTotal  prometheus.Gauge
+	ConntrackTotal prometheus.Gauge
 
 	// Transit metrics
 	TransitSegmentsTotal prometheus.Gauge
 	TransitPeersTotal    prometheus.Gauge
 
 	// BGP metrics
-	BGPPeersTotal   prometheus.Gauge
-	BGPRoutesTotal  prometheus.Gauge
+	BGPPeersTotal  prometheus.Gauge
+	BGPRoutesTotal prometheus.Gauge
 
 	// Node metrics
 	IdentitiesTotal prometheus.Gauge

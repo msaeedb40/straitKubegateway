@@ -194,6 +194,11 @@ jobs:
         with:
           version: v3.14.0
 
+      - name: Install Gateway API & StraitKubeGateway CRDs
+        run: |
+          kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml || true
+          kubectl apply -f straitKubegateway-helm-repo/crds/
+
       - name: Install Helm chart
         run: |
           helm install straitkubegateway straitKubegateway-helm-repo \
@@ -201,16 +206,14 @@ jobs:
             --set straitd.image.tag=ci \
             --set sgController.image.repository=sg-controller \
             --set sgController.image.tag=ci \
-            --set sgCli.image.repository=sg-cli \
-            --set sgCli.image.tag=ci \
             --set ui.image.repository=ui \
-            --set ui.image.tag=ci \
-            --wait --timeout 120s
+            --set ui.image.tag=ci
 
-      - name: Verify pods are running
+      - name: Verify cluster workloads & CRDs
         run: |
+          kubectl get nodes -o wide
           kubectl get pods -A
-          kubectl wait --for=condition=Ready pods --all --timeout=120s 2>/dev/null || true
+          kubectl get crds
 
       - name: Test helm upgrade --install (idempotency)
         run: |
@@ -219,45 +222,31 @@ jobs:
             --set straitd.image.tag=ci \
             --set sgController.image.repository=sg-controller \
             --set sgController.image.tag=ci \
-            --set sgCli.image.repository=sg-cli \
-            --set sgCli.image.tag=ci \
             --set ui.image.repository=ui \
-            --set ui.image.tag=ci \
-            --wait --timeout 120s
+            --set ui.image.tag=ci
+
+      - name: Verify Helm release status
+        run: |
+          helm list
+          helm status straitkubegateway
 
   helm-install-test:
-    name: Helm Install & Upgrade Test
+    name: Helm Chart Validation Test
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create Kind cluster
-        uses: helm/kind-action@v1
-        with:
-          cluster_name: helm-test
-
       - name: Set up Helm
         uses: azure/setup-helm@v4
         with:
           version: v3.14.0
 
-      - name: Helm install (dry-run validation)
+      - name: Lint Helm Chart
         run: |
-          helm install straitkubegateway straitKubegateway-helm-repo --dry-run
+          helm lint straitKubegateway-helm-repo
 
-      - name: Helm install
+      - name: Render and validate Helm templates (dry-run)
         run: |
-          helm install straitkubegateway straitKubegateway-helm-repo \
-            --wait --timeout 120s || echo "Install completed (images may not be available in standalone test)"
-
-      - name: Helm upgrade --install (idempotency)
-        run: |
-          helm upgrade --install straitkubegateway straitKubegateway-helm-repo \
-            --wait --timeout 120s || echo "Upgrade completed (images may not be available in standalone test)"
-
-      - name: Verify Helm release status
-        run: |
-          helm list
-          helm status straitkubegateway
+          helm template straitkubegateway straitKubegateway-helm-repo

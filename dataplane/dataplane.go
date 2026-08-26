@@ -51,13 +51,13 @@ func New(cfg Config, log *zap.Logger) *Dataplane {
 	idAlloc := identity.NewAllocator()
 
 	return &Dataplane{
-		log:          log,
-		bpffsPath:    cfg.BPFFSPath,
-		compiler:     comp,
-		loader:       loader,
-		netkitMgr:    netkitMgr,
-		ipamAlloc:    ipamAlloc,
-		idAlloc:      idAlloc,
+		log:       log,
+		bpffsPath: cfg.BPFFSPath,
+		compiler:  comp,
+		loader:    loader,
+		netkitMgr: netkitMgr,
+		ipamAlloc: ipamAlloc,
+		idAlloc:   idAlloc,
 		currentState: &ir.NetworkState{
 			Endpoints: make(map[uint64]*ir.Endpoint),
 			Services:  make(map[ir.ServiceKey]*ir.Service),

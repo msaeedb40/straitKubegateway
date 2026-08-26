@@ -183,9 +183,9 @@ func TestServiceTypes(t *testing.T) {
 
 func TestPolicyIR(t *testing.T) {
 	pol := &Policy{
-		ID:       "default/web-policy/ingress/0",
-		Priority: 50,
-		Direction: PolicyDirectionIngress,
+		ID:               "default/web-policy/ingress/0",
+		Priority:         50,
+		Direction:        PolicyDirectionIngress,
 		SourceIdentities: []sgtypes.Identity{sgtypes.Identity(256), sgtypes.Identity(257)},
 		DestIdentities:   []sgtypes.Identity{sgtypes.Identity(300)},
 		Ports:            []sgtypes.Protocol{sgtypes.ProtocolTCP},

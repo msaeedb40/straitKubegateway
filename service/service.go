@@ -14,11 +14,11 @@ import (
 	"net/netip"
 	"sync"
 
+	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	discoveryv1 "k8s.io/api/discovery/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"go.uber.org/zap"
 
 	"github.com/straitkubegateway/straitkubegateway/internal/dataplane/ir"
 	sgtypes "github.com/straitkubegateway/straitkubegateway/pkg/types"
@@ -134,11 +134,11 @@ func compileService(svc *corev1.Service, slices []discoveryv1.EndpointSlice) (*i
 			Namespace: svc.Namespace,
 			Name:      svc.Name,
 		},
-		Type:      mapServiceType(svc.Spec.Type),
-		ClusterIP: clusterIP,
-		Ports:     ports,
-		Backends:  backends,
-		Algorithm: sgtypes.LBAlgorithmMaglev, // default
+		Type:            mapServiceType(svc.Spec.Type),
+		ClusterIP:       clusterIP,
+		Ports:           ports,
+		Backends:        backends,
+		Algorithm:       sgtypes.LBAlgorithmMaglev, // default
 		SessionAffinity: svc.Spec.SessionAffinity == corev1.ServiceAffinityClientIP,
 	}, nil
 }

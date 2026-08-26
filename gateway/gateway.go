@@ -31,11 +31,11 @@ const (
 	RouteConditionAccepted     = "Accepted"
 	RouteConditionResolvedRefs = "ResolvedRefs"
 
-	GatewayReasonAccepted        = "Accepted"
-	GatewayReasonProgrammed      = "Programmed"
-	RouteReasonAccepted          = "Accepted"
-	RouteReasonResolvedRefs      = "ResolvedRefs"
-	RouteReasonBackendNotFound   = "BackendNotFound"
+	GatewayReasonAccepted      = "Accepted"
+	GatewayReasonProgrammed    = "Programmed"
+	RouteReasonAccepted        = "Accepted"
+	RouteReasonResolvedRefs    = "ResolvedRefs"
+	RouteReasonBackendNotFound = "BackendNotFound"
 )
 
 // ============================================================================
@@ -89,13 +89,13 @@ const (
 
 // RouteRule is a compiled route rule with rich matchers and weighted backends.
 type RouteRule struct {
-	PathType   PathMatchType
-	Path       string
-	PathRegex  *regexp.Regexp
-	Headers    map[string]string
+	PathType    PathMatchType
+	Path        string
+	PathRegex   *regexp.Regexp
+	Headers     map[string]string
 	QueryParams map[string]string
-	Backends   []RouteBackend
-	Action     string
+	Backends    []RouteBackend
+	Action      string
 }
 
 // RouteBackend is a single backend for a route rule with weight.

@@ -135,16 +135,16 @@ func (a *Allocator) allocateLocked() (Identity, error) {
 
 // Dimensions represents all selector dimensions for a pod or endpoint.
 type Dimensions struct {
-	Namespace  string
-	PodLabels  map[string]string
-	Cluster    string
-	Segment    string
-	Gateway    string
-	HTTPRoute  string
-	TCPRoute   string
-	UDPRoute   string
-	GRPCRoute  string
-	TLSRoute   string
+	Namespace string
+	PodLabels map[string]string
+	Cluster   string
+	Segment   string
+	Gateway   string
+	HTTPRoute string
+	TCPRoute  string
+	UDPRoute  string
+	GRPCRoute string
+	TLSRoute  string
 }
 
 // BuildIdentityKey serializes multi-dimensional labels deterministically.

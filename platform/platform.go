@@ -254,14 +254,14 @@ func (n *NetNS) Do(fn func() error) error {
 // NetworkSysctls sets the required network sysctl parameters for straitd.
 func NetworkSysctls() error {
 	settings := map[string]string{
-		"net.ipv4.ip_forward":              "1",
-		"net.ipv6.conf.all.forwarding":     "1",
-		"net.ipv4.conf.all.rp_filter":      "0",
-		"net.ipv4.conf.default.rp_filter":  "0",
+		"net.ipv4.ip_forward":                "1",
+		"net.ipv6.conf.all.forwarding":       "1",
+		"net.ipv4.conf.all.rp_filter":        "0",
+		"net.ipv4.conf.default.rp_filter":    "0",
 		"net.bridge.bridge-nf-call-iptables": "0",
-		"net.ipv4.conf.all.arp_announce":   "2",
-		"net.ipv4.conf.all.arp_ignore":     "1",
-		"net.core.bpf_jit_enable":          "1",
+		"net.ipv4.conf.all.arp_announce":     "2",
+		"net.ipv4.conf.all.arp_ignore":       "1",
+		"net.core.bpf_jit_enable":            "1",
 	}
 	for key, val := range settings {
 		path := "/proc/sys/" + strings.ReplaceAll(key, ".", "/")

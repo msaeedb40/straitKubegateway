@@ -77,11 +77,11 @@ type IPAMConfig struct {
 
 // Plugin implements the straitKubegateway CNI plugin.
 type Plugin struct {
-	mu           sync.RWMutex
-	log          *zap.Logger
-	ipamAlloc    *ipam.Allocator
+	mu            sync.RWMutex
+	log           *zap.Logger
+	ipamAlloc     *ipam.Allocator
 	identityAlloc *identity.Allocator
-	allocations  map[string]netip.Addr // containerID -> IP
+	allocations   map[string]netip.Addr // containerID -> IP
 }
 
 // New creates a new CNI plugin.

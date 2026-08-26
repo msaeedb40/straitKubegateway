@@ -12,9 +12,9 @@ import (
 	"net/netip"
 	"sync"
 
+	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"go.uber.org/zap"
 )
 
 // ============================================================================
@@ -198,11 +198,11 @@ type DualStackIP struct {
 
 // Allocator dynamically manages IP address allocation from arbitrary prefix lengths.
 type Allocator struct {
-	mu        sync.Mutex
-	cidrs     []netip.Prefix
-	v4Pools   []*Pool
-	v6Pools   []*Pool
-	log       *zap.Logger
+	mu      sync.Mutex
+	cidrs   []netip.Prefix
+	v4Pools []*Pool
+	v6Pools []*Pool
+	log     *zap.Logger
 }
 
 // NewAllocator creates a dynamic allocator over arbitrary pod CIDRs.

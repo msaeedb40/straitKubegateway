@@ -27,8 +27,8 @@ func (m *NetKitManager) SetupNetKit(hostName, containerName, netnsPath string) (
 	la.Name = hostName
 
 	veth := &netlink.Veth{
-		LinkAttrs:     la,
-		PeerName:      containerName,
+		LinkAttrs: la,
+		PeerName:  containerName,
 	}
 
 	if err := netlink.LinkAdd(veth); err != nil {

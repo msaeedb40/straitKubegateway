@@ -35,11 +35,11 @@ import (
 // Engine compiles StraitNetworkPolicy CRs into the IR policy list.
 // Thread-safe.
 type Engine struct {
-	mu        sync.RWMutex
-	client    client.Client
-	identity  *identitypkg.Allocator
-	log       *zap.Logger
-	policies  []*ir.Policy
+	mu       sync.RWMutex
+	client   client.Client
+	identity *identitypkg.Allocator
+	log      *zap.Logger
+	policies []*ir.Policy
 }
 
 // NewEngine creates a new policy engine.

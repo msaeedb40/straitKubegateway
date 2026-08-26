@@ -142,26 +142,26 @@ type Service struct {
 	// SessionAffinity enables session affinity for this service.
 	SessionAffinity bool
 	// DSR enables Direct Server Return.
-	DSR bool
+	DSR        bool
 	Generation Generation
 }
 
 // ServicePort maps a frontend port to a backend port.
 type ServicePort struct {
-	Protocol sgtypes.Protocol
-	Port     uint16
-	NodePort uint16
+	Protocol   sgtypes.Protocol
+	Port       uint16
+	NodePort   uint16
 	TargetPort uint16
 }
 
 // Backend is a single service backend endpoint.
 type Backend struct {
-	ID       uint32
-	IP       netip.Addr
-	Port     uint16
-	Weight   uint32
-	NodeIP   netip.Addr
-	Healthy  bool
+	ID      uint32
+	IP      netip.Addr
+	Port    uint16
+	Weight  uint32
+	NodeIP  netip.Addr
+	Healthy bool
 }
 
 // ============================================================================
@@ -196,7 +196,7 @@ type Policy struct {
 	// Ports are the port/protocol matchers for this rule.
 	Ports []sgtypes.Protocol
 	// Action is the compiled rule action.
-	Action sgtypes.PolicyAction // defined in pkg/types
+	Action     sgtypes.PolicyAction // defined in pkg/types
 	Generation Generation
 }
 
@@ -208,10 +208,10 @@ type Policy struct {
 type RouteType string
 
 const (
-	RouteTypeDirect  RouteType = "direct"
-	RouteTypeVXLAN   RouteType = "vxlan"
-	RouteTypeGeneve  RouteType = "geneve"
-	RouteTypeGRE     RouteType = "gre"
+	RouteTypeDirect    RouteType = "direct"
+	RouteTypeVXLAN     RouteType = "vxlan"
+	RouteTypeGeneve    RouteType = "geneve"
+	RouteTypeGRE       RouteType = "gre"
 	RouteTypeWireGuard RouteType = "wireguard"
 )
 
@@ -228,7 +228,7 @@ type Route struct {
 	// Metric is the route metric.
 	Metric uint32
 	// TableID is the Linux routing table ID.
-	TableID uint32
+	TableID    uint32
 	Generation Generation
 }
 
@@ -240,20 +240,20 @@ type Route struct {
 type NATType string
 
 const (
-	NATTypeSNAT NATType = "SNAT"
-	NATTypeDNAT NATType = "DNAT"
-	NATTypeMasq NATType = "Masquerade"
+	NATTypeSNAT  NATType = "SNAT"
+	NATTypeDNAT  NATType = "DNAT"
+	NATTypeMasq  NATType = "Masquerade"
 	NATTypeNAT64 NATType = "NAT64"
 )
 
 // NATRule is the IR representation of a NAT rule.
 type NATRule struct {
-	Type       NATType
-	Match      netip.Prefix
-	RewriteIP  netip.Addr
+	Type        NATType
+	Match       netip.Prefix
+	RewriteIP   netip.Addr
 	RewritePort uint16
-	OutDev     string
-	Generation Generation
+	OutDev      string
+	Generation  Generation
 }
 
 // ============================================================================
@@ -271,7 +271,7 @@ type TunnelPeer struct {
 	// Mode is the tunnel encapsulation mode.
 	Mode sgtypes.TunnelMode
 	// Port is the tunnel UDP port.
-	Port uint16
+	Port       uint16
 	Generation Generation
 }
 
@@ -286,7 +286,7 @@ type TransitSegment struct {
 	// Clusters are the cluster IDs participating in this segment.
 	Clusters []sgtypes.ClusterID
 	// Routes are the inter-segment routes.
-	Routes []TransitRoute
+	Routes     []TransitRoute
 	Generation Generation
 }
 

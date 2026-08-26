@@ -258,17 +258,17 @@ func (e *Endpoint) String() string {
 // log entry, metric, trace, flow event, and policy decision.
 // Invariant: every major object carries all of these fields.
 type ObservabilityMetadata struct {
-	ClusterID  ClusterID `json:"clusterID"`
-	NodeID     NodeID    `json:"nodeID"`
-	Namespace  string    `json:"namespace,omitempty"`
-	Pod        string    `json:"pod,omitempty"`
-	Service    string    `json:"service,omitempty"`
-	Endpoint   string    `json:"endpoint,omitempty"`
-	FlowID     string    `json:"flowID,omitempty"`
-	TraceID    string    `json:"traceID,omitempty"`
-	PolicyID   string    `json:"policyID,omitempty"`
-	SegmentID  SegmentID `json:"segmentID"`
-	GatewayID  string    `json:"gatewayID,omitempty"`
+	ClusterID ClusterID `json:"clusterID"`
+	NodeID    NodeID    `json:"nodeID"`
+	Namespace string    `json:"namespace,omitempty"`
+	Pod       string    `json:"pod,omitempty"`
+	Service   string    `json:"service,omitempty"`
+	Endpoint  string    `json:"endpoint,omitempty"`
+	FlowID    string    `json:"flowID,omitempty"`
+	TraceID   string    `json:"traceID,omitempty"`
+	PolicyID  string    `json:"policyID,omitempty"`
+	SegmentID SegmentID `json:"segmentID"`
+	GatewayID string    `json:"gatewayID,omitempty"`
 }
 
 // ============================================================================

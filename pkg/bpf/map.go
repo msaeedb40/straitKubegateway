@@ -264,8 +264,8 @@ type bpfMapOpAttr struct {
 }
 
 type bpfObjAttr struct {
-	pathname uint64
-	bpfFD    uint32
+	pathname  uint64
+	bpfFD     uint32
 	fileFlags uint32
 }
 
@@ -276,7 +276,7 @@ func bpfObjPin(path string, fd int) error {
 	}
 	attr := bpfObjAttr{
 		pathname: uint64(uintptr(unsafe.Pointer(pathBytes))),
-		bpfFD:   uint32(fd),
+		bpfFD:    uint32(fd),
 	}
 	_, _, errno := unix.Syscall(unix.SYS_BPF,
 		uintptr(bpfCmdObjPin),
