@@ -69,8 +69,8 @@ cat <<EOF > "${OUTPUT_DIR}/index.html"
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <!-- Tailwind CSS v4 Browser CDN -->
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-    <style type="text/tailwindcss">
-        @theme {
+    <style>
+        :root {
             --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
             --color-brand-cyan: #38bdf8;
@@ -78,8 +78,6 @@ cat <<EOF > "${OUTPUT_DIR}/index.html"
             --color-brand-indigo: #6366f1;
             --color-brand-emerald: #10b981;
         }
-    </style>
-    <style>
         body {
             font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
         }

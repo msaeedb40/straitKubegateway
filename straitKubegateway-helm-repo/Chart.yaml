@@ -5,6 +5,7 @@ type: application
 version: 1.0.0
 appVersion: "1.0.0"
 home: "https://github.com/msaeedb40/straitKubegateway.git"
+icon: "https://raw.githubusercontent.com/msaeedb40/straitKubegateway/main/logo/straitKubegateway.png"
 sources:
   - "https://github.com/msaeedb40/straitKubegateway.git"
 keywords:
