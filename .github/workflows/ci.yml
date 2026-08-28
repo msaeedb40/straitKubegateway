@@ -196,15 +196,13 @@ jobs:
 
       - name: Install Gateway API & StraitKubeGateway CRDs
         run: |
-          kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/experimental-install.yaml
+          kubectl apply -f  https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml
           kubectl apply -f straitKubegateway-helm-repo/crds/
           # Wait for all CRDs to be fully established before Helm install.
-          # TCPRoute / TLSRoute / UDPRoute were dropped from the experimental
-          # bundle in Gateway API v1.1+; they are now bundled in the chart crds/.
+          # TCPRoute/ UDPRoute were dropped from the experimental
+          # bundle in Gateway API v1.6+; they are now bundled in the chart crds/.
           kubectl wait --for=condition=Established --timeout=60s \
-            crd/tcproutes.gateway.networking.k8s.io \
             crd/tlsroutes.gateway.networking.k8s.io \
-            crd/udproutes.gateway.networking.k8s.io \
             crd/gateways.gateway.networking.k8s.io \
             crd/gatewayclasses.gateway.networking.k8s.io \
             crd/httproutes.gateway.networking.k8s.io
