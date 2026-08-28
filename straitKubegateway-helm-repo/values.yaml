@@ -119,7 +119,7 @@ ui:
     type: ClusterIP
     port: 80
 
-# Secrets
+# Secrets 
 secret:
   create: false
   data: {}
