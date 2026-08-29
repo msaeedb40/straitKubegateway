@@ -1,0 +1,24 @@
+{{/*
+  ReferenceGrant — gateway.networking.k8s.io/v1beta1
+
+  ReferenceGrant instances are user-managed and not deployed by this chart.
+  They are created per-namespace to allow Gateway routes to reference
+  Services across namespace boundaries.
+
+  Example:
+    apiVersion: gateway.networking.k8s.io/v1beta1
+    kind: ReferenceGrant
+    metadata:
+      name: allow-gateway-to-backend
+      namespace: backend-ns
+    spec:
+      from:
+        - group: gateway.networking.k8s.io
+          kind: HTTPRoute
+          namespace: gateway-ns
+      to:
+        - group: ""
+          kind: Service
+
+  RBAC for referencegrants is provisioned by rbac.yaml (sgcontroller ClusterRole).
+*/}}
