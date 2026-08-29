@@ -25,14 +25,16 @@ rules:
       - gateways/status
       - httproutes
       - httproutes/status
-      - tcproutes
-      - tcproutes/status
-      - udproutes
-      - udproutes/status
       - grpcroutes
       - grpcroutes/status
       - tlsroutes
       - tlsroutes/status
+      - tcproutes
+      - tcproutes/status
+      - udproutes
+      - udproutes/status
+      - referencegrants
+      - referencegrants/status
     verbs: ["get", "list", "watch", "update", "patch"]
   - apiGroups: ["straitkubegateway.io"]
     resources:

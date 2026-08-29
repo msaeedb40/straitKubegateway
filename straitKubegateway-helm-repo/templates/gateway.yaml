@@ -26,16 +26,25 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
+    - name: tls
+      protocol: TLS
+      port: 8443
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: All
     - name: tcp
       protocol: TCP
-      port: 8080
+      port: 9000
       allowedRoutes:
         namespaces:
           from: All
     - name: udp
       protocol: UDP
-      port: 8080
+      port: 9001
       allowedRoutes:
         namespaces:
           from: All
 {{- end }}
+

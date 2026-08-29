@@ -49,8 +49,7 @@ straitd:
         - NET_RAW
         - PERFMON
         - BPF
-        - SYS_RESOURCE
-        - SYS_PTRACE
+
       drop:
         - ALL
 
@@ -101,7 +100,7 @@ sgController:
 gatewayAPI:
   enabled: true
   gatewayClassName: skgateway  
-  controllerName: gateway.straitkubegateway.io/skgateway
+  controllerName: straitkubegateway.io/skgateway
 
 # Multi-cluster Transit Gateway configuration
 transit:
@@ -114,7 +113,7 @@ ui:
   enabled: false
   image:
     repository: ghcr.io/straitkubegateway/ui
-    tag: latest
+    tag: sg-ui
   service:
     type: ClusterIP
     port: 80
