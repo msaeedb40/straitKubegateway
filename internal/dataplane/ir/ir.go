@@ -138,12 +138,22 @@ type Service struct {
 	ClusterIP netip.Addr
 	Ports     []ServicePort
 	Backends  []Backend
-	Algorithm sgtypes.LBAlgorithm
+	// ExternalIPs are the external IPs programmed into BPF for Phase 5
+	// kube-proxy replacement (ExternalIP, LoadBalancer ingress IPs).
+	ExternalIPs []netip.Addr
+	Algorithm   sgtypes.LBAlgorithm
 	// SessionAffinity enables session affinity for this service.
 	SessionAffinity bool
 	// DSR enables Direct Server Return.
-	DSR        bool
-	Generation Generation
+	DSR bool
+	// MaglevTable is the pre-built 127-slot Maglev consistent hash table.
+	// Slot → Backend.ID mapping. Written into BPF maglev_map by the Compiler.
+	MaglevTable []uint32
+	// KubeProxyReplacement is true when kubeProxyReplacement=true is configured.
+	// When true, ClusterIP, NodePort, ExternalIP, and LoadBalancer VIPs are all
+	// programmed into BPF maps so kube-proxy can be disabled entirely.
+	KubeProxyReplacement bool
+	Generation           Generation
 }
 
 // ServicePort maps a frontend port to a backend port.
@@ -152,6 +162,8 @@ type ServicePort struct {
 	Port       uint16
 	NodePort   uint16
 	TargetPort uint16
+	// PortName is the Kubernetes port name (used for named port resolution).
+	PortName string
 }
 
 // Backend is a single service backend endpoint.

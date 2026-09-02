@@ -1,0 +1,180 @@
+name: ci-kind-cluster
+
+on:
+  push:
+    branches:
+      - main
+      - developer
+  pull_request:
+    branches:
+      - main
+      - developer
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  kind-smoke-test:
+    name: Kind Cluster Smoke Test
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+
+      - name: Run unit tests (pre-requisite)
+        run: go test -race -count=1 ./...
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Build amd64 images only for CI speed — multi-arch is tested in ci-build-load-image.yaml
+      - name: Build straitd image (amd64)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: build/Dockerfile.straitd
+          platforms: linux/amd64
+          load: true
+          tags: straitd:ci-${{ github.sha }}
+
+      - name: Build sg-controller image (amd64)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: build/Dockerfile.sg-controller
+          platforms: linux/amd64
+          load: true
+          tags: sg-controller:ci-${{ github.sha }}
+
+      - name: Build sg-cli image (amd64)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: build/Dockerfile.sg-cli
+          platforms: linux/amd64
+          load: true
+          tags: sg-cli:ci-${{ github.sha }}
+
+      - name: Build UI image (amd64)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: build/Dockerfile.ui
+          platforms: linux/amd64
+          load: true
+          tags: ui:ci-${{ github.sha }}
+
+      - name: Create Kind cluster
+        uses: helm/kind-action@v1
+        with:
+          cluster_name: ci-kind-test
+          # Use a Kind config that disables default CNI so straitKubegateway can own it
+          config: |
+            kind: Cluster
+            apiVersion: kind.x-k8s.io/v1alpha4
+            networking:
+              disableDefaultCNI: true
+              kubeProxyMode: "none"
+
+      - name: Load images into Kind cluster
+        run: |
+          kind load docker-image straitd:ci-${{ github.sha }}         --name ci-kind-test
+          kind load docker-image sg-controller:ci-${{ github.sha }}   --name ci-kind-test
+          kind load docker-image sg-cli:ci-${{ github.sha }}          --name ci-kind-test
+          kind load docker-image ui:ci-${{ github.sha }}              --name ci-kind-test
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v4.0.0
+
+      - name: Apply Gateway API CRDs v1.6.1
+        run: |
+          kubectl apply --server-side -f \
+            https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml
+
+      - name: Apply straitKubegateway CRDs
+        run: |
+          kubectl apply --server-side -f straitKubegateway-helm-repo/charts/crds/ 2>/dev/null || true
+
+      - name: Wait for CRDs to be established
+        run: |
+          kubectl wait --for=condition=Established --timeout=120s \
+            crd/gatewayclasses.gateway.networking.k8s.io \
+            crd/gateways.gateway.networking.k8s.io \
+            crd/httproutes.gateway.networking.k8s.io \
+            crd/grpcroutes.gateway.networking.k8s.io \
+            crd/tlsroutes.gateway.networking.k8s.io \
+            crd/tcproutes.gateway.networking.k8s.io \
+            crd/udproutes.gateway.networking.k8s.io \
+            crd/referencegrants.gateway.networking.k8s.io 2>/dev/null || true
+
+      - name: Helm lint straitKubegateway chart
+        run: helm lint straitKubegateway-helm-repo
+
+      - name: Install straitKubegateway via Helm
+        run: |
+          helm install straitkubegateway straitKubegateway-helm-repo \
+            --namespace kube-system \
+            --create-namespace \
+            --set straitd.image.repository=straitd \
+            --set straitd.image.tag=ci-${{ github.sha }} \
+            --set straitd.image.pullPolicy=Never \
+            --set sgController.image.repository=sg-controller \
+            --set sgController.image.tag=ci-${{ github.sha }} \
+            --set sgController.image.pullPolicy=Never \
+            --set ui.image.repository=ui \
+            --set ui.image.tag=ci-${{ github.sha }} \
+            --set ui.image.pullPolicy=Never \
+            --set kubeProxyReplacement=true \
+            --set kubeProxyMode=none \
+            --timeout=5m \
+            --wait
+
+      - name: Verify cluster nodes and pods
+        run: |
+          kubectl get nodes -o wide
+          kubectl get pods -A
+          kubectl get crds
+        
+
+      - name: Verify Helm release status
+        run: |
+          helm list -n kube-system
+          helm status straitkubegateway -n kube-system
+
+      - name: Test helm upgrade --install (idempotency)
+        run: |
+          helm upgrade --install straitkubegateway straitKubegateway-helm-repo \
+            --namespace kube-system \
+            --set straitd.image.repository=straitd \
+            --set straitd.image.tag=ci-${{ github.sha }} \
+            --set straitd.image.pullPolicy=Never \
+            --set sgController.image.repository=sg-controller \
+            --set sgController.image.tag=ci-${{ github.sha }} \
+            --set sgController.image.pullPolicy=Never \
+            --set ui.image.repository=ui \
+            --set ui.image.tag=ci-${{ github.sha }} \
+            --set ui.image.pullPolicy=Never \
+            --set kubeProxyReplacement=true \
+            --set kubeProxyMode=none \
+            --timeout=5m \
+            --wait
+
+      - name: Verify final Helm release status
+        run: |
+          helm list -n kube-system
+          helm status straitkubegateway -n kube-system

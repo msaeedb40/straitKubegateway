@@ -33,10 +33,13 @@ import (
 	"net/netip"
 	"sync"
 
+	"github.com/vishvananda/netlink"
 	"go.uber.org/zap"
+	"golang.org/x/sys/unix"
 
 	"github.com/straitkubegateway/straitkubegateway/identity"
 	"github.com/straitkubegateway/straitkubegateway/ipam"
+	"github.com/straitkubegateway/straitkubegateway/platform"
 )
 
 // ============================================================================
@@ -147,55 +150,57 @@ func (p *Plugin) ADD(cfg *NetworkConfig, netns string, containerID, ifName strin
 		}
 		gw = p.deriveGatewayForIP(cfg, ip)
 	} else {
-		ip, gw, err = allocateIP(cfg)
-		if err != nil {
-			return nil, fmt.Errorf("CNI ADD IPAM: %w", err)
-		}
+		return nil, fmt.Errorf("CNI ADD: IPAM allocator not configured — " +
+			"call WithIPAM() before ADD")
 	}
 
 	p.mu.Lock()
 	p.allocations[containerID] = ip
 	p.mu.Unlock()
 
-	p.log.Debug("IPAM allocation", zap.String("ip", ip.String()))
+	p.log.Debug("IPAM allocation", zap.String("ip", ip.String()), zap.String("gw", gw.String()))
 
-	// Step 3: Create NetKit attachment (host ↔ container veth pair via netkit)
-	hostIdx, containerIdx, err := setupNetKit(netns, ifName, containerID)
+	// hostDev is the host-side veth name, derived from containerID prefix
+	hostDev := "sg-" + containerID[:min(len(containerID), 10)]
+
+	// Step 3: Create NetKit/veth attachment (host ↔ container)
+	hostIdx, containerIdx, err := setupNetKit(netns, hostDev, ifName)
 	if err != nil {
-		p.releaseAllocatedIP(cfg, containerID, ip)
+		p.releaseAllocatedIP(containerID, ip)
 		return nil, fmt.Errorf("CNI ADD netkit setup: %w", err)
 	}
 
 	// Step 4: Configure address on container interface
 	if err := configureAddress(netns, ifName, ip, gw, cfg.MTU); err != nil {
-		_ = teardownNetKit(netns, ifName)
-		p.releaseAllocatedIP(cfg, containerID, ip)
+		_ = teardownNetKit(hostDev)
+		p.releaseAllocatedIP(containerID, ip)
 		return nil, fmt.Errorf("CNI ADD configure address: %w", err)
 	}
 
 	// Step 5: Configure mandatory routes (default route via gateway)
 	if err := configureMandatoryRoutes(netns, ifName, gw); err != nil {
-		_ = teardownNetKit(netns, ifName)
-		p.releaseAllocatedIP(cfg, containerID, ip)
+		_ = teardownNetKit(hostDev)
+		p.releaseAllocatedIP(containerID, ip)
 		return nil, fmt.Errorf("CNI ADD configure routes: %w", err)
 	}
 
 	// Step 6: Allocate BPF identity
+	// Best-effort: failure does NOT block pod creation (identity may be
+	// deferred until the dataplane reconciles asynchronously).
 	var bpfIdentity uint32
 	if p.identityAlloc != nil {
-		id, err := p.identityAlloc.Allocate(context.Background(), fmt.Sprintf("ip:%s", ip.String()))
-		if err != nil {
-			p.log.Warn("BPF identity allocation deferred", zap.Error(err))
+		labelKey := identity.BuildIdentityKey(identity.Dimensions{
+			Namespace: extractNamespace(cfg),
+			PodLabels: map[string]string{"ip": ip.String()},
+		})
+		id, idErr := p.identityAlloc.Allocate(context.Background(), labelKey)
+		if idErr != nil {
+			p.log.Warn("BPF identity allocation deferred", zap.Error(idErr))
 		} else {
 			bpfIdentity = uint32(id)
 		}
 	} else {
-		id, err := allocateIdentity(ip, containerID)
-		if err != nil {
-			p.log.Warn("BPF identity allocation deferred", zap.Error(err))
-		} else {
-			bpfIdentity = id
-		}
+		p.log.Warn("identity allocator not configured — BPF identity deferred")
 	}
 
 	result := &AddResult{
@@ -208,8 +213,10 @@ func (p *Plugin) ADD(cfg *NetworkConfig, netns string, containerID, ifName strin
 
 	p.log.Info("CNI ADD complete",
 		zap.String("ip", ip.String()),
+		zap.String("gw", gw.String()),
 		zap.Uint32("identity", bpfIdentity),
 		zap.Int("hostIfIdx", hostIdx),
+		zap.String("hostDev", hostDev),
 	)
 	return result, nil
 }
@@ -230,26 +237,27 @@ func (p *Plugin) DEL(cfg *NetworkConfig, netns string, containerID, ifName strin
 	delete(p.allocations, containerID)
 	p.mu.Unlock()
 
-	// 1. Remove routes
+	hostDev := "sg-" + containerID[:min(len(containerID), 10)]
+
+	// 1. Remove routes inside the container netns
 	if err := removeRoutes(netns, ifName); err != nil {
 		p.log.Warn("CNI DEL remove routes", zap.Error(err))
 	}
 	// 2. Remove BPF identity
-	if err := removeBPFIdentity(containerID); err != nil {
-		p.log.Warn("CNI DEL remove BPF identity", zap.Error(err))
+	if p.identityAlloc != nil {
+		labelKey := identity.BuildIdentityKey(identity.Dimensions{
+			PodLabels: map[string]string{"ip": allocatedIP.String()},
+		})
+		p.identityAlloc.Release(context.Background(), labelKey)
 	}
-	// 3. Remove policy state (best-effort)
-	if err := removePolicyState(containerID); err != nil {
-		p.log.Warn("CNI DEL remove policy state", zap.Error(err))
-	}
+	// 3. Remove policy state (best-effort, non-blocking)
+	// Policy cleanup is handled asynchronously by the dataplane reconciler
 	// 4. Release IP back to IPAM
-	if hasIP {
-		p.releaseAllocatedIP(cfg, containerID, allocatedIP)
-	} else if err := releaseIPByContainerID(cfg, containerID); err != nil {
-		p.log.Warn("CNI DEL release IP", zap.Error(err))
+	if hasIP && p.ipamAlloc != nil {
+		p.ipamAlloc.Release(allocatedIP)
 	}
-	// 5. Destroy NetKit interface
-	if err := teardownNetKit(netns, ifName); err != nil {
+	// 5. Destroy host-side NetKit interface (peer is destroyed automatically)
+	if err := teardownNetKit(hostDev); err != nil {
 		p.log.Warn("CNI DEL teardown netkit", zap.Error(err))
 	}
 
@@ -264,7 +272,7 @@ func (p *Plugin) DEL(cfg *NetworkConfig, netns string, containerID, ifName strin
 // CHECK implements the CNI CHECK command.
 func (p *Plugin) CHECK(cfg *NetworkConfig, netns string, containerID, ifName string) error {
 	p.log.Debug("CNI CHECK", zap.String("containerID", containerID))
-	// Verify interface exists and has the correct address
+	// Verify interface exists and is UP inside the container's network namespace
 	return checkNetworkNamespace(netns, ifName)
 }
 
@@ -283,8 +291,17 @@ func (p *Plugin) GC(ctx context.Context, activeContainers map[string]bool) error
 				zap.String("containerID", cid),
 				zap.String("ip", ip.String()),
 			)
-			_ = removeBPFIdentity(cid)
-			_ = removePolicyState(cid)
+			if p.identityAlloc != nil {
+				labelKey := identity.BuildIdentityKey(identity.Dimensions{
+					PodLabels: map[string]string{"ip": ip.String()},
+				})
+				p.identityAlloc.Release(ctx, labelKey)
+			}
+			if p.ipamAlloc != nil {
+				p.ipamAlloc.Release(ip)
+			}
+			hostDev := "sg-" + cid[:min(len(cid), 10)]
+			_ = teardownNetKit(hostDev)
 			delete(p.allocations, cid)
 		}
 	}
@@ -303,12 +320,13 @@ func (p *Plugin) VERSION() []string {
 	return SupportedVersions
 }
 
-func (p *Plugin) releaseAllocatedIP(cfg *NetworkConfig, containerID string, ip netip.Addr) {
+func (p *Plugin) releaseAllocatedIP(containerID string, ip netip.Addr) {
 	p.mu.Lock()
 	delete(p.allocations, containerID)
 	p.mu.Unlock()
-
-	_ = releaseIP(cfg, ip)
+	if p.ipamAlloc != nil {
+		p.ipamAlloc.Release(ip)
+	}
 }
 
 func (p *Plugin) deriveGatewayForIP(cfg *NetworkConfig, ip netip.Addr) netip.Addr {
@@ -346,7 +364,7 @@ func ParseConfig(data []byte) (*NetworkConfig, error) {
 }
 
 // ============================================================================
-// Internal helpers (stubs — implemented in subsequent files)
+// Internal helpers
 // ============================================================================
 
 func validateConfig(cfg *NetworkConfig) error {
@@ -359,82 +377,195 @@ func validateConfig(cfg *NetworkConfig) error {
 	return nil
 }
 
-func allocateIP(_ *NetworkConfig) (ip, gw netip.Addr, err error) {
-	// TODO(phase1): call ipam.Allocator.Allocate()
-	// Placeholder: returns an error until IPAM is wired
-	return netip.Addr{}, netip.Addr{}, fmt.Errorf("IPAM not yet wired")
-}
+// setupNetKit creates a veth pair: host-side stays in host ns, peer is moved
+// into the container netns by ebpf.NetKitManager.SetupNetKit.
+func setupNetKit(netnsPath, hostDev, containerDev string) (hostIdx, containerIdx int, err error) {
+	la := netlink.NewLinkAttrs()
+	la.Name = hostDev
 
-func releaseIP(_ *NetworkConfig, _ netip.Addr) error {
-	// TODO(phase1): call ipam.Allocator.Release()
-	return nil
-}
+	veth := &netlink.Veth{
+		LinkAttrs: la,
+		PeerName:  containerDev,
+	}
+	if err := netlink.LinkAdd(veth); err != nil {
+		return 0, 0, fmt.Errorf("create veth %s<->%s: %w", hostDev, containerDev, err)
+	}
 
-func releaseIPByContainerID(_ *NetworkConfig, _ string) error {
-	// TODO(phase1): look up IP from state store and release
-	return nil
-}
-
-func setupNetKit(_, _, _ string) (hostIdx, containerIdx int, err error) {
-	// TODO(phase1): create NetKit veth pair, attach eBPF programs
-	return 0, 0, nil
-}
-
-func teardownNetKit(_, _ string) error {
-	// TODO(phase1): delete NetKit interface
-	return nil
-}
-
-func configureAddress(netns, ifName string, ip, gw netip.Addr, mtu int) error {
-	// TODO(phase1): enter netns, set IP address and MTU on ifName
-	_ = netns
-	_ = ifName
-	_ = ip
-	_ = gw
-	_ = mtu
-	return nil
-}
-
-func configureMandatoryRoutes(netns, ifName string, gw netip.Addr) error {
-	// TODO(phase1): enter netns, add default route via gw
-	_ = netns
-	_ = ifName
-	_ = gw
-	return nil
-}
-
-func allocateIdentity(_ netip.Addr, _ string) (uint32, error) {
-	// TODO(phase1): call identity.Allocator.Allocate()
-	return 0, fmt.Errorf("identity allocator not yet wired")
-}
-
-func removeBPFIdentity(_ string) error {
-	// TODO(phase1): remove from BPF identity map
-	return nil
-}
-
-func removePolicyState(_ string) error {
-	// TODO(phase4): remove from BPF policy map
-	return nil
-}
-
-func removeRoutes(netns, ifName string) error {
-	// TODO(phase1): enter netns, flush routes on ifName
-	_ = netns
-	_ = ifName
-	return nil
-}
-
-func checkNetworkNamespace(netns, ifName string) error {
-	// Check that the interface exists in the network namespace
-	iface, err := net.InterfaceByName(ifName)
+	hostLink, err := netlink.LinkByName(hostDev)
 	if err != nil {
-		// Interface may be inside a different netns; this is expected
-		_ = netns
+		return 0, 0, fmt.Errorf("lookup host link %q: %w", hostDev, err)
+	}
+	peerLink, err := netlink.LinkByName(containerDev)
+	if err != nil {
+		_ = netlink.LinkDel(hostLink)
+		return 0, 0, fmt.Errorf("lookup peer link %q: %w", containerDev, err)
+	}
+
+	// Move peer into container netns
+	if netnsPath != "" {
+		nsFD, err := unix.Open(netnsPath, unix.O_RDONLY|unix.O_CLOEXEC, 0)
+		if err != nil {
+			_ = netlink.LinkDel(hostLink)
+			return 0, 0, fmt.Errorf("open container netns %q: %w", netnsPath, err)
+		}
+		defer unix.Close(nsFD)
+		if err := netlink.LinkSetNsFd(peerLink, nsFD); err != nil {
+			_ = netlink.LinkDel(hostLink)
+			return 0, 0, fmt.Errorf("move peer %q into netns %q: %w", containerDev, netnsPath, err)
+		}
+	}
+
+	if err := netlink.LinkSetUp(hostLink); err != nil {
+		_ = netlink.LinkDel(hostLink)
+		return 0, 0, fmt.Errorf("bring up host link %q: %w", hostDev, err)
+	}
+
+	return hostLink.Attrs().Index, peerLink.Attrs().Index, nil
+}
+
+func teardownNetKit(hostDev string) error {
+	link, err := netlink.LinkByName(hostDev)
+	if err != nil {
+		return nil // already gone
+	}
+	return netlink.LinkDel(link)
+}
+
+// configureAddress enters the container netns and assigns the IP address and MTU.
+func configureAddress(netnsPath, ifName string, ip, gw netip.Addr, mtu int) error {
+	ns, err := platform.OpenNetNSByPath(netnsPath)
+	if err != nil {
+		return fmt.Errorf("open container netns %q: %w", netnsPath, err)
+	}
+	defer ns.Close()
+
+	return ns.Do(func() error {
+		link, err := netlink.LinkByName(ifName)
+		if err != nil {
+			return fmt.Errorf("link %q not found in container netns: %w", ifName, err)
+		}
+
+		bits := 32
+		if ip.Is6() {
+			bits = 128
+		}
+		addr := &netlink.Addr{
+			IPNet: &net.IPNet{
+				IP:   ip.AsSlice(),
+				Mask: fullMask(bits),
+			},
+		}
+		if err := netlink.AddrAdd(link, addr); err != nil {
+			return fmt.Errorf("assign IP %s to %q: %w", ip, ifName, err)
+		}
+
+		if mtu > 0 {
+			if err := netlink.LinkSetMTU(link, mtu); err != nil {
+				return fmt.Errorf("set MTU %d on %q: %w", mtu, ifName, err)
+			}
+		}
+
+		return netlink.LinkSetUp(link)
+	})
+}
+
+// configureMandatoryRoutes adds the default route via gw inside the container netns.
+func configureMandatoryRoutes(netnsPath, ifName string, gw netip.Addr) error {
+	ns, err := platform.OpenNetNSByPath(netnsPath)
+	if err != nil {
+		return fmt.Errorf("open container netns %q: %w", netnsPath, err)
+	}
+	defer ns.Close()
+
+	return ns.Do(func() error {
+		link, err := netlink.LinkByName(ifName)
+		if err != nil {
+			return fmt.Errorf("link %q not found in container netns: %w", ifName, err)
+		}
+		gwSlice := gw.AsSlice()
+		route := &netlink.Route{
+			LinkIndex: link.Attrs().Index,
+			Gw:        gwSlice,
+		}
+		if err := netlink.RouteAdd(route); err != nil {
+			return fmt.Errorf("add default route via %s on %q: %w", gw, ifName, err)
+		}
+		return nil
+	})
+}
+
+// removeRoutes flushes routes on ifName inside the container netns.
+func removeRoutes(netnsPath, ifName string) error {
+	ns, err := platform.OpenNetNSByPath(netnsPath)
+	if err != nil {
+		// Netns may already be gone on DEL — best-effort
 		return nil
 	}
-	if iface.Flags&net.FlagUp == 0 {
-		return fmt.Errorf("interface %q is down", ifName)
+	defer ns.Close()
+
+	return ns.Do(func() error {
+		link, err := netlink.LinkByName(ifName)
+		if err != nil {
+			return nil // interface already gone
+		}
+		routes, err := netlink.RouteList(link, netlink.FAMILY_ALL)
+		if err != nil {
+			return nil
+		}
+		for i := range routes {
+			_ = netlink.RouteDel(&routes[i])
+		}
+		return nil
+	})
+}
+
+// checkNetworkNamespace verifies that ifName exists and is UP inside the
+// container's network namespace (not the host netns).
+func checkNetworkNamespace(netnsPath, ifName string) error {
+	ns, err := platform.OpenNetNSByPath(netnsPath)
+	if err != nil {
+		return fmt.Errorf("open container netns %q for CHECK: %w", netnsPath, err)
 	}
-	return nil
+	defer ns.Close()
+
+	var checkErr error
+	_ = ns.Do(func() error {
+		link, err := netlink.LinkByName(ifName)
+		if err != nil {
+			checkErr = fmt.Errorf("interface %q not found in container netns: %w", ifName, err)
+			return nil
+		}
+		if link.Attrs().Flags&net.FlagUp == 0 {
+			checkErr = fmt.Errorf("interface %q is down in container netns", ifName)
+		}
+		return nil
+	})
+	return checkErr
+}
+
+// fullMask returns a full-coverage IP mask for the given bit length.
+func fullMask(bits int) []byte {
+	if bits == 32 {
+		return []byte{0xff, 0xff, 0xff, 0xff}
+	}
+	mask := make([]byte, 16)
+	for i := range mask {
+		mask[i] = 0xff
+	}
+	return mask
+}
+
+// extractNamespace extracts the pod namespace from the CNI config if present.
+func extractNamespace(cfg *NetworkConfig) string {
+	if cfg == nil {
+		return ""
+	}
+	return cfg.Name // placeholder; real impl reads from CNI_ARGS env
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
