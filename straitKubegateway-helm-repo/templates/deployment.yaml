@@ -17,19 +17,32 @@ spec:
         {{- include "straitKubegateway-helm-repo.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: controller
     spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       serviceAccountName: {{ include "straitKubegateway-helm-repo.fullname" . }}-controller
       {{- with .Values.sgController.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.sgController.affinity }}
       affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.sgController.tolerations }}
+        {{- if .Values.sgController.affinity }}
+        {{- toYaml .Values.sgController.affinity | nindent 8 }}
+        {{- else }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/component: controller
+                topologyKey: kubernetes.io/hostname
+        {{- end }}
       tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- if .Values.sgController.tolerations }}
+        {{- toYaml .Values.sgController.tolerations | nindent 8 }}
+        {{- else }}
+        - operator: Exists
+        {{- end }}
       containers:
         - name: sg-controller
           image: "{{ .Values.sgController.image.repository }}:{{ .Values.sgController.image.tag }}"
@@ -39,6 +52,7 @@ spec:
           args:
             - --leader-elect={{ .Values.sgController.leaderElection.enabled }}
             - --metrics-bind-address=:{{ .Values.sgController.metrics.port }}
+            - --health-probe-bind-address=:8081
           ports:
             - name: metrics
               containerPort: {{ .Values.sgController.metrics.port }}

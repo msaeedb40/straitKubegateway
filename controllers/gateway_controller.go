@@ -8,8 +8,11 @@ import (
 
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	"github.com/straitkubegateway/straitkubegateway/gateway"
@@ -35,8 +38,30 @@ func (r *GatewayReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 }
 
 func (r *GatewayReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// Map HTTPRoute events to parent Gateway reconcile requests
+	mapRouteToGateways := func(_ context.Context, obj client.Object) []reconcile.Request {
+		route, ok := obj.(*gwv1.HTTPRoute)
+		if !ok {
+			return nil
+		}
+		var reqs []reconcile.Request
+		for _, parent := range route.Spec.ParentRefs {
+			ns := route.Namespace
+			if parent.Namespace != nil {
+				ns = string(*parent.Namespace)
+			}
+			reqs = append(reqs, reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Namespace: ns,
+					Name:      string(parent.Name),
+				},
+			})
+		}
+		return reqs
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&gwv1.Gateway{}).
-		Watches(&gwv1.HTTPRoute{}, nil).
+		Watches(&gwv1.HTTPRoute{}, handler.EnqueueRequestsFromMapFunc(mapRouteToGateways)).
 		Complete(r)
 }

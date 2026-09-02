@@ -81,13 +81,7 @@ jobs:
         uses: helm/kind-action@v1
         with:
           cluster_name: ci-kind-test
-          # Use a Kind config that disables default CNI so straitKubegateway can own it
-          config: |
-            kind: Cluster
-            apiVersion: kind.x-k8s.io/v1alpha4
-            networking:
-              disableDefaultCNI: true
-              kubeProxyMode: "none"
+          config: scripts/kind/kind-config.yaml
 
       - name: Load images into Kind cluster
         run: |
@@ -108,7 +102,7 @@ jobs:
 
       - name: Apply straitKubegateway CRDs
         run: |
-          kubectl apply --server-side -f straitKubegateway-helm-repo/charts/crds/ 2>/dev/null || true
+          kubectl apply --server-side -f straitKubegateway-helm-repo/crds/
 
       - name: Wait for CRDs to be established
         run: |
@@ -120,7 +114,11 @@ jobs:
             crd/tlsroutes.gateway.networking.k8s.io \
             crd/tcproutes.gateway.networking.k8s.io \
             crd/udproutes.gateway.networking.k8s.io \
-            crd/referencegrants.gateway.networking.k8s.io 2>/dev/null || true
+            crd/referencegrants.gateway.networking.k8s.io \
+            crd/straitnetworks.straitkubegateway.io \
+            crd/straitnetworkpolicies.straitkubegateway.io \
+            crd/straitnodes.straitkubegateway.io \
+            crd/transitgateways.straitkubegateway.io
 
       - name: Helm lint straitKubegateway chart
         run: helm lint straitKubegateway-helm-repo
@@ -136,20 +134,22 @@ jobs:
             --set sgController.image.repository=sg-controller \
             --set sgController.image.tag=ci-${{ github.sha }} \
             --set sgController.image.pullPolicy=Never \
+            --set sgController.replicas=1 \
             --set ui.image.repository=ui \
             --set ui.image.tag=ci-${{ github.sha }} \
             --set ui.image.pullPolicy=Never \
+            --set straitd.kubeProxyReplacement=true \
+            --set straitd.kubeProxyMode=none \
             --set kubeProxyReplacement=true \
             --set kubeProxyMode=none \
-            --timeout=5m \
+            --timeout=15m \
             --wait
 
-      - name: Verify cluster nodes and pods
+      - name: Verify cluster nodes and workloads
         run: |
           kubectl get nodes -o wide
           kubectl get pods -A
           kubectl get crds
-        
 
       - name: Verify Helm release status
         run: |
@@ -166,15 +166,32 @@ jobs:
             --set sgController.image.repository=sg-controller \
             --set sgController.image.tag=ci-${{ github.sha }} \
             --set sgController.image.pullPolicy=Never \
+            --set sgController.replicas=1 \
             --set ui.image.repository=ui \
             --set ui.image.tag=ci-${{ github.sha }} \
             --set ui.image.pullPolicy=Never \
+            --set straitd.kubeProxyReplacement=true \
+            --set straitd.kubeProxyMode=none \
             --set kubeProxyReplacement=true \
             --set kubeProxyMode=none \
-            --timeout=5m \
+            --timeout=15m \
             --wait
 
       - name: Verify final Helm release status
         run: |
           helm list -n kube-system
           helm status straitkubegateway -n kube-system
+
+      - name: Debug cluster on failure
+        if: failure()
+        run: |
+          echo "=== Nodes ==="
+          kubectl get nodes -o wide
+          echo "=== Pods ==="
+          kubectl get pods -A -o wide
+          echo "=== Describe Pods in kube-system ==="
+          kubectl describe pods -n kube-system
+          echo "=== Logs of sg-controller ==="
+          kubectl logs -n kube-system -l app.kubernetes.io/component=controller --all-containers=true --tail=200 || true
+          echo "=== Logs of straitd ==="
+          kubectl logs -n kube-system -l app.kubernetes.io/component=node-agent --all-containers=true --tail=200 || true
