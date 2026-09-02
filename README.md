@@ -126,15 +126,16 @@ sg-cli status
 
 | Document | Description |
 |---|---|
-| [Overview](docs/overview.md) | Platform summary and feature pillars |
-| [Architecture](docs/architecture.md) | System components and Mermaid diagrams |
-| [Workflow](docs/workflow.md) | Traffic lifecycle with color-coded flow diagrams |
+| [Documentation Index](docs/docs.md) | Full roadmap and documentation suite index |
+| [Overview](docs/overview.md) | Platform summary, core feature pillars, and invariants |
+| [Architecture](docs/architecture.md) | System components, control plane reconcilers, and Mermaid diagrams |
+| [Workflow](docs/workflow.md) | Traffic lifecycle, CNI ADD/DEL, and color-coded packet walk diagrams |
 | [Multi-Cluster Transit](docs/transit.md) | 32-bit segment architecture, 4 transit topologies & CRDs |
-| [Capabilities](docs/capability.md) | Comprehensive feature matrix |
-| [Security](docs/security.md) | RBAC, capabilities, encryption, and policy engine |
-| [Observability](docs/observability.md) | Metrics, logging, tracing, and flow events |
-| [Operator Guide](docs/guide.md) | Install, setup, upgrade, uninstall, and testing |
-| [CLI Reference](docs/cli.md) | `sg-cli` command reference |
+| [Capabilities](docs/capability.md) | Comprehensive feature matrix, protocols, and Maglev hashing |
+| [Security](docs/security.md) | RBAC, capability boundaries, encryption, and policy compiler |
+| [Observability](docs/observability.md) | Canonical 11-attribute metadata, Prometheus metrics, and OpenTelemetry tracing |
+| [Operator Guide](docs/guide.md) | Installation, Helm deployment, verification, upgrade, and troubleshooting |
+| [CLI Reference](docs/cli.md) | `sg-cli` complete command-line reference |
 
 ---
 

@@ -52,11 +52,15 @@ func main() {
 	var probeAddr string
 	var enableLeaderElection bool
 	var debug bool
+	var kubeProxyReplacement bool
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false, "Enable leader election for controller manager.")
 	flag.BoolVar(&debug, "debug", false, "Enable verbose debug logging.")
+	flag.BoolVar(&kubeProxyReplacement, "kube-proxy-replacement", false,
+		"Enable Phase 5 kube-proxy replacement: programs ClusterIP, NodePort, ExternalIP, "+
+			"and LoadBalancer VIPs into BPF maps so kube-proxy can be disabled entirely.")
 	flag.Parse()
 
 	// Logger setup
@@ -92,7 +96,7 @@ func main() {
 	// Subsystem managers
 	identityAlloc := identity.NewAllocator()
 	discoverer := ipam.NewDiscoverer(mgr.GetClient(), zapLogger)
-	serviceMgr := service.NewManager(mgr.GetClient(), zapLogger)
+	serviceMgr := service.NewManager(mgr.GetClient(), service.Config{KubeProxyReplacement: kubeProxyReplacement}, zapLogger)
 	policyEngine := policy.NewEngine(mgr.GetClient(), identityAlloc, zapLogger)
 	transitMgr := transit.NewManager(mgr.GetClient(), zapLogger)
 	gatewayMgr := gateway.NewManager(mgr.GetClient(), zapLogger)
