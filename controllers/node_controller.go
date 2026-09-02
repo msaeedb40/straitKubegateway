@@ -9,8 +9,11 @@ import (
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	apiv1 "github.com/straitkubegateway/straitkubegateway/api/v1alpha1"
 )
@@ -39,8 +42,19 @@ func (r *StraitNodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 }
 
 func (r *StraitNodeReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// Map Node events to StraitNode reconcile requests (node name matches StraitNode name)
+	mapNodeToStraitNode := func(_ context.Context, obj client.Object) []reconcile.Request {
+		return []reconcile.Request{
+			{
+				NamespacedName: types.NamespacedName{
+					Name: obj.GetName(),
+				},
+			},
+		}
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&apiv1.StraitNode{}).
-		Watches(&corev1.Node{}, nil).
+		Watches(&corev1.Node{}, handler.EnqueueRequestsFromMapFunc(mapNodeToStraitNode)).
 		Complete(r)
 }
