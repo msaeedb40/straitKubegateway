@@ -17,28 +17,31 @@ spec:
         {{- include "straitKubegateway-helm-repo.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: controller
     spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       serviceAccountName: {{ include "straitKubegateway-helm-repo.fullname" . }}-controller
       {{- with .Values.sgController.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.sgController.affinity }}
       affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- if .Values.sgController.affinity }}
+        {{- toYaml .Values.sgController.affinity | nindent 8 }}
+        {{- else }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/component: controller
+                topologyKey: kubernetes.io/hostname
+        {{- end }}
       tolerations:
         {{- if .Values.sgController.tolerations }}
         {{- toYaml .Values.sgController.tolerations | nindent 8 }}
         {{- else }}
-        - key: node.kubernetes.io/not-ready
-          operator: Exists
-          effect: NoSchedule
-        - key: node-role.kubernetes.io/control-plane
-          operator: Exists
-          effect: NoSchedule
-        - key: node-role.kubernetes.io/master
-          operator: Exists
-          effect: NoSchedule
+        - operator: Exists
         {{- end }}
       containers:
         - name: sg-controller

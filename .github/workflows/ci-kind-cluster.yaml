@@ -134,6 +134,7 @@ jobs:
             --set sgController.image.repository=sg-controller \
             --set sgController.image.tag=ci-${{ github.sha }} \
             --set sgController.image.pullPolicy=Never \
+            --set sgController.replicas=1 \
             --set ui.image.repository=ui \
             --set ui.image.tag=ci-${{ github.sha }} \
             --set ui.image.pullPolicy=Never \
@@ -165,6 +166,7 @@ jobs:
             --set sgController.image.repository=sg-controller \
             --set sgController.image.tag=ci-${{ github.sha }} \
             --set sgController.image.pullPolicy=Never \
+            --set sgController.replicas=1 \
             --set ui.image.repository=ui \
             --set ui.image.tag=ci-${{ github.sha }} \
             --set ui.image.pullPolicy=Never \
@@ -179,3 +181,17 @@ jobs:
         run: |
           helm list -n kube-system
           helm status straitkubegateway -n kube-system
+
+      - name: Debug cluster on failure
+        if: failure()
+        run: |
+          echo "=== Nodes ==="
+          kubectl get nodes -o wide
+          echo "=== Pods ==="
+          kubectl get pods -A -o wide
+          echo "=== Describe Pods in kube-system ==="
+          kubectl describe pods -n kube-system
+          echo "=== Logs of sg-controller ==="
+          kubectl logs -n kube-system -l app.kubernetes.io/component=controller --all-containers=true --tail=200 || true
+          echo "=== Logs of straitd ==="
+          kubectl logs -n kube-system -l app.kubernetes.io/component=node-agent --all-containers=true --tail=200 || true
