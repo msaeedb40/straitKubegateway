@@ -82,11 +82,12 @@ jobs:
         uses: medyagh/setup-minikube@master
         with:
           minikube-version: 1.35.0
-          container-runtime: docker
+          driver: docker
+          container-runtime: containerd
           cpus: 2
-          memory: 4096m
+          memory: 3500m
           nodes: 2
-          start-args: '--cni=false --extra-config=kubeadm.skip-phases=addon/kube-proxy'
+          start-args: '--cni=false --wait=apiserver --extra-config=kubeadm.skip-phases=addon/kube-proxy'
 
       - name: Load images into Minikube cluster
         run: |
