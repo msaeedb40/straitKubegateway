@@ -81,6 +81,9 @@ func discoverAPIServer(host string, port int) (string, int) {
 				}
 			}
 		}
+		if scanErr := scanner.Err(); scanErr != nil {
+			_ = scanErr
+		}
 	}
 
 	// Try common control plane hostnames in Kind

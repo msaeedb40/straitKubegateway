@@ -432,7 +432,7 @@ func teardownNetKit(hostDev string) error {
 }
 
 // configureAddress enters the container netns and assigns the IP address and MTU.
-func configureAddress(netnsPath, ifName string, ip, gw netip.Addr, mtu int) error {
+func configureAddress(netnsPath, ifName string, ip, _ netip.Addr, mtu int) error {
 	ns, err := platform.OpenNetNSByPath(netnsPath)
 	if err != nil {
 		return fmt.Errorf("open container netns %q: %w", netnsPath, err)
