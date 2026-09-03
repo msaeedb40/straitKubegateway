@@ -43,7 +43,8 @@ jobs:
         with:
           node-version: 24
           cache: npm 
-      
+          cache-dependency-path: dist/charts/package-lock.json
+
 
 
       - name: Set up Helm
