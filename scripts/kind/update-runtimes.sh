@@ -54,6 +54,11 @@ for node in ${NODES}; do
       echo \"Neither curl nor wget available on ${node}\" >&2; exit 1
     fi
 
+    CONTAINERD_BIN=\$(which containerd || echo '/usr/local/bin/containerd')
+    if [[ \"\${CONTAINERD_BIN}\" != '/usr/local/bin/containerd' && -f /usr/local/bin/containerd ]]; then
+      cp /usr/local/bin/containerd \"\${CONTAINERD_BIN}\"
+    fi
+
     echo \"[${node}] Downloading runc v${RUNC_VERSION} (\${ARCH})...\"
     RUNC_TARGET=\"\$(which runc || echo '/usr/local/sbin/runc')\"
     if command -v curl &>/dev/null; then
