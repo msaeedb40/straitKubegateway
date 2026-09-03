@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initHookExplorer();
   initCopyButtons();
   initScrollEffects();
+  initCommandPalette();
 });
 
 /* ==========================================================================
@@ -715,14 +716,23 @@ function initScrollEffects() {
   const navbar = document.getElementById('navbar');
   const navToggle = document.getElementById('nav-toggle');
   const mobileDrawer = document.getElementById('mobile-drawer');
+  const progressBar = document.getElementById('scroll-progress');
   const hamburgerIcon = navToggle?.querySelector('.hamburger-icon');
   const closeIcon = navToggle?.querySelector('.close-icon');
   const navLinks = document.querySelectorAll('.nav-links a');
   const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
   const sections = document.querySelectorAll('section[id]');
 
-  // Navbar scroll glow
+  // Navbar scroll glow & progress bar
   window.addEventListener('scroll', () => {
+    // Update scroll progress bar
+    if (progressBar) {
+      const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
+      progressBar.style.width = `${scrolled}%`;
+    }
+
     if (window.scrollY > 30) {
       navbar?.classList.add('scrolled');
       if (navbar) {
@@ -806,4 +816,117 @@ function initScrollEffects() {
       if (e.key === 'Escape') toggleDrawer(false);
     });
   }
+}
+
+/* ==========================================================================
+   7. Interactive Command Palette (⌘K)
+   ========================================================================== */
+
+function initCommandPalette() {
+  const modal = document.getElementById('cmd-palette-modal');
+  const openBtn = document.getElementById('cmd-palette-btn');
+  const input = document.getElementById('cmd-modal-input');
+  const resultsContainer = document.getElementById('cmd-modal-results');
+  const items = resultsContainer ? Array.from(resultsContainer.querySelectorAll('.cmd-item')) : [];
+
+  if (!modal || !openBtn || !input) return;
+
+  const openModal = () => {
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    input.value = '';
+    filterItems('');
+    setTimeout(() => input.focus(), 50);
+  };
+
+  const closeModal = () => {
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+  };
+
+  const filterItems = (query) => {
+    const q = query.toLowerCase().trim();
+    let firstVisible = null;
+
+    items.forEach(item => {
+      const text = (item.getAttribute('data-title') || '') + ' ' + (item.textContent || '');
+      const matches = !q || text.toLowerCase().includes(q);
+      item.style.display = matches ? 'flex' : 'none';
+      item.classList.remove('selected');
+      if (matches && !firstVisible) {
+        firstVisible = item;
+      }
+    });
+
+    if (firstVisible) {
+      firstVisible.classList.add('selected');
+    }
+  };
+
+  openBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openModal();
+  });
+
+  // Global Keyboard Shortcuts (⌘K / Ctrl+K)
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+      e.preventDefault();
+      if (modal.classList.contains('open')) {
+        closeModal();
+      } else {
+        openModal();
+      }
+    } else if (e.key === 'Escape' && modal.classList.contains('open')) {
+      closeModal();
+    }
+  });
+
+  // Input typing filter
+  input.addEventListener('input', () => {
+    filterItems(input.value);
+  });
+
+  // Arrow navigation & Enter key
+  input.addEventListener('keydown', (e) => {
+    const visibleItems = items.filter(it => it.style.display !== 'none');
+    if (!visibleItems.length) return;
+
+    let currentIndex = visibleItems.findIndex(it => it.classList.contains('selected'));
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (currentIndex !== -1) visibleItems[currentIndex].classList.remove('selected');
+      const nextIndex = (currentIndex + 1) % visibleItems.length;
+      visibleItems[nextIndex].classList.add('selected');
+      visibleItems[nextIndex].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (currentIndex !== -1) visibleItems[currentIndex].classList.remove('selected');
+      const prevIndex = (currentIndex - 1 + visibleItems.length) % visibleItems.length;
+      visibleItems[prevIndex].classList.add('selected');
+      visibleItems[prevIndex].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const target = currentIndex !== -1 ? visibleItems[currentIndex] : visibleItems[0];
+      if (target) {
+        closeModal();
+        target.click();
+      }
+    }
+  });
+
+  // Close when clicking backdrop
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+
+  // Close when selecting item
+  items.forEach(item => {
+    item.addEventListener('click', () => {
+      closeModal();
+    });
+  });
 }

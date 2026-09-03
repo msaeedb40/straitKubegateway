@@ -32,6 +32,7 @@
   <header>
     <div class="header-top-accent"></div>
     <nav id="navbar">
+      <div id="scroll-progress" class="scroll-progress-bar"></div>
       <div class="container">
         <div class="nav-wrapper">
           
@@ -68,6 +69,21 @@
 
           <!-- Call to Action & Mobile Toggle -->
           <div class="nav-cta-group">
+            <button id="cmd-palette-btn" class="nav-search-trigger" aria-label="Open search command palette">
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <span>Search</span>
+              <kbd>⌘K</kbd>
+            </button>
+
+            <button class="btn btn-secondary btn-sm code-copy-btn btn-helm-copy" data-copy-text="helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway&#10;helm repo update" title="Copy Helm repo command" aria-label="Copy Helm repository command">
+              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+              <span>helm repo add</span>
+            </button>
+
             <a href="https://github.com/msaeedb40/straitKubegateway" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" aria-label="GitHub Repository">
               <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24">
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
@@ -107,6 +123,9 @@
             <li><a href="#roadmap" class="mobile-nav-link">🗺️ Project Roadmap</a></li>
           </ul>
           <div class="mobile-drawer-cta">
+            <button class="btn btn-secondary btn-sm code-copy-btn" data-copy-text="helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway&#10;helm repo update" style="width: 100%; justify-content: center;">
+              📋 Copy helm repo add
+            </button>
             <a href="https://github.com/msaeedb40/straitKubegateway" target="_blank" class="btn btn-secondary btn-sm" style="width: 100%; justify-content: center;">
               GitHub Repository
             </a>
@@ -117,6 +136,91 @@
         </div>
       </div>
     </nav>
+
+    <!-- Interactive Command Palette Modal (⌘K) -->
+    <div id="cmd-palette-modal" class="cmd-modal-backdrop" aria-hidden="true">
+      <div class="cmd-modal-card" role="dialog" aria-modal="true" aria-label="Command Palette">
+        <div class="cmd-modal-search">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input type="text" id="cmd-modal-input" placeholder="Search sections, platforms, or commands..." autocomplete="off">
+          <kbd class="cmd-modal-esc">ESC</kbd>
+        </div>
+        <div class="cmd-modal-results" id="cmd-modal-results">
+          <div class="cmd-group-label">Documentation &amp; Configuration</div>
+          <a href="#installer" class="cmd-item" data-title="Install Configurator Helm Quickstart">
+            <span class="cmd-icon">⚡</span>
+            <div class="cmd-item-info">
+              <div class="cmd-item-title">Helm Configurator &amp; Quickstart</div>
+              <div class="cmd-item-desc">Interactive flags generator and preset profiles</div>
+            </div>
+            <span class="cmd-key">#installer</span>
+          </a>
+          <a href="#platforms" class="cmd-item" data-title="Platforms Kind K3s Minikube Kubeadm">
+            <span class="cmd-icon">☸️</span>
+            <div class="cmd-item-info">
+              <div class="cmd-item-title">Platform Clusters (Kind, K3s, Minikube, Kubeadm)</div>
+              <div class="cmd-item-desc">Local developer clusters and bare-metal v1.m.p</div>
+            </div>
+            <span class="cmd-key">#platforms</span>
+          </a>
+          <a href="#topology" class="cmd-item" data-title="Topology Multi-Cluster Transit Mesh">
+            <span class="cmd-icon">🌐</span>
+            <div class="cmd-item-info">
+              <div class="cmd-item-title">Transit Network Topology Visualizer</div>
+              <div class="cmd-item-desc">Hub-and-spoke backbone and peer-to-peer mesh routing</div>
+            </div>
+            <span class="cmd-key">#topology</span>
+          </a>
+          <a href="#hooks" class="cmd-item" data-title="eBPF Hooks XDP TC Cgroup SockOps">
+            <span class="cmd-icon">⚡</span>
+            <div class="cmd-item-info">
+              <div class="cmd-item-title">In-Kernel eBPF Attachment Points</div>
+              <div class="cmd-item-desc">XDP packet engine, TC classifier, and Cgroup socket hooks</div>
+            </div>
+            <span class="cmd-key">#hooks</span>
+          </a>
+          <a href="#evaluator" class="cmd-item" data-title="Policy Simulator Zero-Trust Security Firewall">
+            <span class="cmd-icon">🛡️</span>
+            <div class="cmd-item-info">
+              <div class="cmd-item-title">Identity Policy Simulator</div>
+              <div class="cmd-item-desc">Real-time packet evaluation and segment authorization</div>
+            </div>
+            <span class="cmd-key">#evaluator</span>
+          </a>
+          <a href="#observability" class="cmd-item" data-title="Observability Prometheus Grafana ServiceMonitor">
+            <span class="cmd-icon">📊</span>
+            <div class="cmd-item-info">
+              <div class="cmd-item-title">Prometheus &amp; Grafana Observability</div>
+              <div class="cmd-item-desc">kube-prometheus-stack (88.m.p) &amp; dashboards</div>
+            </div>
+            <span class="cmd-key">#observability</span>
+          </a>
+          <a href="#architecture" class="cmd-item" data-title="Architecture Engine Maglev BPF Core">
+            <span class="cmd-icon">🏗️</span>
+            <div class="cmd-item-info">
+              <div class="cmd-item-title">Core Architecture Pillars</div>
+              <div class="cmd-item-desc">Zero-overhead kernel routing, identity isolation, and DSR</div>
+            </div>
+            <span class="cmd-key">#architecture</span>
+          </a>
+          <a href="#roadmap" class="cmd-item" data-title="Roadmap Phases Milestones">
+            <span class="cmd-icon">🗺️</span>
+            <div class="cmd-item-info">
+              <div class="cmd-item-title">Release Roadmap &amp; Phases</div>
+              <div class="cmd-item-desc">Milestones for GA release and hardware offload</div>
+            </div>
+            <span class="cmd-key">#roadmap</span>
+          </a>
+        </div>
+        <div class="cmd-modal-footer">
+          <span><kbd>↑</kbd> <kbd>↓</kbd> to navigate</span>
+          <span><kbd>↵</kbd> to select</span>
+          <span><kbd>ESC</kbd> to close</span>
+        </div>
+      </div>
+    </div>
   </header>
 
   <main>
