@@ -66,31 +66,105 @@ Designed for public clouds, bare-metal, edge, hybrid-cloud, multi-cloud, and air
 
 ---
 
+## 🌐 Interactive Web Hub & Helm Repository
+
+Explore the interactive live web application, configurator, and visualizers hosted at:
+**[https://msaeedb40.github.io/straitKubegateway](https://msaeedb40.github.io/straitKubegateway)**
+
+- ⚡ **Interactive Helm Configurator**: Dynamic flag generation with 1-click preset profiles (Quickstart, High-Security, Multi-Cluster Transit, High-Throughput).
+- ☸️ **Platform Deployments**: Step-by-step guides for **Kind**, **K3s (k3d)**, **Minikube**, and **Kubeadm Bare-Metal** with dynamic `v1.m.p` versioning.
+- 🌐 **Interactive Network Topology Visualizer**: Hub-and-spoke transit backbone, full mesh, and segment isolation routing diagrams.
+- ⚡ **In-Kernel eBPF Hook Explorer**: Interactive inspection of XDP, NetKit, TCX, sockops, and BPF LSM attachment points.
+- 🛡️ **Zero-Trust Policy Simulator**: Real-time packet authorization engine calculating verdicts and latency down to sub-microsecond precision.
+- 💻 **sg-cli Terminal Control Center**: Live in-browser CLI playground with output simulation for cluster status, policy tracing, and transit routing.
+- 📊 **Observability Suite**: Prometheus metrics (`kube-prometheus-stack` pinned `--version 88.6.4`) & Grafana dashboards.
+
+---
+
 ## Quick Start
 
-### Install via Helm
+### 1. Automated sg-cli Installation (Linux & macOS)
+
+Install the standalone `sg-cli` binary with automatic architecture detection (`amd64` / `arm64`):
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/msaeedb40/straitKubegateway/developer/scripts/sg-cli/install.sh | bash
+```
+
+Or from local source:
+```bash
+./scripts/sg-cli/install.sh
+```
+
+### 2. Deploy StraitKubeGateway via Helm
+
+```bash
+# Add Helm chart repository
 helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway
 helm repo update
 
+# Install StraitKubeGateway (replaces kube-proxy with eBPF Maglev)
 helm install straitkubegateway straitkubegateway/straitkubegateway \
   --namespace kube-system \
-  --create-namespace
+  --set straitd.kubeProxyReplacement=true \
+  --set straitd.kubeProxyMode=none \
+  --set straitd.wireguard.enabled=true \
+  --wait --timeout 300s
 ```
 
-### Install via sg-cli
+### 3. Deploy via sg-cli
 
 ```bash
-sg-cli install --namespace kube-system
+sg-cli install --namespace kube-system --set wireguard.enabled=true
 ```
 
-### Verify
+### 4. Verification
 
 ```bash
-kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway
+# Verify with kubectl
+kubectl get nodes -o wide
+kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide
+
+# Verify with sg-cli
 sg-cli status
+sg-cli node
 ```
+
+---
+
+## Platform Quickstarts
+
+| Platform | Quick Command | Reference Script |
+|---|---|---|
+| **Kind** | `scripts/kind/create-cluster.sh && scripts/kind/install.sh` | [scripts/kind/](scripts/kind/) |
+| **K3s (k3d)** | `scripts/k3s/create-cluster.sh && scripts/k3s/install.sh` | [scripts/k3s/](scripts/k3s/) |
+| **Minikube** | `scripts/minikube/create-cluster.sh && scripts/minikube/install.sh` | [scripts/minikube/](scripts/minikube/) |
+| **Kubeadm (Bare-Metal)** | Automated host prep, CRI containerd v2.3.4, runc v1.5.1, CNI plugins v1.6.2, multi-node join | [Operator Guide](docs/guide.md#4-kubeadm-bare-metal--vm-deployment) |
+
+---
+
+## Observability Suite
+
+StraitKubeGateway integrates natively with the **Prometheus Operator** and **Grafana**:
+
+```bash
+# Deploy Prometheus Operator & Grafana (pinned chart version 88.6.4)
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+helm install prometheus-stack prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --create-namespace \
+  --version 88.6.4 \
+  --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false \
+  --set prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues=false
+
+# Retrieve Grafana admin credentials
+kubectl get secret -n monitoring prometheus-stack-grafana -o jsonpath="{.data.admin-password}" | base64 --decode && echo
+```
+
+- **ServiceMonitor & PrometheusRule**: Automatically targets `:9090/metrics` across `straitd` and `sg-controller` pods.
+- **Pre-Configured Dashboards**: Kernel packet processing rates, Maglev hash distribution, WireGuard handshakes, and BFD link status. See [docs/observability.md](docs/observability.md).
 
 ---
 
@@ -174,6 +248,7 @@ helm lint straitKubegateway-helm-repo
 
 ```
 straitKubegateway/
+├── .github/workflows/    # CI/CD Workflows (Minikube, K3s, Kubeadm VM, Images)
 ├── api/v1alpha1/         # CRD type definitions
 ├── bpf/
 │   ├── headers/          # eBPF helper headers
@@ -185,7 +260,9 @@ straitKubegateway/
 ├── cni/                  # CNI plugin (ADD/DEL/CHECK/GC)
 ├── controllers/          # Kubernetes reconcilers
 ├── dataplane/            # Top-level dataplane orchestrator
-├── docs/                 # Documentation
+├── dist/
+│   └── charts/           # GitHub Pages landing page & Helm repository
+├── docs/                 # Documentation suite
 ├── encryption/           # WireGuard & IPsec managers
 ├── gateway/              # Gateway API v1.6.1 manager
 ├── identity/             # BPF security identity allocator
@@ -201,10 +278,11 @@ straitKubegateway/
 ├── platform/             # Linux platform (cgroup v2, systemd, netns)
 ├── policy/               # Network policy engine & compiler
 ├── routing/              # BGP-4 & BFD engines
+├── scripts/              # Platform scripts (Kind, K3s, Minikube, sg-cli, Helm)
 ├── service/              # Service & EndpointSlice compiler
-├── straitKubegateway-helm-repo/  # Helm chart
+├── straitKubegateway-helm-repo/  # Helm chart source
 ├── transit/              # Multi-cluster transit gateway
-└── ui/                   # Angular 22 dashboard
+└── ui/                   # Web telemetry & visualizer interface
 ```
 
 ---

@@ -4,6 +4,47 @@
 
 ---
 
+## Installation
+
+### 1. One-Line Automated Installer (Linux & macOS)
+
+Supports automatic architecture detection for `amd64` and `arm64`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/msaeedb40/straitKubegateway/developer/scripts/sg-cli/install.sh | bash
+```
+
+Or from the cloned repository:
+```bash
+./scripts/sg-cli/install.sh
+```
+
+### 2. Direct Pre-Built Binary Download
+
+Download standalone executable directly into `/usr/local/bin`:
+
+```bash
+# Linux (amd64)
+curl -fsSL https://github.com/msaeedb40/straitKubegateway/releases/latest/download/sg-cli-linux-amd64 -o /usr/local/bin/sg-cli
+sudo chmod +x /usr/local/bin/sg-cli
+
+# Linux (arm64 / Graviton / Raspberry Pi)
+curl -fsSL https://github.com/msaeedb40/straitKubegateway/releases/latest/download/sg-cli-linux-arm64 -o /usr/local/bin/sg-cli
+sudo chmod +x /usr/local/bin/sg-cli
+
+# macOS (Apple Silicon / arm64)
+curl -fsSL https://github.com/msaeedb40/straitKubegateway/releases/latest/download/sg-cli-darwin-arm64 -o /usr/local/bin/sg-cli
+sudo chmod +x /usr/local/bin/sg-cli
+```
+
+### 3. Install via Go Toolchain
+
+```bash
+go install github.com/msaeedb40/straitKubegateway/cmd/sg-cli@latest
+```
+
+---
+
 ## Global Flags
 
 | Flag | Short | Default | Description |
