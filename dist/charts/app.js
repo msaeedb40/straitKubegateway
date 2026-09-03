@@ -708,20 +708,102 @@ function initCopyButtons() {
 }
 
 /* ==========================================================================
-   6. Scroll & Navbar Interaction
+   6. Scroll, Navbar Interaction & Mobile Navigation
    ========================================================================== */
 
 function initScrollEffects() {
   const navbar = document.getElementById('navbar');
+  const navToggle = document.getElementById('nav-toggle');
+  const mobileDrawer = document.getElementById('mobile-drawer');
+  const hamburgerIcon = navToggle?.querySelector('.hamburger-icon');
+  const closeIcon = navToggle?.querySelector('.close-icon');
+  const navLinks = document.querySelectorAll('.nav-links a');
+  const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+  const sections = document.querySelectorAll('section[id]');
+
+  // Navbar scroll glow
   window.addEventListener('scroll', () => {
     if (window.scrollY > 30) {
       navbar?.classList.add('scrolled');
-      navbar.style.borderBottomColor = 'rgba(34, 211, 238, 0.25)';
-      navbar.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.5)';
+      if (navbar) {
+        navbar.style.borderBottomColor = 'rgba(34, 211, 238, 0.25)';
+        navbar.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.5)';
+      }
     } else {
       navbar?.classList.remove('scrolled');
-      navbar.style.borderBottomColor = 'rgba(255, 255, 255, 0.07)';
-      navbar.style.boxShadow = 'none';
+      if (navbar) {
+        navbar.style.borderBottomColor = 'rgba(255, 255, 255, 0.07)';
+        navbar.style.boxShadow = 'none';
+      }
+    }
+
+    // Scroll-Spy: Highlight active nav link based on scroll position
+    let currentSectionId = '';
+    const scrollPos = window.scrollY + 120;
+
+    sections.forEach(sec => {
+      const top = sec.offsetTop;
+      const height = sec.offsetHeight;
+      if (scrollPos >= top && scrollPos < top + height) {
+        currentSectionId = sec.getAttribute('id');
+      }
+    });
+
+    if (currentSectionId) {
+      navLinks.forEach(link => {
+        if (link.getAttribute('href') === `#${currentSectionId}`) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
+      mobileNavLinks.forEach(link => {
+        if (link.getAttribute('href') === `#${currentSectionId}`) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
     }
   });
+
+  // Mobile Drawer toggle logic
+  if (navToggle && mobileDrawer) {
+    const toggleDrawer = (open) => {
+      const isOpen = open !== undefined ? open : !mobileDrawer.classList.contains('open');
+      if (isOpen) {
+        mobileDrawer.classList.add('open');
+        navToggle.setAttribute('aria-expanded', 'true');
+        if (hamburgerIcon) hamburgerIcon.style.display = 'none';
+        if (closeIcon) closeIcon.style.display = 'block';
+      } else {
+        mobileDrawer.classList.remove('open');
+        navToggle.setAttribute('aria-expanded', 'false');
+        if (hamburgerIcon) hamburgerIcon.style.display = 'block';
+        if (closeIcon) closeIcon.style.display = 'none';
+      }
+    };
+
+    navToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleDrawer();
+    });
+
+    // Close when clicking any mobile link
+    mobileNavLinks.forEach(link => {
+      link.addEventListener('click', () => toggleDrawer(false));
+    });
+
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+      if (!navbar?.contains(e.target)) {
+        toggleDrawer(false);
+      }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') toggleDrawer(false);
+    });
+  }
 }
