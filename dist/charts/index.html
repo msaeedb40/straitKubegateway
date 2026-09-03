@@ -1274,7 +1274,7 @@ kubectl get gatewayclasses,gateways,straitnetworks</code></pre>
                     </div>
                   </div>
                   <div class="code-window">
-                    <button class="code-copy-btn" data-copy-text="helm repo add prometheus-community https://prometheus-community.github.io/helm-charts&#10;helm repo update&#10;helm install prometheus prometheus-community/kube-prometheus-stack \&#10;  --namespace monitoring \&#10;  --create-namespace">
+                    <button class="code-copy-btn" data-copy-text="helm repo add prometheus-community https://prometheus-community.github.io/helm-charts&#10;helm repo update&#10;helm install prometheus prometheus-community/kube-prometheus-stack \&#10;  --version 88.6.4 \&#10;  --namespace monitoring \&#10;  --create-namespace">
                       <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                       <span>Copy</span>
                     </button>
@@ -1282,6 +1282,7 @@ kubectl get gatewayclasses,gateways,straitnetworks</code></pre>
 helm repo update
 
 helm install prometheus prometheus-community/kube-prometheus-stack \
+  --version 88.6.4 \
   --namespace monitoring \
   --create-namespace</code></pre>
                   </div>
