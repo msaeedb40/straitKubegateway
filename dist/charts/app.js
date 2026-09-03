@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initTopology();
   initPolicyTester();
   initHookExplorer();
+  initCliTerminal();
   initCopyButtons();
   initScrollEffects();
   initCommandPalette();
@@ -935,4 +936,167 @@ function initCommandPalette() {
       closeModal();
     });
   });
+}
+
+/* ==========================================================================
+   8. sg-cli Interactive Terminal Playground
+   ========================================================================== */
+
+const cliPresets = {
+  status: {
+    title: 'bash — sg-cli status',
+    command: 'sg-cli status',
+    output: `straitKubegateway Cluster Status:
+  CNI Dataplane:      Ready (Linux 6.8+ NetKit/veth)
+  Service LB:         Ready (kube-proxy replacement: true)
+  NetworkPolicy:      Active (BPF LSM/cgroup hooks)
+  Gateway API v1.6.1: Active (Controller reconciled)
+  Transit Gateway:    Segment 0 (Backbone)
+  WireGuard:          Operational (Mesh encryption active)
+  Active Daemons:     3 / 3 nodes synchronized`
+  },
+  node: {
+    title: 'bash — sg-cli node',
+    command: 'sg-cli node',
+    output: `NODE NAME     ROLES          STATUS   PODCIDR        INTERFACE   EBPF XDP   WIREGUARD
+master        control-plane  Ready    10.18.0.0/24   eth0        Pass (L4)  up (wg0)
+worker-01     <none>         Ready    10.18.1.0/24   eth0        Pass (L4)  up (wg0)
+worker-02     <none>         Ready    10.18.2.0/24   eth0        Pass (L4)  up (wg0)`
+  },
+  endpoint: {
+    title: 'bash — sg-cli endpoint',
+    command: 'sg-cli endpoint',
+    output: `NAMESPACE    POD NAME                    IP            BPF SEC-ID  INTERFACE   STATUS
+production   orders-api-7b8f6d-xz9k2     10.18.1.12    1024        netkit0     Ready
+production   payments-v2-94fa10-bb21a    10.18.1.13    1025        netkit1     Ready
+analytics    spark-worker-55cc8e-m10pa   10.18.2.45    2048        netkit0     Ready
+kube-system  straitd-worker-01           192.168.56.10 1           host        Ready`
+  },
+  policy: {
+    title: 'bash — sg-cli policy trace',
+    command: 'sg-cli policy trace --src-pod orders-api --dst-pod payments-v2 --port 8080 --protocol TCP',
+    output: `[TRACE] Flow: orders-api (sec-id: 1024) -> payments-v2 (sec-id: 1025)
+  Protocol: TCP | Destination Port: 8080
+  Segment: 0 (Backbone Transit)
+
+  1. Segment Boundary Check: [PASS] Same segment isolation domain
+  2. BPF LPM Map Lookup:     [MATCH] rule #14 ("allow-ingress-payments")
+  3. L4 Port Authorization:  [ALLOW] port 8080 permitted for identity 1024
+Verdict: ALLOW (Latency: 0.18 µs, Engine: BPF TC/LSM)`
+  },
+  gateway: {
+    title: 'bash — sg-cli gateway',
+    command: 'sg-cli gateway',
+    output: `NAME          CLASS           ADDRESSES        PORTS      PROGRAMMED   AGE
+strait-gw     skubegateway    192.168.56.200   80, 443    True         4d12h
+
+ATTACHED ROUTES:
+  HTTPRoute: orders-route (host: api.strait.io, prefix: /api/v1/orders -> svc/orders-api:8080)
+  HTTPRoute: payments-route (host: api.strait.io, prefix: /api/v1/payments -> svc/payments-v2:8443)`
+  },
+  transit: {
+    title: 'bash — sg-cli transit',
+    command: 'sg-cli transit',
+    output: `TRANSIT SEGMENT ID   NAME       BACKBONE PEERS   ATTACHMENTS   ISOLATION
+0                    Core-Hub   3                6             Strict Zero-Trust
+10                   Payments   1                2             Isolated
+20                   Analytics  1                4             Isolated
+30                   Frontend   1                3             Isolated`
+  },
+  bgp: {
+    title: 'bash — sg-cli bgp',
+    command: 'sg-cli bgp',
+    output: `PEER ADDRESS     ASN      STATE         UPTIME    ADVERTISED   RECEIVED
+192.168.56.1     65001    Established   4d12h     18           42
+192.168.56.2     65002    Established   4d12h     18           35
+10.254.0.1       64512    Established   2d08h     6            14`
+  },
+  wireguard: {
+    title: 'bash — sg-cli wireguard',
+    command: 'sg-cli wireguard',
+    output: `INTERFACE   PUBLIC KEY                                  LISTEN PORT   PEERS
+wg0         tK2P8Y...eN9kM= (curve25519)                51820         2
+
+PEER: worker-01 (192.168.56.11:51820)
+  Endpoint: 192.168.56.11:51820 | AllowedIPs: 10.18.1.0/24
+  Latest Handshake: 14 seconds ago | Transfer: 1.4 GiB received, 2.8 GiB sent
+
+PEER: worker-02 (192.168.56.12:51820)
+  Endpoint: 192.168.56.12:51820 | AllowedIPs: 10.18.2.0/24
+  Latest Handshake: 8 seconds ago | Transfer: 890 MiB received, 1.1 GiB sent`
+  },
+  config: {
+    title: 'bash — sg-cli config',
+    command: 'sg-cli config',
+    output: `CURRENT RUNTIME CONFIGURATION:
+  dataplane.kubeProxyReplacement: true
+  dataplane.kubeProxyMode: none
+  dataplane.bpfFS: /sys/fs/bpf
+  tunnel.mode: wireguard
+  tunnel.encryption: chacha20poly1305
+  transit.defaultSegment: 0
+  transit.segmentRoutingEnabled: true
+  policy.enforcementMode: always`
+  },
+  version: {
+    title: 'bash — sg-cli version',
+    command: 'sg-cli version',
+    output: `sg-cli version: v1.0.1
+  Go Runtime:  go1.26.7
+  OS / Arch:   linux/amd64 (kernel 6.8.0-generic compatible)
+  Git Commit:  1645357
+  Build Time:  2026-09-04T00:08:27Z`
+  }
+};
+
+function initCliTerminal() {
+  const buttons = document.querySelectorAll('[data-clicmd]');
+  const titleElem = document.getElementById('cli-terminal-title');
+  const commandElem = document.getElementById('cli-prompt-command');
+  const outputElem = document.getElementById('cli-prompt-output');
+  const copyBtn = document.getElementById('cli-copy-btn');
+
+  if (!buttons.length || !commandElem || !outputElem) return;
+
+  const setCommand = (key) => {
+    const data = cliPresets[key];
+    if (!data) return;
+
+    buttons.forEach(b => {
+      if (b.getAttribute('data-clicmd') === key) {
+        b.classList.add('active');
+      } else {
+        b.classList.remove('active');
+      }
+    });
+
+    if (titleElem) titleElem.textContent = data.title;
+    commandElem.textContent = data.command;
+    outputElem.textContent = data.output;
+  };
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.getAttribute('data-clicmd');
+      setCommand(key);
+    });
+  });
+
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const cmd = commandElem?.textContent || '';
+      const out = outputElem?.textContent || '';
+      const full = `$ ${cmd}\n${out}`;
+      navigator.clipboard.writeText(full).then(() => {
+        const orig = copyBtn.innerHTML;
+        copyBtn.innerHTML = `
+          <svg width="12" height="12" fill="none" stroke="#10b981" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          <span style="color: #10b981;">Copied!</span>
+        `;
+        setTimeout(() => {
+          copyBtn.innerHTML = orig;
+        }, 2000);
+      });
+    });
+  }
 }

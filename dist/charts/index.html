@@ -62,6 +62,7 @@
             <li><a href="#topology" class="nav-link">Topology</a></li>
             <li><a href="#hooks" class="nav-link">eBPF Hooks</a></li>
             <li><a href="#evaluator" class="nav-link">Policy Sim</a></li>
+            <li><a href="#cli" class="nav-link">CLI Tool</a></li>
             <li><a href="#observability" class="nav-link">Observability</a></li>
             <li><a href="#architecture" class="nav-link">Architecture</a></li>
             <li><a href="#roadmap" class="nav-link">Roadmap</a></li>
@@ -118,6 +119,7 @@
             <li><a href="#topology" class="mobile-nav-link">🌐 Transit &amp; Mesh Topology</a></li>
             <li><a href="#hooks" class="mobile-nav-link">⚡ In-Kernel eBPF Hooks</a></li>
             <li><a href="#evaluator" class="mobile-nav-link">🛡️ Policy Simulator</a></li>
+            <li><a href="#cli" class="mobile-nav-link">💻 sg-cli Command Line</a></li>
             <li><a href="#observability" class="mobile-nav-link">📊 Prometheus &amp; Grafana</a></li>
             <li><a href="#architecture" class="mobile-nav-link">🏗️ Core Architecture</a></li>
             <li><a href="#roadmap" class="mobile-nav-link">🗺️ Project Roadmap</a></li>
@@ -188,6 +190,14 @@
               <div class="cmd-item-desc">Real-time packet evaluation and segment authorization</div>
             </div>
             <span class="cmd-key">#evaluator</span>
+          </a>
+          <a href="#cli" class="cmd-item" data-title="CLI sg-cli Terminal Command Tool Status Endpoint Policy Gateway Transit BGP WireGuard">
+            <span class="cmd-icon">💻</span>
+            <div class="cmd-item-info">
+              <div class="cmd-item-title">sg-cli Terminal &amp; Control Center</div>
+              <div class="cmd-item-desc">CLI management tool, policy tracing, and transit troubleshooting</div>
+            </div>
+            <span class="cmd-key">#cli</span>
           </a>
           <a href="#observability" class="cmd-item" data-title="Observability Prometheus Grafana ServiceMonitor">
             <span class="cmd-icon">📊</span>
@@ -1431,6 +1441,279 @@ kubectl get gatewayclasses,gateways,straitnetworks</code></pre>
             <p id="eval-reason" style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.6;"></p>
           </div>
 
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section: sg-cli Terminal & Management Tool -->
+    <section id="cli" class="section">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-tag">💻 Terminal Control Center</div>
+          <h2 class="section-title">
+            <span class="text-gradient">sg-cli</span>: Command-Line Management Tool
+          </h2>
+          <p class="section-desc">
+            The official command-line toolkit for inspecting node networking, tracing zero-trust policy evaluations, managing transit segments, and live kernel troubleshooting.
+          </p>
+        </div>
+
+        <!-- Quick Install Bar -->
+        <div class="cli-quick-install glass-card" style="margin-bottom: 28px;">
+          <div class="cli-install-info">
+            <div class="cli-install-badge">INSTALL sg-cli</div>
+            <div style="font-size: 13px; color: var(--text-secondary);">Single static binary with zero dependencies. Runs on Linux amd64/arm64 and macOS:</div>
+          </div>
+          <div class="code-window" style="margin-top: 12px;">
+            <button class="code-copy-btn" data-copy-text="curl -fsSL https://github.com/msaeedb40/straitKubegateway/releases/latest/download/sg-cli-linux-amd64 -o /usr/local/bin/sg-cli &amp;&amp; sudo chmod +x /usr/local/bin/sg-cli">
+              <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              <span>Copy</span>
+            </button>
+            <pre><code># Download standalone binary to /usr/local/bin
+curl -fsSL https://github.com/msaeedb40/straitKubegateway/releases/latest/download/sg-cli-linux-amd64 -o /usr/local/bin/sg-cli
+sudo chmod +x /usr/local/bin/sg-cli
+
+# Or install via Go
+go install github.com/msaeedb40/straitKubegateway/cmd/sg-cli@latest</code></pre>
+          </div>
+        </div>
+
+        <!-- Interactive Terminal Playground -->
+        <div class="cli-playground-grid">
+          
+          <!-- Command Category Selector -->
+          <div class="cli-cmd-palette">
+            <div class="cli-palette-title">Interactive Commands</div>
+            <div class="cli-btn-list">
+              <button class="cli-cmd-btn active" data-clicmd="status">
+                <span class="cli-cmd-icon">⚡</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli status</span>
+                  <span class="cli-cmd-sub">Cluster &amp; datapath health</span>
+                </div>
+              </button>
+              <button class="cli-cmd-btn" data-clicmd="node">
+                <span class="cli-cmd-icon">🖥️</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli node</span>
+                  <span class="cli-cmd-sub">Host networking &amp; interfaces</span>
+                </div>
+              </button>
+              <button class="cli-cmd-btn" data-clicmd="endpoint">
+                <span class="cli-cmd-icon">📦</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli endpoint</span>
+                  <span class="cli-cmd-sub">Pod IPs &amp; BPF security identities</span>
+                </div>
+              </button>
+              <button class="cli-cmd-btn" data-clicmd="policy">
+                <span class="cli-cmd-icon">🛡️</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli policy trace</span>
+                  <span class="cli-cmd-sub">Live packet authorization trace</span>
+                </div>
+              </button>
+              <button class="cli-cmd-btn" data-clicmd="gateway">
+                <span class="cli-cmd-icon">🚪</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli gateway</span>
+                  <span class="cli-cmd-sub">Gateway API &amp; HTTPRoute rules</span>
+                </div>
+              </button>
+              <button class="cli-cmd-btn" data-clicmd="transit">
+                <span class="cli-cmd-icon">🌐</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli transit</span>
+                  <span class="cli-cmd-sub">Multi-cluster transit segments</span>
+                </div>
+              </button>
+              <button class="cli-cmd-btn" data-clicmd="bgp">
+                <span class="cli-cmd-icon">📡</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli bgp</span>
+                  <span class="cli-cmd-sub">BGP neighbor peering &amp; routes</span>
+                </div>
+              </button>
+              <button class="cli-cmd-btn" data-clicmd="wireguard">
+                <span class="cli-cmd-icon">🔒</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli wireguard</span>
+                  <span class="cli-cmd-sub">Encrypted mesh &amp; handshakes</span>
+                </div>
+              </button>
+              <button class="cli-cmd-btn" data-clicmd="config">
+                <span class="cli-cmd-icon">⚙️</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli config</span>
+                  <span class="cli-cmd-sub">Runtime engine configuration</span>
+                </div>
+              </button>
+              <button class="cli-cmd-btn" data-clicmd="version">
+                <span class="cli-cmd-icon">🏷️</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli version</span>
+                  <span class="cli-cmd-sub">Architecture &amp; Go build</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Terminal Output Screen -->
+          <div class="cli-terminal-screen">
+            <div class="cli-terminal-bar">
+              <div class="cli-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-yellow"></span>
+                <span class="dot dot-green"></span>
+              </div>
+              <div class="cli-title-text" id="cli-terminal-title">bash — sg-cli status</div>
+              <button class="cli-terminal-copy-btn" id="cli-copy-btn" title="Copy command and output">
+                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <span>Copy Output</span>
+              </button>
+            </div>
+            <div class="cli-terminal-body">
+              <div class="cli-prompt-line">
+                <span class="cli-prompt-user">user@k8s-node</span><span class="cli-prompt-colon">:</span><span class="cli-prompt-dir">~</span><span class="cli-prompt-dollar">$</span>
+                <span class="cli-prompt-cmd" id="cli-prompt-command">sg-cli status</span>
+              </div>
+              <pre class="cli-prompt-output" id="cli-prompt-output">straitKubegateway Cluster Status:
+  CNI Dataplane:      Ready
+  Service LB:         Ready (kube-proxy replacement: true)
+  NetworkPolicy:      Active (LSM/cgroup hooks)
+  Gateway API v1.6.1: Active
+  Transit Gateway:    Segment 0 (Backbone)
+  WireGuard:          Operational (Mesh encryption active)
+  Active Daemons:     3 / 3 nodes synchronized</pre>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Comprehensive CLI Command Reference Table -->
+        <div class="cli-table-card glass-card" style="margin-top: 32px;">
+          <div class="cli-table-header">
+            <div style="font-weight: 700; color: var(--text-primary); font-size: 15px;">Complete sg-cli Command Reference</div>
+            <div style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">18 built-in commands for cluster lifecycle, security, and networking management</div>
+          </div>
+          <div class="hook-table-container">
+            <table class="hook-table">
+              <thead>
+                <tr>
+                  <th>Command</th>
+                  <th>Arguments &amp; Flags</th>
+                  <th>Primary Purpose</th>
+                  <th>Category</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>sg-cli status</code></td>
+                  <td><code>--verbose, -v</code></td>
+                  <td>Show complete health of CNI, LB, BPF hooks, WireGuard &amp; Transit Gateway</td>
+                  <td><span class="badge-tag">Observability</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli node</code></td>
+                  <td><code>--name &lt;node-name&gt;</code></td>
+                  <td>Inspect host networking state, NetKit interfaces, and PodCIDR allocations</td>
+                  <td><span class="badge-tag">Infrastructure</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli endpoint</code></td>
+                  <td><code>--namespace, --pod</code></td>
+                  <td>List pod endpoints, veth/NetKit peer links, and allocated BPF security IDs</td>
+                  <td><span class="badge-tag">Networking</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli policy</code></td>
+                  <td><code>--name, --namespace</code></td>
+                  <td>List compiled eBPF LPM maps, security identities, and policy rules</td>
+                  <td><span class="badge-tag">Security</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli policy trace</code></td>
+                  <td><code>--src-pod, --dst-pod, --port, --protocol</code></td>
+                  <td>Trace live packet evaluation across zero-trust policies and segment isolation</td>
+                  <td><span class="badge-tag">Security</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli gateway</code></td>
+                  <td><code>--name, --namespace</code></td>
+                  <td>Inspect Gateway API resources, listeners, and HTTPRoute bindings</td>
+                  <td><span class="badge-tag">Ingress</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli transit</code></td>
+                  <td><code>--segment &lt;id&gt;</code></td>
+                  <td>Manage multi-cluster transit segments, backbone peering, and attachments</td>
+                  <td><span class="badge-tag">Multi-Cluster</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli bgp</code></td>
+                  <td><code>advertised-routes, received-routes</code></td>
+                  <td>Inspect BGP neighbor sessions, advertised prefixes, and EVPN routes</td>
+                  <td><span class="badge-tag">Routing</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli wireguard</code></td>
+                  <td><code>peers</code></td>
+                  <td>Inspect WireGuard interface status, public keys, and last handshake timestamp</td>
+                  <td><span class="badge-tag">Encryption</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli ipsec</code></td>
+                  <td><code>policies</code></td>
+                  <td>Inspect IPsec Security Associations (SA) and Linux XFRM security policies</td>
+                  <td><span class="badge-tag">Encryption</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli cluster</code></td>
+                  <td><code>--name &lt;cluster-name&gt;</code></td>
+                  <td>Manage federated Kubernetes clusters and inter-cluster peering</td>
+                  <td><span class="badge-tag">Multi-Cluster</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli config</code></td>
+                  <td><code>set &lt;key&gt; &lt;val&gt;</code></td>
+                  <td>View and modify runtime engine configuration dynamically</td>
+                  <td><span class="badge-tag">Management</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli export</code></td>
+                  <td><code>--policies-only</code></td>
+                  <td>Export running cluster networking and security policies to declarative YAML</td>
+                  <td><span class="badge-tag">Backup</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli import</code></td>
+                  <td><code>&lt;file.yaml&gt;</code></td>
+                  <td>Import and reconcile declarative networking configuration from file</td>
+                  <td><span class="badge-tag">Backup</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli install</code></td>
+                  <td><code>--namespace, --set</code></td>
+                  <td>Direct in-cluster installation helper for StraitKubeGateway components</td>
+                  <td><span class="badge-tag">Lifecycle</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli upgrade</code></td>
+                  <td><code>--namespace</code></td>
+                  <td>Perform rolling upgrade of StraitKubeGateway DaemonSet and Controller</td>
+                  <td><span class="badge-tag">Lifecycle</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli version</code></td>
+                  <td>—</td>
+                  <td>Display compiled version, Go runtime, target OS/Arch, and git commit SHA</td>
+                  <td><span class="badge-tag">System</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
       </div>
