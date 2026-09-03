@@ -1,0 +1,25 @@
+apiVersion: v1
+entries:
+  straitkubegateway:
+  - apiVersion: v2
+    appVersion: 1.0.1
+    created: "2026-09-03T21:30:54.045116023+03:00"
+    description: A Helm chart for straitKubegateway Kubernetes-native transit gateway
+      and CNI platform
+    digest: 11a0de3c66c982c0bdaab4dee01d1414ee67bc83a794e5ac68f3723e36c3da51
+    home: https://github.com/msaeedb40/straitKubegateway.git
+    icon: https://raw.githubusercontent.com/msaeedb40/straitKubegateway/main/logo/straitKubegateway.png
+    keywords:
+    - networking
+    - cni
+    - ebpf
+    - gateway-api
+    - transit-gateway
+    name: straitkubegateway
+    sources:
+    - https://github.com/msaeedb40/straitKubegateway.git
+    type: application
+    urls:
+    - https://msaeedb40.github.io/straitKubegateway/straitkubegateway-1.0.1.tgz
+    version: 1.0.1
+generated: "2026-09-03T21:30:54.041596651+03:00"

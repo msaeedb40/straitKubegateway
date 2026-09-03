@@ -53,7 +53,10 @@ CHART_VERSION=$(grep '^version:' "${CHART_DIR}/Chart.yaml" | awk '{print $2}')
 APP_VERSION=$(grep '^appVersion:' "${CHART_DIR}/Chart.yaml" | awk '{print $2}' | tr -d '"')
 CHART_NAME=$(grep '^name:' "${CHART_DIR}/Chart.yaml" | awk '{print $2}')
 
-# 7. Generate beautiful modern index.html landing page with Tailwind CSS v4
+# 7. Generate beautiful modern index.html landing page with Tailwind CSS v4 if not already present
+if [ -f "${OUTPUT_DIR}/index.html" ]; then
+    echo "==> Existing index.html detected in ${OUTPUT_DIR}; preserving custom landing page."
+else
 cat <<EOF > "${OUTPUT_DIR}/index.html"
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth dark">
@@ -543,6 +546,7 @@ helm repo update</code></pre>
 </body>
 </html>
 EOF
+fi
 
 chmod +x "${SCRIPT_DIR}/publish-helm-repo.sh" 2>/dev/null || true
 

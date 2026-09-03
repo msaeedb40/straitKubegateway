@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StraitKubeGateway | Official Helm Charts Repository</title>
+  <meta name="description" content="Official Helm chart repository for StraitKubeGateway: Kubernetes-native eBPF Transit Gateway, CNI plugin, and Multi-Cluster Service Mesh.">
+  <meta name="keywords" content="straitkubegateway, kubernetes, helm, ebpf, cni, gateway-api, wireguard, bgp, netkit, linux-kernel">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2322d3ee'><polygon points='12 2 2 7 12 12 22 7 12 2'/><polyline points='2 17 12 22 22 17'/><polyline points='2 12 12 17 22 12'/></svg>">
+  
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS v4 Browser Engine -->
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  
+  <!-- Bespoke Design System Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Ambient Backdrop Lights & Dynamic Grid -->
+  <div class="ambient-container">
+    <div class="ambient-glow-top"></div>
+    <div class="ambient-glow-bottom"></div>
+    <div class="ambient-grid"></div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <header>
+    <nav id="navbar">
+      <div class="container">
+        <div class="nav-wrapper">
+          
+          <!-- Brand Logo -->
+          <a href="#" class="nav-brand" aria-label="StraitKubeGateway Home">
+            <div class="brand-logo-frame">
+              <div class="brand-logo-inner">
+                <img src="logo.png" alt="StraitKubeGateway Emblem">
+              </div>
+            </div>
+            <div>
+              <div class="brand-title">
+                StraitKubeGateway
+                <span class="badge-helm">HELM v1.0.1</span>
+              </div>
+              <div class="brand-sub">eBPF Transit Gateway & CNI</div>
+            </div>
+          </a>
+
+          <!-- Nav Anchors -->
+          <ul class="nav-links">
+            <li><a href="#installer">Install</a></li>
+            <li><a href="#topology">Topology</a></li>
+            <li><a href="#hooks">eBPF Hooks</a></li>
+            <li><a href="#evaluator">Policy Simulator</a></li>
+            <li><a href="#architecture">Architecture</a></li>
+            <li><a href="#roadmap">Roadmap</a></li>
+          </ul>
+
+          <!-- Call to Action -->
+          <div class="nav-cta-group">
+            <a href="https://github.com/msaeedb40/straitKubegateway" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" aria-label="GitHub Repository">
+              <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+              </svg>
+              <span>GitHub</span>
+            </a>
+            <a href="index.yaml" target="_blank" class="btn btn-primary btn-sm" aria-label="Helm index.yaml">
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+              </svg>
+              <span>index.yaml</span>
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section id="hero">
+      <div class="container">
+        <div class="hero-content">
+          
+          <!-- Live Status Pill -->
+          <div class="hero-status-pill">
+            <span class="pulse-indicator"></span>
+            <span>Official Helm Repository Active</span>
+            <span style="opacity: 0.3;">•</span>
+            <span style="color: var(--cyan-300); font-family: var(--font-mono);">v1.0.1</span>
+            <span style="opacity: 0.3;">•</span>
+            <span style="color: var(--text-muted);">Kubernetes 1.28+</span>
+          </div>
+
+          <!-- Official Hero Logo Showcase -->
+          <div class="hero-logo-showcase">
+            <div class="hero-logo-card">
+              <img src="logo.png" alt="StraitKubeGateway Core Emblem">
+            </div>
+          </div>
+
+          <!-- Main Title -->
+          <h1 class="hero-headline">
+            <span class="hero-headline-gradient">Kernel-Accelerated</span><br>
+            Kubernetes Networking
+          </h1>
+
+          <!-- Value Proposition -->
+          <p class="hero-subhead">
+            Deploy <strong>StraitKubeGateway</strong> with Helm: in-kernel eBPF dataplane, complete kube-proxy replacement via consistent Maglev hashing, native NetKit CNI, and cross-cluster transit routing across 32-bit isolated segments.
+          </p>
+
+          <!-- Badges Stream -->
+          <div class="hero-badges-stream">
+            <div class="hero-badge-item">
+              <span class="bullet" style="background: var(--cyan-400);"></span>
+              <span>Linux Kernel 6.7+ CO-RE</span>
+            </div>
+            <div class="hero-badge-item">
+              <span class="bullet" style="background: var(--emerald-400);"></span>
+              <span>Zero Kube-Proxy Overhead</span>
+            </div>
+            <div class="hero-badge-item">
+              <span class="bullet" style="background: var(--blue-400);"></span>
+              <span>Gateway API v1.6.1 Ready</span>
+            </div>
+            <div class="hero-badge-item">
+              <span class="bullet" style="background: var(--indigo-400);"></span>
+              <span>NetKit Zero-Copy CNI</span>
+            </div>
+            <div class="hero-badge-item">
+              <span class="bullet" style="background: var(--purple-400);"></span>
+              <span>WireGuard & IPsec Mesh</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="hero-cta-bar">
+            <a href="#installer" class="btn btn-primary btn-lg">
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+              <span>Interactive Configurator</span>
+            </a>
+            <a href="straitkubegateway-1.0.1.tgz" class="btn btn-secondary btn-lg" download>
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              <span>Download .tgz Archive</span>
+            </a>
+            <a href="#topology" class="btn btn-secondary btn-lg">
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+              <span>Explore Topology</span>
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Metrics Strip -->
+    <section class="metrics-strip" aria-label="Key Performance Indicators">
+      <div class="container">
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <div class="metric-number">&lt; 0.15 µs</div>
+            <div class="metric-caption">XDP Fast-Path Latency</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-number">100%</div>
+            <div class="metric-caption">Kube-Proxy Bypassed</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-number">32-Bit</div>
+            <div class="metric-caption">Segment Isolation</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-number">v1.6.1</div>
+            <div class="metric-caption">Gateway API Ready</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-number">Kernel 6.7+</div>
+            <div class="metric-caption">CO-RE Architecture</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-number">Sub-Sec</div>
+            <div class="metric-caption">BFD Route Failover</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 1: Interactive Installation Configurator -->
+    <section id="installer" class="section">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-tag">🚀 Helm Deployment</div>
+          <h2 class="section-title">
+            Interactive <span class="text-gradient">Installation Configurator</span>
+          </h2>
+          <p class="section-desc">
+            Select an operational preset or fine-tune feature switches to dynamically generate your tailored Helm deployment commands.
+          </p>
+        </div>
+
+        <div class="installer-dashboard">
+          
+          <!-- Topbar with Preset Selector -->
+          <div class="installer-topbar">
+            <div>
+              <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">Operational Presets</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">One-click cluster profile selection</div>
+            </div>
+            <div class="tab-pill-group">
+              <button class="tab-pill active" data-preset="quickstart">⚡ Quickstart</button>
+              <button class="tab-pill" data-preset="production">🛡️ Production Mesh</button>
+              <button class="tab-pill" data-preset="transit">🌐 Transit Core</button>
+              <button class="tab-pill" data-preset="edge">📦 Minimal Edge</button>
+            </div>
+          </div>
+
+          <!-- Configuration Grid -->
+          <div class="installer-grid">
+            
+            <!-- Left: Toggles & Options -->
+            <div class="installer-options-pane">
+              <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--cyan-300); margin-bottom: 16px;">
+                Kernel & Dataplane Capabilities
+              </div>
+
+              <!-- Switch: WireGuard -->
+              <label class="switch-card" for="opt-wireguard">
+                <div class="switch-content">
+                  <span class="switch-icon">🔒</span>
+                  <div>
+                    <div class="switch-title">WireGuard Mesh Encryption</div>
+                    <div class="switch-desc">Kernel-level node-to-node & pod-to-pod crypto</div>
+                  </div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="opt-wireguard" class="installer-toggle">
+                  <span class="toggle-slider"></span>
+                </div>
+              </label>
+
+              <!-- Switch: Gateway API -->
+              <label class="switch-card" for="opt-gwapi">
+                <div class="switch-content">
+                  <span class="switch-icon">🚪</span>
+                  <div>
+                    <div class="switch-title">Gateway API v1.6.1</div>
+                    <div class="switch-desc">HTTPRoute, TCPRoute, UDPRoute, TLSRoute</div>
+                  </div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="opt-gwapi" class="installer-toggle" checked>
+                  <span class="toggle-slider"></span>
+                </div>
+              </label>
+
+              <!-- Switch: Transit Gateway -->
+              <label class="switch-card" for="opt-transit">
+                <div class="switch-content">
+                  <span class="switch-icon">🔀</span>
+                  <div>
+                    <div class="switch-title">Multi-Cluster Transit Hub</div>
+                    <div class="switch-desc">Segment 0 backbone & 32-bit segment routing</div>
+                  </div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="opt-transit" class="installer-toggle">
+                  <span class="toggle-slider"></span>
+                </div>
+              </label>
+
+              <!-- Switch: BGP / BFD -->
+              <label class="switch-card" for="opt-bgp">
+                <div class="switch-content">
+                  <span class="switch-icon">📡</span>
+                  <div>
+                    <div class="switch-title">BGP-4 & Sub-Second BFD</div>
+                    <div class="switch-desc">Dynamic route advertisement to ToR switches</div>
+                  </div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="opt-bgp" class="installer-toggle">
+                  <span class="toggle-slider"></span>
+                </div>
+              </label>
+
+              <!-- Switch: Prometheus & OTel -->
+              <label class="switch-card" for="opt-metrics">
+                <div class="switch-content">
+                  <span class="switch-icon">📊</span>
+                  <div>
+                    <div class="switch-title">Prometheus & OpenTelemetry</div>
+                    <div class="switch-desc">eBPF flow export, drop tracing, and hub metrics</div>
+                  </div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="opt-metrics" class="installer-toggle" checked>
+                  <span class="toggle-slider"></span>
+                </div>
+              </label>
+
+              <!-- Switch: Dual-Stack IPv6 -->
+              <label class="switch-card" for="opt-ipv6">
+                <div class="switch-content">
+                  <span class="switch-icon">🌐</span>
+                  <div>
+                    <div class="switch-title">Dual-Stack IPv4 / IPv6</div>
+                    <div class="switch-desc">Full IPv6 overlay & translation datapath</div>
+                  </div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="opt-ipv6" class="installer-toggle">
+                  <span class="toggle-slider"></span>
+                </div>
+              </label>
+
+              <!-- Switch: DSR Load Balancing -->
+              <label class="switch-card" for="opt-dsr">
+                <div class="switch-content">
+                  <span class="switch-icon">⚡</span>
+                  <div>
+                    <div class="switch-title">Direct Server Return (DSR)</div>
+                    <div class="switch-desc">Bypass return trip hops for maximum throughput</div>
+                  </div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="opt-dsr" class="installer-toggle">
+                  <span class="toggle-slider"></span>
+                </div>
+              </label>
+            </div>
+
+            <!-- Right: Terminal Pane -->
+            <div class="installer-terminal-pane">
+              
+              <!-- Step 1 -->
+              <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                  <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--cyan-300);">
+                    Step 1: Add Helm Repository
+                  </span>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway&#10;helm repo update">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway
+helm repo update</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 2: Dynamic Install Command -->
+              <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                  <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--cyan-300);">
+                    Step 2: Install StraitKubeGateway
+                  </span>
+                  <span style="font-size: 10px; font-family: var(--font-mono); color: var(--emerald-400);">dynamic flags sync</span>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-target="code-install-cmd">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code id="code-install-cmd">helm install straitkubegateway straitkubegateway/straitkubegateway \
+  --namespace kube-system \
+  --create-namespace \
+  --set kubeProxyReplacement=true \
+  --set disableDefaultCNI=true</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 3: Verify Status -->
+              <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                  <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--cyan-300);">
+                    Step 3: Verify Deployment
+                  </span>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide</code></pre>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 2: Interactive Network Topology Visualizer -->
+    <section id="topology" class="section">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-tag">🌐 Network Topology</div>
+          <h2 class="section-title">
+            Multi-Cluster <span class="text-gradient">Transit & Mesh Routing</span>
+          </h2>
+          <p class="section-desc">
+            Explore topological interconnect models with 32-bit segment isolation, encrypted transit backbones, and direct peer-to-peer data paths.
+          </p>
+        </div>
+
+        <div class="topology-stage">
+          <div class="topology-controls">
+            <div>
+              <h3 id="topo-title" style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">Hub-and-Spoke Topology (Segment 0 Backbone)</h3>
+              <p id="topo-desc" style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px;">Cluster-B acts as Central Gateway on Segment 0 with strict traffic isolation.</p>
+            </div>
+            <div class="tab-pill-group">
+              <button class="tab-pill active" data-topo="hubspoke">Hub & Spoke (Segment 0)</button>
+              <button class="tab-pill" data-topo="peertopeer">Peer-to-Peer WireGuard</button>
+              <button class="tab-pill" data-topo="segmentrouting">Segment Route Policy</button>
+            </div>
+          </div>
+
+          <!-- Dynamic SVG Canvas -->
+          <svg id="topo-canvas" class="topology-svg-canvas" viewBox="0 0 900 400" aria-label="Interactive Network Topology Diagram"></svg>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 3: eBPF Dataplane Hook Explorer -->
+    <section id="hooks" class="section">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-tag">⚡ Linux Kernel In-Depth</div>
+          <h2 class="section-title">
+            eBPF Dataplane <span class="text-gradient">Hook Explorer</span>
+          </h2>
+          <p class="section-desc">
+            Examine how StraitKubeGateway attaches program hooks directly in the Linux 6.7+ networking stack to eliminate conntrack, iptables, and bridge bottlenecks.
+          </p>
+        </div>
+
+        <div class="glass-card" style="margin-bottom: 24px;">
+          <!-- Hook Selection Tabs -->
+          <div class="tab-pill-group" style="margin-bottom: 24px;">
+            <button class="tab-pill active" data-hook="xdp">XDP (Ingress)</button>
+            <button class="tab-pill" data-hook="netkit">NetKit (Pod Namespace)</button>
+            <button class="tab-pill" data-hook="tcx">TCX (Traffic Control)</button>
+            <button class="tab-pill" data-hook="sockops">sockops (Socket Acceleration)</button>
+            <button class="tab-pill" data-hook="lsm">BPF LSM (Security)</button>
+          </div>
+
+          <!-- Dynamic Hook Inspection Card -->
+          <div class="hook-detail-grid">
+            <div>
+              <div class="hook-detail-item-title">Hook Point</div>
+              <div id="hook-detail-name" class="hook-detail-item-val" style="color: var(--cyan-300);">XDP (eXpress Data Path)</div>
+            </div>
+            <div>
+              <div class="hook-detail-item-title">Execution Layer</div>
+              <div id="hook-detail-layer" class="hook-detail-item-val" style="color: var(--blue-400); font-family: var(--font-mono);">NIC Driver / Kernel Ingress</div>
+            </div>
+            <div>
+              <div class="hook-detail-item-title">Latency & Performance</div>
+              <div id="hook-detail-perf" class="hook-detail-item-val" style="color: var(--emerald-400); font-family: var(--font-mono);">Sub-microsecond (&lt; 0.15 µs)</div>
+            </div>
+          </div>
+
+          <div style="padding: 16px 20px; background: rgba(255, 255, 255, 0.02); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <div class="hook-detail-item-title">Mechanics & Purpose</div>
+            <p id="hook-detail-purpose" style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; margin-top: 6px;">
+              Earliest packet processing before sk_buff allocation. Performs L3/L4 DDoS mitigation, packet filtration, and wire-rate forwarding.
+            </p>
+          </div>
+        </div>
+
+        <!-- Comparative Hook Architecture Table -->
+        <div class="hook-table-container">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Hook</th>
+                <th>Kernel Layer</th>
+                <th>Primary Functionality</th>
+                <th>Packet Memory Model</th>
+                <th>Hardware Offload</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong style="color: var(--cyan-300); font-family: var(--font-mono);">XDP</strong></td>
+                <td>NIC Driver Ingress</td>
+                <td>Early packet filter, DDoS mitigation, Maglev hash redirection</td>
+                <td>Raw <code>xdp_buff</code></td>
+                <td><span style="color: var(--emerald-400); font-weight: 700;">Native / SmartNIC</span></td>
+              </tr>
+              <tr>
+                <td><strong style="color: var(--blue-400); font-family: var(--font-mono);">NetKit</strong></td>
+                <td>Pod Container Interface</td>
+                <td>Container-to-host zero-copy forwarding replacing veth</td>
+                <td>Direct BPF redirection</td>
+                <td><span style="color: var(--cyan-300); font-weight: 700;">In-Kernel Zero-Copy</span></td>
+              </tr>
+              <tr>
+                <td><strong style="color: var(--indigo-400); font-family: var(--font-mono);">TCX</strong></td>
+                <td>Host Interface Ingress / Egress</td>
+                <td>Kube-proxy replacement, NAT44/64, tunnel encapsulation</td>
+                <td>Kernel <code>sk_buff</code></td>
+                <td><span style="color: var(--emerald-400); font-weight: 700;">TC Offload Ready</span></td>
+              </tr>
+              <tr>
+                <td><strong style="color: var(--purple-400); font-family: var(--font-mono);">sockops</strong></td>
+                <td>L4 Transport / TCP Socket</td>
+                <td>Sockmap redirection between co-located pods on same node</td>
+                <td>Socket Buffer Bypass</td>
+                <td><span style="color: var(--amber-400); font-weight: 700;">Host CPU Accelerated</span></td>
+              </tr>
+              <tr>
+                <td><strong style="color: var(--rose-400); font-family: var(--font-mono);">BPF LSM</strong></td>
+                <td>Security Subsystem</td>
+                <td>Zero-trust socket verification and policy enforcement</td>
+                <td>Kernel Security Hooks</td>
+                <td><span style="color: var(--emerald-400); font-weight: 700;">Deterministic</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 4: Interactive Zero-Trust Policy Evaluator Simulator -->
+    <section id="evaluator" class="section">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-tag">🛡️ Stateful Firewall</div>
+          <h2 class="section-title">
+            Identity-Based <span class="text-gradient">Policy Simulator</span>
+          </h2>
+          <p class="section-desc">
+            Simulate real-time in-kernel eBPF packet evaluation across pod identity namespaces and 32-bit segment boundaries.
+          </p>
+        </div>
+
+        <div class="glass-card" style="max-width: 860px; margin: 0 auto;">
+          <div class="eval-grid">
+            
+            <div class="form-group">
+              <label class="form-label" for="eval-src-ns">Source Namespace</label>
+              <select id="eval-src-ns" class="form-select">
+                <option value="frontend">frontend</option>
+                <option value="default">default</option>
+                <option value="secure">secure</option>
+                <option value="monitoring">monitoring</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="eval-dst-ns">Destination Namespace</label>
+              <select id="eval-dst-ns" class="form-select">
+                <option value="production">production</option>
+                <option value="secure">secure</option>
+                <option value="analytics">analytics</option>
+                <option value="database">database</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="eval-proto">Protocol</label>
+              <select id="eval-proto" class="form-select">
+                <option value="TCP">TCP</option>
+                <option value="UDP">UDP</option>
+                <option value="ICMP">ICMP</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="eval-port">Destination Port</label>
+              <input type="number" id="eval-port" class="form-input" value="80" min="1" max="65535">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="eval-segment">Segment ID</label>
+              <select id="eval-segment" class="form-select">
+                <option value="0">0 (Core Backbone)</option>
+                <option value="10">10 (Payment Segment)</option>
+                <option value="20">20 (Analytics Segment)</option>
+                <option value="isolated">isolated (Unattached)</option>
+              </select>
+            </div>
+
+          </div>
+
+          <button id="btn-eval-policy" class="btn btn-primary" style="width: 100%;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            <span>Simulate eBPF Dataplane Evaluation</span>
+          </button>
+
+          <!-- Dynamic Result Card -->
+          <div id="eval-result" class="eval-result-box">
+            <div class="eval-result-header">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 700;">Verdict:</span>
+                <span id="eval-verdict" style="font-weight: 800; font-family: var(--font-mono); font-size: 1.25rem;">ALLOW</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 11px; color: var(--text-muted);">Evaluation Latency:</span>
+                <span id="eval-latency" style="font-family: var(--font-mono); font-size: 0.95rem; color: var(--cyan-300);">0.22 µs</span>
+              </div>
+            </div>
+            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 700; margin-bottom: 4px;">Matched Rule & Justification:</div>
+            <p id="eval-reason" style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.6;"></p>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 5: Architecture Pillars -->
+    <section id="architecture" class="section">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-tag">🏗️ Core Architecture</div>
+          <h2 class="section-title">
+            Engineered for <span class="text-gradient">Zero Overhead</span>
+          </h2>
+          <p class="section-desc">
+            Six architectural pillars delivering uncompromised throughput, hardware offload capabilities, and zero cloud-vendor lock-in.
+          </p>
+        </div>
+
+        <div class="features-grid">
+          
+          <!-- Pillar 1 -->
+          <div class="glass-card">
+            <div class="feature-header">
+              <div class="feature-icon-bubble" style="background: rgba(34, 211, 238, 0.12); color: var(--cyan-300);">
+                ⚡
+              </div>
+              <div>
+                <h3 class="feature-heading">Native eBPF Dataplane</h3>
+              </div>
+            </div>
+            <p class="feature-body">
+              XDP, TCX, and NetKit hooks in Linux kernel 6.7+ bypass conntrack and iptables bottlenecks completely, operating with zero-copy buffer handoffs.
+            </p>
+            <div class="feature-tag-list">
+              <span class="tag-pill" style="color: var(--cyan-300); background: rgba(34, 211, 238, 0.08); border-color: rgba(34, 211, 238, 0.2);">XDP</span>
+              <span class="tag-pill" style="color: var(--cyan-300); background: rgba(34, 211, 238, 0.08); border-color: rgba(34, 211, 238, 0.2);">TCX</span>
+              <span class="tag-pill" style="color: var(--cyan-300); background: rgba(34, 211, 238, 0.08); border-color: rgba(34, 211, 238, 0.2);">BPF CO-RE</span>
+            </div>
+          </div>
+
+          <!-- Pillar 2 -->
+          <div class="glass-card">
+            <div class="feature-header">
+              <div class="feature-icon-bubble" style="background: rgba(52, 211, 153, 0.12); color: var(--emerald-400);">
+                ⚖️
+              </div>
+              <div>
+                <h3 class="feature-heading">Kube-Proxy Replacement</h3>
+              </div>
+            </div>
+            <p class="feature-body">
+              Full Maglev consistent hashing with lookup tables for NodePort, ClusterIP, and LoadBalancer services with Direct Server Return (DSR).
+            </p>
+            <div class="feature-tag-list">
+              <span class="tag-pill" style="color: var(--emerald-400); background: rgba(52, 211, 153, 0.08); border-color: rgba(52, 211, 153, 0.2);">Maglev-128</span>
+              <span class="tag-pill" style="color: var(--emerald-400); background: rgba(52, 211, 153, 0.08); border-color: rgba(52, 211, 153, 0.2);">DSR Mode</span>
+              <span class="tag-pill" style="color: var(--emerald-400); background: rgba(52, 211, 153, 0.08); border-color: rgba(52, 211, 153, 0.2);">Zero-Conntrack</span>
+            </div>
+          </div>
+
+          <!-- Pillar 3 -->
+          <div class="glass-card">
+            <div class="feature-header">
+              <div class="feature-icon-bubble" style="background: rgba(96, 165, 250, 0.12); color: var(--blue-400);">
+                🌐
+              </div>
+              <div>
+                <h3 class="feature-heading">Multi-Cluster Transit Hub</h3>
+              </div>
+            </div>
+            <p class="feature-body">
+              Segment 0 backbone gateway facilitating cross-cluster routing with 32-bit segment IDs (0 to 4,294,967,295) for strict multi-tenant isolation.
+            </p>
+            <div class="feature-tag-list">
+              <span class="tag-pill" style="color: var(--blue-400); background: rgba(96, 165, 250, 0.08); border-color: rgba(96, 165, 250, 0.2);">Segment Routing</span>
+              <span class="tag-pill" style="color: var(--blue-400); background: rgba(96, 165, 250, 0.08); border-color: rgba(96, 165, 250, 0.2);">Multi-Mesh</span>
+              <span class="tag-pill" style="color: var(--blue-400); background: rgba(96, 165, 250, 0.08); border-color: rgba(96, 165, 250, 0.2);">BGP Peering</span>
+            </div>
+          </div>
+
+          <!-- Pillar 4 -->
+          <div class="glass-card">
+            <div class="feature-header">
+              <div class="feature-icon-bubble" style="background: rgba(129, 140, 248, 0.12); color: var(--indigo-400);">
+                🛡️
+              </div>
+              <div>
+                <h3 class="feature-heading">Built-in NetKit CNI</h3>
+              </div>
+            </div>
+            <p class="feature-body">
+              CNI Spec 1.1+ compliant pod allocation utilizing Linux NetKit interfaces to eliminate traditional veth context switches and copy cycles.
+            </p>
+            <div class="feature-tag-list">
+              <span class="tag-pill" style="color: var(--indigo-400); background: rgba(129, 140, 248, 0.08); border-color: rgba(129, 140, 248, 0.2);">NetKit veth</span>
+              <span class="tag-pill" style="color: var(--indigo-400); background: rgba(129, 140, 248, 0.08); border-color: rgba(129, 140, 248, 0.2);">Dynamic IPAM</span>
+              <span class="tag-pill" style="color: var(--indigo-400); background: rgba(129, 140, 248, 0.08); border-color: rgba(129, 140, 248, 0.2);">Dual-Stack</span>
+            </div>
+          </div>
+
+          <!-- Pillar 5 -->
+          <div class="glass-card">
+            <div class="feature-header">
+              <div class="feature-icon-bubble" style="background: rgba(192, 132, 252, 0.12); color: var(--purple-400);">
+                🔒
+              </div>
+              <div>
+                <h3 class="feature-heading">Zero-Trust Encryption</h3>
+              </div>
+            </div>
+            <p class="feature-body">
+              Automatic WireGuard and IPsec encryption for pod-to-pod and node-to-node links, combined with stateful eBPF identity NetworkPolicies.
+            </p>
+            <div class="feature-tag-list">
+              <span class="tag-pill" style="color: var(--purple-400); background: rgba(192, 132, 252, 0.08); border-color: rgba(192, 132, 252, 0.2);">WireGuard</span>
+              <span class="tag-pill" style="color: var(--purple-400); background: rgba(192, 132, 252, 0.08); border-color: rgba(192, 132, 252, 0.2);">IPsec</span>
+              <span class="tag-pill" style="color: var(--purple-400); background: rgba(192, 132, 252, 0.08); border-color: rgba(192, 132, 252, 0.2);">LSM Hooks</span>
+            </div>
+          </div>
+
+          <!-- Pillar 6 -->
+          <div class="glass-card">
+            <div class="feature-header">
+              <div class="feature-icon-bubble" style="background: rgba(251, 191, 36, 0.12); color: var(--amber-400);">
+                🧭
+              </div>
+              <div>
+                <h3 class="feature-heading">Gateway API v1.6.1 Ready</h3>
+              </div>
+            </div>
+            <p class="feature-body">
+              First-class controllers for GatewayClass, Gateway, HTTPRoute, TCPRoute, UDPRoute, GRPCRoute, and TLSRoute with weighted traffic splitting.
+            </p>
+            <div class="feature-tag-list">
+              <span class="tag-pill" style="color: var(--amber-400); background: rgba(251, 191, 36, 0.08); border-color: rgba(251, 191, 36, 0.2);">GatewayClass</span>
+              <span class="tag-pill" style="color: var(--amber-400); background: rgba(251, 191, 36, 0.08); border-color: rgba(251, 191, 36, 0.2);">HTTPRoute</span>
+              <span class="tag-pill" style="color: var(--amber-400); background: rgba(251, 191, 36, 0.08); border-color: rgba(251, 191, 36, 0.2);">TLSRoute</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 6: Build Phases & Technical Roadmap -->
+    <section id="roadmap" class="section">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-tag">🗺️ Project Lifecycle</div>
+          <h2 class="section-title">
+            Production <span class="text-gradient">Release Roadmap</span>
+          </h2>
+          <p class="section-desc">
+            Progressive implementation phases from low-level Linux CO-RE kernel compilation to multi-cloud enterprise transit fabrics.
+          </p>
+        </div>
+
+        <div class="phases-timeline">
+          
+          <div class="phase-card">
+            <div>
+              <div class="phase-badge" style="background: rgba(34, 211, 238, 0.12); color: var(--cyan-300); border: 1px solid rgba(34, 211, 238, 0.3);">
+                01
+              </div>
+              <h3 class="phase-title">Core Dataplane & CNI</h3>
+              <p class="phase-desc">
+                Kernel 6.7+ NetKit veth replacement, XDP/TCX packet filters, and dynamic IPAM pod interface provisioning.
+              </p>
+            </div>
+            <span style="font-size: 11px; font-family: var(--font-mono); color: var(--emerald-400); font-weight: 700;">✓ Completed (v1.0.0)</span>
+          </div>
+
+          <div class="phase-card">
+            <div>
+              <div class="phase-badge" style="background: rgba(52, 211, 153, 0.12); color: var(--emerald-400); border: 1px solid rgba(52, 211, 153, 0.3);">
+                02
+              </div>
+              <h3 class="phase-title">Transit Hub & BGP</h3>
+              <p class="phase-desc">
+                Segment 0 backbone routing, 32-bit segment attachment policies, and sub-second BFD route peering.
+              </p>
+            </div>
+            <span style="font-size: 11px; font-family: var(--font-mono); color: var(--emerald-400); font-weight: 700;">✓ Completed (v1.0.1)</span>
+          </div>
+
+          <div class="phase-card">
+            <div>
+              <div class="phase-badge" style="background: rgba(96, 165, 250, 0.12); color: var(--blue-400); border: 1px solid rgba(96, 165, 250, 0.3);">
+                03
+              </div>
+              <h3 class="phase-title">WireGuard Mesh Crypto</h3>
+              <p class="phase-desc">
+                In-kernel peer-to-peer overlay encryption, dynamic key exchange, and hardware cryptographic offload.
+              </p>
+            </div>
+            <span style="font-size: 11px; font-family: var(--font-mono); color: var(--cyan-300); font-weight: 700;">⚡ Active Development</span>
+          </div>
+
+          <div class="phase-card">
+            <div>
+              <div class="phase-badge" style="background: rgba(192, 132, 252, 0.12); color: var(--purple-400); border: 1px solid rgba(192, 132, 252, 0.3);">
+                04
+              </div>
+              <h3 class="phase-title">Enterprise Observability</h3>
+              <p class="phase-desc">
+                OpenTelemetry eBPF flow tracer, Prometheus exporter, and WebAssembly UI management plane.
+              </p>
+            </div>
+            <span style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); font-weight: 700;">🔮 Planned Next</span>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer id="footer">
+    <div class="container">
+      
+      <div class="footer-top">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="brand-logo-frame" style="width: 36px; height: 36px;">
+            <div class="brand-logo-inner">
+              <img src="logo.png" alt="StraitKubeGateway Logo">
+            </div>
+          </div>
+          <div>
+            <span style="font-weight: 800; color: var(--text-primary); font-size: 1rem;">StraitKubeGateway</span>
+            <span style="font-size: 11px; color: var(--text-muted); display: block;">Open Source Kubernetes eBPF Transit Gateway</span>
+          </div>
+        </div>
+
+        <ul class="footer-nav">
+          <li><a href="https://github.com/msaeedb40/straitKubegateway" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+          <li><a href="https://github.com/msaeedb40/straitKubegateway/tree/main/docs" target="_blank" rel="noopener noreferrer">Documentation</a></li>
+          <li><a href="index.yaml" target="_blank">index.yaml</a></li>
+          <li><a href="straitkubegateway-1.0.1.tgz" download>Download .tgz</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          Licensed under Apache License 2.0. Copyright &copy; 2026 StraitKubeGateway Contributors.
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan-300);">
+          Chart Repository: msaeedb40.github.io/straitKubegateway
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Application Logic (Presets, Topology SVG, Simulator, Hooks, Copy) -->
+  <script src="app.js"></script>
+</body>
+</html>
