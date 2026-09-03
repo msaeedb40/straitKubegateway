@@ -9,7 +9,7 @@ on:
       - 'straitKubegateway-helm-repo/**'
       - 'scripts/publish-helm-repo.sh'
       - '.github/workflows/static.yml'
-      - '.github/static.yml'
+      - 'static.yml'
   release:
     types: [published]
   # Allows manual triggers from GitHub Actions UI
