@@ -1014,29 +1014,35 @@ sudo sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/c
                 </div>
               </div>
 
-              <!-- Step 3: Install runc v1.5.1 & Start CRI -->
+              <!-- Step 3: Install runc v1.5.1 & Configure crictl -->
               <div class="platform-step-card">
                 <div class="platform-step-header">
                   <div class="platform-step-badge">
                     <span class="platform-step-badge-num">3</span>
-                    <span>Install OCI Runtime (runc v1.5.1) &amp; Enable containerd</span>
+                    <span>Install runc (v1.5.1) &amp; Configure crictl (v1.36.0)</span>
                   </div>
                 </div>
                 <div class="code-window">
-                  <button class="code-copy-btn" data-copy-text="curl -LO https://github.com/opencontainers/runc/releases/download/v1.5.1/runc.amd64&#10;sudo install -m 755 runc.amd64 /usr/local/sbin/runc&#10;sudo systemctl daemon-reload&#10;sudo systemctl enable --now containerd&#10;sudo systemctl status containerd --no-pager">
+                  <button class="code-copy-btn" data-copy-text="curl -LO https://github.com/opencontainers/runc/releases/download/v1.5.1/runc.amd64&#10;sudo install -m 755 runc.amd64 /usr/local/sbin/runc&#10;curl -LO https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.36.0/crictl-v1.36.0-linux-amd64.tar.gz&#10;sudo tar zxvf crictl-v1.36.0-linux-amd64.tar.gz -C /usr/local/bin&#10;sudo crictl config runtime-endpoint unix:///var/run/containerd/containerd.sock&#10;sudo systemctl daemon-reload&#10;sudo systemctl enable --now containerd&#10;sudo systemctl status containerd --no-pager">
                     <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                     <span>Copy</span>
                   </button>
-                  <pre><code># Download and install runc v1.5.1
+                  <pre><code># Download &amp; install runc v1.5.1
 curl -LO https://github.com/opencontainers/runc/releases/download/v1.5.1/runc.amd64
 sudo install -m 755 runc.amd64 /usr/local/sbin/runc
+
+# Download &amp; configure crictl v1.36.0 for containerd
+curl -LO https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.36.0/crictl-v1.36.0-linux-amd64.tar.gz
+sudo tar zxvf crictl-v1.36.0-linux-amd64.tar.gz -C /usr/local/bin
+sudo crictl config runtime-endpoint unix:///var/run/containerd/containerd.sock
 
 # Reload systemd and enable containerd CRI
 sudo systemctl daemon-reload
 sudo systemctl enable --now containerd
 
-# Verify containerd service status
-sudo systemctl status containerd --no-pager</code></pre>
+# Verify containerd service status and crictl
+sudo systemctl status containerd --no-pager
+sudo crictl info</code></pre>
                 </div>
               </div>
 
@@ -1088,12 +1094,12 @@ sudo apt-mark hold kubelet kubeadm kubectl</code></pre>
                 </div>
               </div>
 
-              <!-- Step 6: Initialize Kubeadm (No kube-proxy) -->
+              <!-- Step 6: Initialize Control Plane & Prepare Kubeconfig (Dynamic v1.m.p) -->
               <div class="platform-step-card">
                 <div class="platform-step-header">
                   <div class="platform-step-badge">
                     <span class="platform-step-badge-num">6</span>
-                    <span>Initialize Kubeadm Cluster (Skipping kube-proxy)</span>
+                    <span>Initialize Control Plane &amp; Configure Kubeconfig</span>
                   </div>
                 </div>
                 <div class="code-window">
@@ -1103,9 +1109,15 @@ sudo apt-mark hold kubelet kubeadm kubectl</code></pre>
                   </button>
                   <pre><code id="code-kubeadm-init">sudo kubeadm init \
   --kubernetes-version=v1.32.0 \
-  --pod-network-cidr=10.244.0.0/16 \
+  --pod-network-cidr=10.18.0.0/16 \
+  --apiserver-advertise-address=192.168.56.3 \
   --skip-phases=addon/kube-proxy \
+  --node-name master \
   --ignore-preflight-errors=NumCPU,Mem
+
+# Prepare kubeconfig for kubectl
+sudo chmod 755 /etc/kubernetes/admin.conf
+export KUBECONFIG=/etc/kubernetes/admin.conf
 
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
@@ -1116,11 +1128,34 @@ kubectl taint nodes --all node-role.kubernetes.io/control-plane- || true</code><
                 </div>
               </div>
 
-              <!-- Step 7: Apply Gateway API CRDs & Install StraitKubeGateway -->
+              <!-- Step 7: Join Worker Nodes to the Cluster -->
               <div class="platform-step-card">
                 <div class="platform-step-header">
                   <div class="platform-step-badge">
                     <span class="platform-step-badge-num">7</span>
+                    <span>Join Worker Nodes to the Cluster (Multi-Node)</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="# Run on each worker node:&#10;sudo kubeadm join 192.168.56.3:6443 --token <token> --discovery-token-ca-cert-hash sha256:<hash>&#10;&#10;# Regenerate join command on master if needed:&#10;kubeadm token create --print-join-command">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code># Run on each worker node to join the cluster:
+sudo kubeadm join 192.168.56.3:6443 \
+  --token &lt;token&gt; \
+  --discovery-token-ca-cert-hash sha256:&lt;hash&gt;
+
+# In case you need to regenerate the join command on the master node:
+kubeadm token create --print-join-command</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 8: Apply Gateway API CRDs & Install StraitKubeGateway -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">8</span>
                     <span>Apply Gateway API CRDs &amp; Install StraitKubeGateway via Helm</span>
                   </div>
                 </div>
@@ -1146,11 +1181,11 @@ helm install straitkubegateway straitkubegateway/straitkubegateway \
                 </div>
               </div>
 
-              <!-- Step 8: Verification -->
+              <!-- Step 9: Verification -->
               <div class="platform-step-card">
                 <div class="platform-step-header">
                   <div class="platform-step-badge">
-                    <span class="platform-step-badge-num">8</span>
+                    <span class="platform-step-badge-num">9</span>
                     <span>Verify Bare-Metal Node &amp; Workload Health</span>
                   </div>
                 </div>

@@ -254,9 +254,15 @@ sudo apt-mark hold kubelet kubeadm kubectl`;
     if (initCode) {
       initCode.textContent = `sudo kubeadm init \\
   --kubernetes-version=v1.${m}.${p} \\
-  --pod-network-cidr=10.244.0.0/16 \\
+  --pod-network-cidr=10.18.0.0/16 \\
+  --apiserver-advertise-address=192.168.56.3 \\
   --skip-phases=addon/kube-proxy \\
+  --node-name master \\
   --ignore-preflight-errors=NumCPU,Mem
+
+# Prepare kubeconfig for kubectl
+sudo chmod 755 /etc/kubernetes/admin.conf
+export KUBECONFIG=/etc/kubernetes/admin.conf
 
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
