@@ -46,6 +46,8 @@ type config struct {
 	enableIPv6    bool
 	wireguardPort int
 	kubeProxyMode string
+	cniConfDir    string
+	cniBinDir     string
 }
 
 func parseFlags() *config {
@@ -63,6 +65,8 @@ func parseFlags() *config {
 	flag.BoolVar(&cfg.enableIPv6, "enable-ipv6", false, "Enable IPv6 dual-stack")
 	flag.IntVar(&cfg.wireguardPort, "wireguard-port", 51820, "WireGuard listen UDP port")
 	flag.StringVar(&cfg.kubeProxyMode, "kube-proxy-mode", "none", "Kube-proxy replacement mode (none, partial)")
+	flag.StringVar(&cfg.cniConfDir, "cni-conf-dir", cni.DefaultCNIConfDir, "CNI configuration directory")
+	flag.StringVar(&cfg.cniBinDir, "cni-bin-dir", cni.DefaultCNIBinDir, "CNI plugin binary directory")
 	flag.Parse()
 	return cfg
 }
@@ -125,7 +129,10 @@ func main() {
 		}
 	}()
 
-	// 5. Initialize Core Subsystems
+	// 5. Initialize Core Subsystems & Install CNI Configuration
+	if err := cni.InstallConfig(cfg.cniConfDir, cfg.podCIDR, logger); err != nil {
+		logger.Warn("could not install CNI configuration", zap.Error(err))
+	}
 	identityAlloc := identity.NewAllocator()
 	dataplaneCompiler := compiler.New(logger)
 	routingMgr := routing.NewManager(logger, 0)

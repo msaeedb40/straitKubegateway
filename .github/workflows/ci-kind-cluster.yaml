@@ -147,7 +147,11 @@ jobs:
 
       - name: Verify cluster nodes and workloads
         run: |
+          echo "Waiting for all cluster nodes to become Ready..."
+          kubectl wait --for=condition=Ready nodes --all --timeout=180s || true
           kubectl get nodes -o wide
+          echo "Waiting for CoreDNS pods to become Ready..."
+          kubectl wait --for=condition=Ready -n kube-system pod -l k8s-app=kube-dns --timeout=180s || true
           kubectl get pods -A
           kubectl get crds
 
