@@ -1263,6 +1263,32 @@ kubectl get gatewayclasses,gateways,straitnetworks</code></pre>
 
             <!-- Tab 1: Deploy Guide -->
             <div class="obs-panel active" data-obspanel="deploy">
+
+              <!-- Prometheus Stack Version Selector (88.m.p) -->
+              <div class="version-selector-bar" style="margin-bottom: 24px;">
+                <div class="version-selector-title">
+                  <div class="version-selector-icon">📈</div>
+                  <div>
+                    <div style="font-weight: 700; color: var(--text-primary); font-size: 13.5px;">kube-prometheus-stack Version Selector (88.m.p)</div>
+                    <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Enter minor (m) &amp; patch (p) to dynamically configure prometheus-community Helm install version</div>
+                  </div>
+                </div>
+                <div class="version-inputs-group">
+                  <div class="version-input-pill">
+                    <span class="version-prefix">88 .</span>
+                    <input type="number" id="prom-minor" class="version-input" value="6" min="0" max="99" aria-label="Prometheus Minor Version (m)">
+                    <span class="version-dot">.</span>
+                    <input type="number" id="prom-patch" class="version-input" value="4" min="0" max="99" aria-label="Prometheus Patch Version (p)">
+                  </div>
+                  <div class="version-presets-pills">
+                    <button type="button" class="btn-prom-version-quick active" data-prom-m="6" data-prom-p="4">88.6.4 (Latest)</button>
+                    <button type="button" class="btn-prom-version-quick" data-prom-m="6" data-prom-p="0">88.6.0</button>
+                    <button type="button" class="btn-prom-version-quick" data-prom-m="5" data-prom-p="4">88.5.4</button>
+                    <button type="button" class="btn-prom-version-quick" data-prom-m="4" data-prom-p="0">88.4.0</button>
+                  </div>
+                </div>
+              </div>
+
               <div class="platform-steps-grid">
                 
                 <!-- Step 1 -->
@@ -1270,15 +1296,15 @@ kubectl get gatewayclasses,gateways,straitnetworks</code></pre>
                   <div class="platform-step-header">
                     <div class="platform-step-badge">
                       <span class="platform-step-badge-num">1</span>
-                      <span>Deploy kube-prometheus-stack (Prometheus + Grafana + Alertmanager)</span>
+                      <span>Deploy kube-prometheus-stack (Dynamic 88.m.p)</span>
                     </div>
                   </div>
                   <div class="code-window">
-                    <button class="code-copy-btn" data-copy-text="helm repo add prometheus-community https://prometheus-community.github.io/helm-charts&#10;helm repo update&#10;helm install prometheus prometheus-community/kube-prometheus-stack \&#10;  --version 88.6.4 \&#10;  --namespace monitoring \&#10;  --create-namespace">
+                    <button class="code-copy-btn" data-copy-target="code-prom-install">
                       <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                       <span>Copy</span>
                     </button>
-                    <pre><code>helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+                    <pre><code id="code-prom-install">helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
 helm install prometheus prometheus-community/kube-prometheus-stack \
@@ -1318,16 +1344,19 @@ helm install prometheus prometheus-community/kube-prometheus-stack \
                   <div class="platform-step-header">
                     <div class="platform-step-badge">
                       <span class="platform-step-badge-num">3</span>
-                      <span>Port-Forward to Access Grafana Web Console</span>
+                      <span>Port-Forward &amp; Access Grafana Web Console</span>
                     </div>
                   </div>
                   <div class="code-window">
-                    <button class="code-copy-btn" data-copy-text="kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80">
+                    <button class="code-copy-btn" data-copy-text="kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80&#10;# Retrieve admin password:&#10;kubectl get secret --namespace monitoring prometheus-grafana -o jsonpath='{.data.admin-password}' | base64 --decode ; echo">
                       <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                       <span>Copy</span>
                     </button>
                     <pre><code>kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
-# Open http://localhost:3000 in your browser (default credentials: admin / prom-operator)</code></pre>
+# Open http://localhost:3000 in your browser (User: admin)
+# Retrieve Grafana admin password:
+kubectl get secret --namespace monitoring prometheus-grafana \
+  -o jsonpath="{.data.admin-password}" | base64 --decode ; echo</code></pre>
                   </div>
                 </div>
 

@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initPlatformTabs();
   initKubeadmVersionSelector();
   initObservabilityTabs();
+  initPrometheusVersionSelector();
   initTopology();
   initPolicyTester();
   initHookExplorer();
@@ -330,6 +331,62 @@ function initObservabilityTabs() {
       opsElem.textContent = `${val}k /s`;
     }, 3200);
   }
+}
+
+/* ==========================================================================
+   1e. kube-prometheus-stack 88.m.p Version Dynamic Generator
+   ========================================================================== */
+
+function initPrometheusVersionSelector() {
+  const minorInput = document.getElementById('prom-minor');
+  const patchInput = document.getElementById('prom-patch');
+  const quickBtns = document.querySelectorAll('.btn-prom-version-quick');
+
+  function updatePromSnippets() {
+    const m = minorInput ? (parseInt(minorInput.value, 10) ?? 6) : 6;
+    const p = patchInput ? (parseInt(patchInput.value, 10) ?? 4) : 4;
+
+    const promCode = document.getElementById('code-prom-install');
+
+    if (promCode) {
+      promCode.textContent = `helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+helm install prometheus prometheus-community/kube-prometheus-stack \\
+  --version 88.${m}.${p} \\
+  --namespace monitoring \\
+  --create-namespace`;
+    }
+
+    quickBtns.forEach(btn => {
+      const btnM = parseInt(btn.getAttribute('data-prom-m'), 10);
+      const btnP = parseInt(btn.getAttribute('data-prom-p'), 10);
+      if (btnM === m && btnP === p) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+
+  if (minorInput) {
+    minorInput.addEventListener('input', updatePromSnippets);
+  }
+  if (patchInput) {
+    patchInput.addEventListener('input', updatePromSnippets);
+  }
+
+  quickBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const m = btn.getAttribute('data-prom-m');
+      const p = btn.getAttribute('data-prom-p');
+      if (minorInput) minorInput.value = m;
+      if (patchInput) patchInput.value = p;
+      updatePromSnippets();
+    });
+  });
+
+  updatePromSnippets();
 }
 
 /* ==========================================================================

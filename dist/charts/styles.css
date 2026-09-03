@@ -1581,7 +1581,8 @@ input:checked + .toggle-slider::before {
   flex-wrap: wrap;
 }
 
-.btn-version-quick {
+.btn-version-quick,
+.btn-prom-version-quick {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
@@ -1594,12 +1595,14 @@ input:checked + .toggle-slider::before {
   transition: var(--transition-fast);
 }
 
-.btn-version-quick:hover {
+.btn-version-quick:hover,
+.btn-prom-version-quick:hover {
   background: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
 }
 
-.btn-version-quick.active {
+.btn-version-quick.active,
+.btn-prom-version-quick.active {
   background: rgba(34, 211, 238, 0.18);
   border-color: rgba(34, 211, 238, 0.45);
   color: var(--cyan-300);
