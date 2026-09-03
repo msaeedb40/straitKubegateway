@@ -985,11 +985,91 @@ sudo sysctl --system</code></pre>
                 </div>
               </div>
 
-              <!-- Step 2: Configure APT Repo & Install (Dynamic v1.m.p) -->
+              <!-- Step 2: Install CRI containerd v2.3.4 -->
               <div class="platform-step-card">
                 <div class="platform-step-header">
                   <div class="platform-step-badge">
                     <span class="platform-step-badge-num">2</span>
+                    <span>Install Container Runtime Interface (containerd v2.3.4)</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="curl -LO https://github.com/containerd/containerd/releases/download/v2.3.4/containerd-2.3.4-linux-amd64.tar.gz&#10;sudo tar Cxzvf /usr/local containerd-2.3.4-linux-amd64.tar.gz&#10;curl -LO https://raw.githubusercontent.com/containerd/containerd/main/containerd.service&#10;sudo mkdir -p /usr/local/lib/systemd/system/&#10;sudo mv containerd.service /usr/local/lib/systemd/system/&#10;sudo mkdir -p /etc/containerd&#10;containerd config default | sudo tee /etc/containerd/config.toml&#10;sudo sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code># Download &amp; unpack containerd v2.3.4
+curl -LO https://github.com/containerd/containerd/releases/download/v2.3.4/containerd-2.3.4-linux-amd64.tar.gz
+sudo tar Cxzvf /usr/local containerd-2.3.4-linux-amd64.tar.gz
+
+# Install systemd service unit
+curl -LO https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
+sudo mkdir -p /usr/local/lib/systemd/system/
+sudo mv containerd.service /usr/local/lib/systemd/system/
+
+# Configure containerd with SystemdCgroup enabled
+sudo mkdir -p /etc/containerd
+containerd config default | sudo tee /etc/containerd/config.toml
+sudo sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 3: Install runc v1.5.1 & Start CRI -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">3</span>
+                    <span>Install OCI Runtime (runc v1.5.1) &amp; Enable containerd</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="curl -LO https://github.com/opencontainers/runc/releases/download/v1.5.1/runc.amd64&#10;sudo install -m 755 runc.amd64 /usr/local/sbin/runc&#10;sudo systemctl daemon-reload&#10;sudo systemctl enable --now containerd&#10;sudo systemctl status containerd --no-pager">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code># Download and install runc v1.5.1
+curl -LO https://github.com/opencontainers/runc/releases/download/v1.5.1/runc.amd64
+sudo install -m 755 runc.amd64 /usr/local/sbin/runc
+
+# Reload systemd and enable containerd CRI
+sudo systemctl daemon-reload
+sudo systemctl enable --now containerd
+
+# Verify containerd service status
+sudo systemctl status containerd --no-pager</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 4: Install CNI Plugins & StraitKubeGateway CNI Setup -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">4</span>
+                    <span>Install Reference CNI Plugins &amp; CNI Configuration</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="CNI_PLUGINS_VERSION=&quot;v1.6.2&quot;&#10;sudo mkdir -p /opt/cni/bin&#10;curl -LO &quot;https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGINS_VERSION}/cni-plugins-linux-amd64-${CNI_PLUGINS_VERSION}.tgz&quot;&#10;sudo tar -Cxzvf /opt/cni/bin &quot;cni-plugins-linux-amd64-${CNI_PLUGINS_VERSION}.tgz&quot;&#10;sudo mkdir -p /etc/cni/net.d">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code># Download &amp; install standard CNI plugins (ptp, host-local, loopback, portmap)
+CNI_PLUGINS_VERSION="v1.6.2"
+sudo mkdir -p /opt/cni/bin
+curl -LO "https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGINS_VERSION}/cni-plugins-linux-amd64-${CNI_PLUGINS_VERSION}.tgz"
+sudo tar -Cxzvf /opt/cni/bin "cni-plugins-linux-amd64-${CNI_PLUGINS_VERSION}.tgz"
+
+# Create StraitKubeGateway CNI configuration directory
+sudo mkdir -p /etc/cni/net.d
+# (straitd automatically manages 10-strait.conflist and attaches eBPF hooks)</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 5: Configure APT Repo & Install (Dynamic v1.m.p) -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">5</span>
                     <span>Install Kubelet, Kubeadm &amp; Kubectl (Dynamic v1.m.p)</span>
                   </div>
                 </div>
@@ -1008,11 +1088,11 @@ sudo apt-mark hold kubelet kubeadm kubectl</code></pre>
                 </div>
               </div>
 
-              <!-- Step 3: Initialize Kubeadm (No kube-proxy) -->
+              <!-- Step 6: Initialize Kubeadm (No kube-proxy) -->
               <div class="platform-step-card">
                 <div class="platform-step-header">
                   <div class="platform-step-badge">
-                    <span class="platform-step-badge-num">3</span>
+                    <span class="platform-step-badge-num">6</span>
                     <span>Initialize Kubeadm Cluster (Skipping kube-proxy)</span>
                   </div>
                 </div>
@@ -1036,38 +1116,25 @@ kubectl taint nodes --all node-role.kubernetes.io/control-plane- || true</code><
                 </div>
               </div>
 
-              <!-- Step 4: Apply Gateway API CRDs -->
+              <!-- Step 7: Apply Gateway API CRDs & Install StraitKubeGateway -->
               <div class="platform-step-card">
                 <div class="platform-step-header">
                   <div class="platform-step-badge">
-                    <span class="platform-step-badge-num">4</span>
-                    <span>Apply Gateway API v1.6.1 CRDs</span>
+                    <span class="platform-step-badge-num">7</span>
+                    <span>Apply Gateway API CRDs &amp; Install StraitKubeGateway via Helm</span>
                   </div>
                 </div>
                 <div class="code-window">
-                  <button class="code-copy-btn" data-copy-text="kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml">
+                  <button class="code-copy-btn" data-copy-text="kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml&#10;helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway&#10;helm repo update&#10;helm install straitkubegateway straitkubegateway/straitkubegateway \&#10;  --namespace kube-system \&#10;  --set straitd.kubeProxyReplacement=true \&#10;  --set straitd.kubeProxyMode=none \&#10;  --set straitd.wireguard.enabled=true \&#10;  --wait --timeout 300s">
                     <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                     <span>Copy</span>
                   </button>
-                  <pre><code>kubectl apply --server-side --force-conflicts -f \
-  https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml</code></pre>
-                </div>
-              </div>
+                  <pre><code># 1. Apply Gateway API v1.6.1 CRDs
+kubectl apply --server-side --force-conflicts -f \
+  https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml
 
-              <!-- Step 5: Install StraitKubeGateway via Helm -->
-              <div class="platform-step-card">
-                <div class="platform-step-header">
-                  <div class="platform-step-badge">
-                    <span class="platform-step-badge-num">5</span>
-                    <span>Install StraitKubeGateway via Helm</span>
-                  </div>
-                </div>
-                <div class="code-window">
-                  <button class="code-copy-btn" data-copy-text="helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway&#10;helm repo update&#10;helm install straitkubegateway straitkubegateway/straitkubegateway \&#10;  --namespace kube-system \&#10;  --set straitd.kubeProxyReplacement=true \&#10;  --set straitd.kubeProxyMode=none \&#10;  --set straitd.wireguard.enabled=true \&#10;  --wait --timeout 300s">
-                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                    <span>Copy</span>
-                  </button>
-                  <pre><code>helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway
+# 2. Deploy StraitKubeGateway eBPF CNI &amp; Transit Gateway
+helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway
 helm repo update
 
 helm install straitkubegateway straitkubegateway/straitkubegateway \
@@ -1079,11 +1146,11 @@ helm install straitkubegateway straitkubegateway/straitkubegateway \
                 </div>
               </div>
 
-              <!-- Step 6: Verification -->
+              <!-- Step 8: Verification -->
               <div class="platform-step-card">
                 <div class="platform-step-header">
                   <div class="platform-step-badge">
-                    <span class="platform-step-badge-num">6</span>
+                    <span class="platform-step-badge-num">8</span>
                     <span>Verify Bare-Metal Node &amp; Workload Health</span>
                   </div>
                 </div>
