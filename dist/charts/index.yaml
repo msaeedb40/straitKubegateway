@@ -3,7 +3,7 @@ entries:
   straitkubegateway:
   - apiVersion: v2
     appVersion: 1.0.1
-    created: "2026-09-04T00:37:58.024799604+03:00"
+    created: "2026-09-04T00:47:43.421892903+03:00"
     description: A Helm chart for straitKubegateway Kubernetes-native transit gateway
       and CNI platform
     digest: a4ff733b685d8675b770f01487a12913eafd3c2dd86a5cc9bfc41c7ff36c76ff
@@ -22,4 +22,4 @@ entries:
     urls:
     - https://msaeedb40.github.io/straitKubegateway/straitkubegateway-1.0.1.tgz
     version: 1.0.1
-generated: "2026-09-04T00:37:58.017427968+03:00"
+generated: "2026-09-04T00:47:43.416136258+03:00"
