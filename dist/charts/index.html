@@ -1200,14 +1200,19 @@ helm install straitkubegateway straitkubegateway/straitkubegateway \
                   </div>
                 </div>
                 <div class="code-window">
-                  <button class="code-copy-btn" data-copy-text="kubectl wait --for=condition=Ready nodes --all --timeout=180s&#10;kubectl get nodes -o wide&#10;kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide&#10;kubectl get gatewayclasses,gateways,straitnetworks">
+                  <button class="code-copy-btn" data-copy-text="kubectl wait --for=condition=Ready nodes --all --timeout=180s&#10;kubectl get nodes -o wide&#10;kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide&#10;kubectl get gatewayclasses,gateways,straitnetworks&#10;sg-cli status&#10;sg-cli node">
                     <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                     <span>Copy</span>
                   </button>
-                  <pre><code>kubectl wait --for=condition=Ready nodes --all --timeout=180s
+                  <pre><code># 1. Check Kubernetes Node &amp; Pod health
+kubectl wait --for=condition=Ready nodes --all --timeout=180s
 kubectl get nodes -o wide
 kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide
-kubectl get gatewayclasses,gateways,straitnetworks</code></pre>
+kubectl get gatewayclasses,gateways,straitnetworks
+
+# 2. Inspect with sg-cli management tool
+sg-cli status
+sg-cli node</code></pre>
                 </div>
               </div>
             </div>
@@ -1463,20 +1468,28 @@ kubectl get gatewayclasses,gateways,straitnetworks</code></pre>
         <!-- Quick Install Bar -->
         <div class="cli-quick-install glass-card" style="margin-bottom: 28px;">
           <div class="cli-install-info">
-            <div class="cli-install-badge">INSTALL sg-cli</div>
-            <div style="font-size: 13px; color: var(--text-secondary);">Single static binary with zero dependencies. Runs on Linux amd64/arm64 and macOS:</div>
+            <div class="cli-install-badge">INSTALL sg-cli (amd64 / arm64)</div>
+            <div style="font-size: 13px; color: var(--text-secondary);">Automated installer script with platform auto-detection for Linux (amd64, arm64) &amp; macOS:</div>
           </div>
           <div class="code-window" style="margin-top: 12px;">
-            <button class="code-copy-btn" data-copy-text="curl -fsSL https://github.com/msaeedb40/straitKubegateway/releases/latest/download/sg-cli-linux-amd64 -o /usr/local/bin/sg-cli &amp;&amp; sudo chmod +x /usr/local/bin/sg-cli">
+            <button class="code-copy-btn" data-copy-text="curl -fsSL https://raw.githubusercontent.com/msaeedb40/straitKubegateway/developer/scripts/sg-cli/install.sh | bash">
               <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
               <span>Copy</span>
             </button>
-            <pre><code># Download standalone binary to /usr/local/bin
-curl -fsSL https://github.com/msaeedb40/straitKubegateway/releases/latest/download/sg-cli-linux-amd64 -o /usr/local/bin/sg-cli
-sudo chmod +x /usr/local/bin/sg-cli
+            <pre><code># 1. One-Line Auto Installer (Detects Linux/macOS &amp; amd64/arm64)
+curl -fsSL https://raw.githubusercontent.com/msaeedb40/straitKubegateway/developer/scripts/sg-cli/install.sh | bash
 
-# Or install via Go
-go install github.com/msaeedb40/straitKubegateway/cmd/sg-cli@latest</code></pre>
+# 2. Or run directly from cloned repository:
+./scripts/sg-cli/install.sh
+
+# 3. Direct Download (Linux amd64)
+# curl -fsSL https://github.com/msaeedb40/straitKubegateway/releases/latest/download/sg-cli-linux-amd64 -o /usr/local/bin/sg-cli &amp;&amp; sudo chmod +x /usr/local/bin/sg-cli
+
+# 4. Direct Download (Linux arm64 / Apple Silicon / Graviton)
+# curl -fsSL https://github.com/msaeedb40/straitKubegateway/releases/latest/download/sg-cli-linux-arm64 -o /usr/local/bin/sg-cli &amp;&amp; sudo chmod +x /usr/local/bin/sg-cli
+
+# 5. Or build via Go Toolchain
+# go install github.com/msaeedb40/straitKubegateway/cmd/sg-cli@latest</code></pre>
           </div>
         </div>
 
