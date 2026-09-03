@@ -52,7 +52,7 @@ jobs:
 
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
 
       - name: Build Chart Repository and Tailwind CSS v4 Static Landing Page
