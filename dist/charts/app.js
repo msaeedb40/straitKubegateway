@@ -4,6 +4,8 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   initInstaller();
+  initPlatformTabs();
+  initKubeadmVersionSelector();
   initTopology();
   initPolicyTester();
   initHookExplorer();
@@ -51,6 +53,42 @@ const presets = {
     transit: false,
     bgp: false,
     metrics: false,
+    ipv6: false,
+    dsr: false
+  },
+  kind: {
+    wireguard: false,
+    gwapi: true,
+    transit: false,
+    bgp: false,
+    metrics: true,
+    ipv6: false,
+    dsr: false
+  },
+  k3s: {
+    wireguard: false,
+    gwapi: true,
+    transit: false,
+    bgp: false,
+    metrics: true,
+    ipv6: false,
+    dsr: false
+  },
+  minikube: {
+    wireguard: false,
+    gwapi: true,
+    transit: false,
+    bgp: false,
+    metrics: true,
+    ipv6: false,
+    dsr: false
+  },
+  kubeadm: {
+    wireguard: true,
+    gwapi: true,
+    transit: false,
+    bgp: false,
+    metrics: true,
     ipv6: false,
     dsr: false
   }
@@ -144,6 +182,11 @@ function renderInstallCommand() {
     lines.push('  --set service.lb.mode="DSR"');
   }
 
+  if (activePreset === 'kind' || activePreset === 'k3s' || activePreset === 'minikube') {
+    lines.push('  --set straitd.image.pullPolicy=IfNotPresent');
+    lines.push('  --set sgController.image.pullPolicy=IfNotPresent');
+  }
+
   // Format with backslashes
   const formatted = lines.map((l, i) => {
     if (i === lines.length - 1) return l;
@@ -151,6 +194,106 @@ function renderInstallCommand() {
   }).join('\n');
 
   codeElem.textContent = formatted;
+}
+
+/* ==========================================================================
+   1b. Local Platform Cluster Tabs (Kind, K3s, Minikube)
+   ========================================================================== */
+
+function initPlatformTabs() {
+  const tabs = document.querySelectorAll('.platform-tab');
+  const panels = document.querySelectorAll('.platform-panel');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const targetPlatform = tab.getAttribute('data-platform');
+      if (!targetPlatform) return;
+
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      panels.forEach(p => {
+        if (p.getAttribute('data-panel') === targetPlatform) {
+          p.classList.add('active');
+        } else {
+          p.classList.remove('active');
+        }
+      });
+    });
+  });
+}
+
+/* ==========================================================================
+   1c. Kubeadm v1.m.p Version Dynamic Generator
+   ========================================================================== */
+
+function initKubeadmVersionSelector() {
+  const minorInput = document.getElementById('kubeadm-minor');
+  const patchInput = document.getElementById('kubeadm-patch');
+  const quickBtns = document.querySelectorAll('.btn-version-quick');
+
+  function updateKubeadmSnippets() {
+    const m = minorInput ? (parseInt(minorInput.value, 10) || 32) : 32;
+    const p = patchInput ? (parseInt(patchInput.value, 10) || 0) : 0;
+
+    const repoCode = document.getElementById('code-kubeadm-repo');
+    const initCode = document.getElementById('code-kubeadm-init');
+
+    if (repoCode) {
+      repoCode.textContent = `sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates curl gpg
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.${m}/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.${m}/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update
+sudo apt-get install -y kubelet=1.${m}.${p}-* kubeadm=1.${m}.${p}-* kubectl=1.${m}.${p}-*
+sudo apt-mark hold kubelet kubeadm kubectl`;
+    }
+
+    if (initCode) {
+      initCode.textContent = `sudo kubeadm init \\
+  --kubernetes-version=v1.${m}.${p} \\
+  --pod-network-cidr=10.244.0.0/16 \\
+  --skip-phases=addon/kube-proxy \\
+  --ignore-preflight-errors=NumCPU,Mem
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+# Untaint control-plane so StraitKubeGateway CNI can schedule
+kubectl taint nodes --all node-role.kubernetes.io/control-plane- || true`;
+    }
+
+    // Update active quick button
+    quickBtns.forEach(btn => {
+      const btnM = parseInt(btn.getAttribute('data-m'), 10);
+      const btnP = parseInt(btn.getAttribute('data-p'), 10);
+      if (btnM === m && btnP === p) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+
+  if (minorInput) {
+    minorInput.addEventListener('input', updateKubeadmSnippets);
+  }
+  if (patchInput) {
+    patchInput.addEventListener('input', updateKubeadmSnippets);
+  }
+
+  quickBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const m = btn.getAttribute('data-m');
+      const p = btn.getAttribute('data-p');
+      if (minorInput) minorInput.value = m;
+      if (patchInput) patchInput.value = p;
+      updateKubeadmSnippets();
+    });
+  });
+
+  updateKubeadmSnippets();
 }
 
 /* ==========================================================================

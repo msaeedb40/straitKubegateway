@@ -53,6 +53,7 @@
           <!-- Nav Anchors -->
           <ul class="nav-links">
             <li><a href="#installer">Install</a></li>
+            <li><a href="#platforms">Kind / K3s / Minikube / Kubeadm</a></li>
             <li><a href="#topology">Topology</a></li>
             <li><a href="#hooks">eBPF Hooks</a></li>
             <li><a href="#evaluator">Policy Simulator</a></li>
@@ -223,6 +224,10 @@
               <button class="tab-pill active" data-preset="quickstart">⚡ Quickstart</button>
               <button class="tab-pill" data-preset="production">🛡️ Production Mesh</button>
               <button class="tab-pill" data-preset="transit">🌐 Transit Core</button>
+              <button class="tab-pill" data-preset="kind">🐙 Kind</button>
+              <button class="tab-pill" data-preset="k3s">⚡ K3s</button>
+              <button class="tab-pill" data-preset="minikube">🚀 Minikube</button>
+              <button class="tab-pill" data-preset="kubeadm">⚙️ Kubeadm</button>
               <button class="tab-pill" data-preset="edge">📦 Minimal Edge</button>
             </div>
           </div>
@@ -406,7 +411,561 @@ helm repo update</code></pre>
       </div>
     </section>
 
-    <!-- Section 2: Interactive Network Topology Visualizer -->
+    <!-- Section 2: Local Cluster Deployments (Kind, K3s, Minikube) -->
+    <section id="platforms" class="section">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-tag">☸️ Cluster Environments</div>
+          <h2 class="section-title">
+            Deploy on <span class="text-gradient">Kind, K3s, Minikube & Kubeadm</span>
+          </h2>
+          <p class="section-desc">
+            Production-grade eBPF CNI and Gateway API networking on local engines and bare-metal nodes. Step-by-step setup guides, cluster initialization manifests, and verified Helm deployment flags.
+          </p>
+        </div>
+
+        <div class="platform-container">
+          
+          <!-- Platform Tabs -->
+          <div class="platform-tab-header">
+            <button class="platform-tab active" data-platform="kind" aria-label="Kind Kubernetes in Docker Deployment">
+              <div class="platform-tab-icon">🐙</div>
+              <div>
+                <div class="platform-tab-name">Kind</div>
+                <div class="platform-tab-sub">Kubernetes in Docker (Multi-Node)</div>
+              </div>
+            </button>
+            <button class="platform-tab" data-platform="k3s" aria-label="K3s via k3d Deployment">
+              <div class="platform-tab-icon">⚡</div>
+              <div>
+                <div class="platform-tab-name">K3s (via k3d)</div>
+                <div class="platform-tab-sub">Lightweight Rancher Engine</div>
+              </div>
+            </button>
+            <button class="platform-tab" data-platform="minikube" aria-label="Minikube Cluster Deployment">
+              <div class="platform-tab-icon">🚀</div>
+              <div>
+                <div class="platform-tab-name">Minikube</div>
+                <div class="platform-tab-sub">Docker / KVM / Hyperkit Engine</div>
+              </div>
+            </button>
+            <button class="platform-tab" data-platform="kubeadm" aria-label="Kubeadm Bare-Metal and VM Deployment">
+              <div class="platform-tab-icon">⚙️</div>
+              <div>
+                <div class="platform-tab-name">Kubeadm</div>
+                <div class="platform-tab-sub">Bare-Metal / VM (v1.m.p)</div>
+              </div>
+            </button>
+          </div>
+
+          <!-- Kind Panel -->
+          <div class="platform-panel active" data-panel="kind">
+            <div class="platform-callout">
+              <div class="platform-callout-icon">💡</div>
+              <div>
+                <div class="platform-callout-title">Kind Dataplane Architecture Invariant</div>
+                <div class="platform-callout-desc">
+                  Kind clusters require disabling <code>kindnet</code> (<code>disableDefaultCNI: true</code>), disabling kube-proxy (<code>kubeProxyMode: "none"</code>), and mounting the host's <code>/sys/fs/bpf</code> filesystem into container nodes with bidirectional mount propagation so StraitKubeGateway's <code>straitd</code> node agent can pin eBPF maps.
+                </div>
+              </div>
+            </div>
+
+            <div class="platform-steps-grid">
+              <!-- Step 1: Cluster Config -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">1</span>
+                    <span>Create Kind Cluster Config & Bootstrap</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="cat <<'EOF' > kind-config.yaml&#10;kind: Cluster&#10;apiVersion: kind.x-k8s.io/v1alpha4&#10;networking:&#10;  disableDefaultCNI: true&#10;  kubeProxyMode: 'none'&#10;nodes:&#10;  - role: control-plane&#10;    extraMounts:&#10;      - hostPath: /sys/fs/bpf&#10;        containerPath: /sys/fs/bpf&#10;        propagation: Bidirectional&#10;  - role: worker&#10;    extraMounts:&#10;      - hostPath: /sys/fs/bpf&#10;        containerPath: /sys/fs/bpf&#10;        propagation: Bidirectional&#10;EOF&#10;kind create cluster --name straitkubegateway --config kind-config.yaml">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>cat &lt;&lt;'EOF' &gt; kind-config.yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  disableDefaultCNI: true
+  kubeProxyMode: "none"
+nodes:
+  - role: control-plane
+    extraMounts:
+      - hostPath: /sys/fs/bpf
+        containerPath: /sys/fs/bpf
+        propagation: Bidirectional
+  - role: worker
+    extraMounts:
+      - hostPath: /sys/fs/bpf
+        containerPath: /sys/fs/bpf
+        propagation: Bidirectional
+EOF
+kind create cluster --name straitkubegateway --config kind-config.yaml</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 2: Gateway API CRDs -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">2</span>
+                    <span>Apply Gateway API v1.6.1 CRDs</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>kubectl apply --server-side --force-conflicts -f \
+  https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 3: Helm Install -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">3</span>
+                    <span>Install StraitKubeGateway via Helm</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway&#10;helm repo update&#10;helm install straitkubegateway straitkubegateway/straitkubegateway \&#10;  --namespace kube-system \&#10;  --set straitd.kubeProxyReplacement=true \&#10;  --set straitd.kubeProxyMode=none \&#10;  --set straitd.image.pullPolicy=IfNotPresent \&#10;  --set sgController.image.pullPolicy=IfNotPresent \&#10;  --wait --timeout 300s">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway
+helm repo update
+
+helm install straitkubegateway straitkubegateway/straitkubegateway \
+  --namespace kube-system \
+  --set straitd.kubeProxyReplacement=true \
+  --set straitd.kubeProxyMode=none \
+  --set straitd.image.pullPolicy=IfNotPresent \
+  --set sgController.image.pullPolicy=IfNotPresent \
+  --wait --timeout 300s</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 4: Verification -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">4</span>
+                    <span>Verify Node Status & Dataplane</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="kubectl wait --for=condition=Ready nodes --all --timeout=120s&#10;kubectl get nodes -o wide&#10;kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide&#10;kubectl get gatewayclasses,gateways,straitnetworks">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>kubectl wait --for=condition=Ready nodes --all --timeout=120s
+kubectl get nodes -o wide
+kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide
+kubectl get gatewayclasses,gateways,straitnetworks</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- K3s Panel -->
+          <div class="platform-panel" data-panel="k3s">
+            <div class="platform-callout">
+              <div class="platform-callout-icon">💡</div>
+              <div>
+                <div class="platform-callout-title">K3s Dataplane Architecture Invariant</div>
+                <div class="platform-callout-desc">
+                  K3s by default packages Flannel and its own kube-proxy. When running via <code>k3d</code>, pass <code>--flannel-backend=none</code>, <code>--disable-kube-proxy</code>, <code>--disable=traefik</code>, <code>--disable=servicelb</code>, and mount <code>/sys/fs/bpf</code> into all server and agent nodes so that StraitKubeGateway handles all VIP translation and CNI routing in eBPF.
+                </div>
+              </div>
+            </div>
+
+            <div class="platform-steps-grid">
+              <!-- Step 1: k3d Cluster Creation -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">1</span>
+                    <span>Create K3s Cluster via k3d</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="k3d cluster create straitkubegateway \&#10;  --servers 1 \&#10;  --agents 2 \&#10;  --k3s-arg '--flannel-backend=none@server:*' \&#10;  --k3s-arg '--disable-network-policy@server:*' \&#10;  --k3s-arg '--disable=traefik@server:*' \&#10;  --k3s-arg '--disable=servicelb@server:*' \&#10;  --k3s-arg '--disable-kube-proxy@server:*' \&#10;  --volume /sys/fs/bpf:/sys/fs/bpf@server:*;agent:* \&#10;  --no-lb \&#10;  --wait">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>k3d cluster create straitkubegateway \
+  --servers 1 \
+  --agents 2 \
+  --k3s-arg "--flannel-backend=none@server:*" \
+  --k3s-arg "--disable-network-policy@server:*" \
+  --k3s-arg "--disable=traefik@server:*" \
+  --k3s-arg "--disable=servicelb@server:*" \
+  --k3s-arg "--disable-kube-proxy@server:*" \
+  --volume /sys/fs/bpf:/sys/fs/bpf@server:*;agent:* \
+  --no-lb \
+  --wait</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 2: Gateway API CRDs -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">2</span>
+                    <span>Apply Gateway API v1.6.1 CRDs</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>kubectl apply --server-side --force-conflicts -f \
+  https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 3: Helm Install -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">3</span>
+                    <span>Install StraitKubeGateway via Helm</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway&#10;helm repo update&#10;helm install straitkubegateway straitkubegateway/straitkubegateway \&#10;  --namespace kube-system \&#10;  --set straitd.kubeProxyReplacement=true \&#10;  --set straitd.kubeProxyMode=none \&#10;  --set straitd.image.pullPolicy=IfNotPresent \&#10;  --set sgController.image.pullPolicy=IfNotPresent \&#10;  --wait --timeout 300s">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway
+helm repo update
+
+helm install straitkubegateway straitkubegateway/straitkubegateway \
+  --namespace kube-system \
+  --set straitd.kubeProxyReplacement=true \
+  --set straitd.kubeProxyMode=none \
+  --set straitd.image.pullPolicy=IfNotPresent \
+  --set sgController.image.pullPolicy=IfNotPresent \
+  --wait --timeout 300s</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 4: Verification -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">4</span>
+                    <span>Verify Node Status & Dataplane</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="kubectl wait --for=condition=Ready nodes --all --timeout=120s&#10;kubectl get nodes -o wide&#10;kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide&#10;kubectl get gatewayclasses,gateways,straitnetworks">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>kubectl wait --for=condition=Ready nodes --all --timeout=120s
+kubectl get nodes -o wide
+kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide
+kubectl get gatewayclasses,gateways,straitnetworks</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Minikube Panel -->
+          <div class="platform-panel" data-panel="minikube">
+            <div class="platform-callout">
+              <div class="platform-callout-icon">💡</div>
+              <div>
+                <div class="platform-callout-title">Minikube Dataplane Architecture Invariant</div>
+                <div class="platform-callout-desc">
+                  Minikube clusters must be initialized with <code>--cni=false</code> and <code>--extra-config=kubeadm.skip-phases=addon/kube-proxy</code> so that kubeadm does not deploy kindnet/bridge CNI or iptables kube-proxy. StraitKubeGateway will schedule onto the uninitialized nodes, initialize NetKit/veth interfaces, and set nodes to <code>Ready</code>.
+                </div>
+              </div>
+            </div>
+
+            <div class="platform-steps-grid">
+              <!-- Step 1: Minikube Start -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">1</span>
+                    <span>Start Minikube with CNI & Kube-Proxy Disabled</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="minikube start \&#10;  --driver=docker \&#10;  --nodes=2 \&#10;  --cni=false \&#10;  --extra-config=kubeadm.skip-phases=addon/kube-proxy \&#10;  --cpus=2 \&#10;  --memory=4096m">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>minikube start \
+  --driver=docker \
+  --nodes=2 \
+  --cni=false \
+  --extra-config=kubeadm.skip-phases=addon/kube-proxy \
+  --cpus=2 \
+  --memory=4096m</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 2: Gateway API CRDs -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">2</span>
+                    <span>Apply Gateway API v1.6.1 CRDs</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>kubectl apply --server-side --force-conflicts -f \
+  https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 3: Helm Install -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">3</span>
+                    <span>Install StraitKubeGateway via Helm</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway&#10;helm repo update&#10;helm install straitkubegateway straitkubegateway/straitkubegateway \&#10;  --namespace kube-system \&#10;  --set straitd.kubeProxyReplacement=true \&#10;  --set straitd.kubeProxyMode=none \&#10;  --set straitd.image.pullPolicy=IfNotPresent \&#10;  --set sgController.image.pullPolicy=IfNotPresent \&#10;  --wait --timeout 300s">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway
+helm repo update
+
+helm install straitkubegateway straitkubegateway/straitkubegateway \
+  --namespace kube-system \
+  --set straitd.kubeProxyReplacement=true \
+  --set straitd.kubeProxyMode=none \
+  --set straitd.image.pullPolicy=IfNotPresent \
+  --set sgController.image.pullPolicy=IfNotPresent \
+  --wait --timeout 300s</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 4: Verification -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">4</span>
+                    <span>Verify Node Status & Dataplane</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="kubectl wait --for=condition=Ready nodes --all --timeout=180s&#10;kubectl get nodes -o wide&#10;kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>kubectl wait --for=condition=Ready nodes --all --timeout=180s
+kubectl get nodes -o wide
+kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Kubeadm Panel -->
+          <div class="platform-panel" data-panel="kubeadm">
+            <div class="platform-callout">
+              <div class="platform-callout-icon">💡</div>
+              <div>
+                <div class="platform-callout-title">Kubeadm Dataplane Architecture Invariant</div>
+                <div class="platform-callout-desc">
+                  Bare-metal and VM clusters initialized via Kubeadm must skip the kube-proxy addon phase (<code>--skip-phases=addon/kube-proxy</code>). StraitKubeGateway's in-kernel eBPF dataplane provides complete, zero-overhead Service VIP routing, ClusterIP/NodePort/LoadBalancer translation, and full CNI networking without iptables or IPVS.
+                </div>
+              </div>
+            </div>
+
+            <!-- Version Selector Component -->
+            <div class="version-selector-bar">
+              <div class="version-selector-title">
+                <div class="version-selector-icon">🏷️</div>
+                <div>
+                  <div style="font-weight: 700; color: var(--text-primary); font-size: 13.5px;">Kubernetes Version Selector (v1.m.p)</div>
+                  <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Enter minor (m) &amp; patch (p) to dynamically configure pkgs.k8s.io repository &amp; kubeadm init</div>
+                </div>
+              </div>
+              <div class="version-inputs-group">
+                <div class="version-input-pill">
+                  <span class="version-prefix">v1 .</span>
+                  <input type="number" id="kubeadm-minor" class="version-input" value="32" min="26" max="37" aria-label="Minor Version (m)">
+                  <span class="version-dot">.</span>
+                  <input type="number" id="kubeadm-patch" class="version-input" value="0" min="0" max="99" aria-label="Patch Version (p)">
+                </div>
+                <div class="version-presets-pills">
+                  <button type="button" class="btn-version-quick active" data-m="32" data-p="0">v1.32.0 (LTS)</button>
+                  <button type="button" class="btn-version-quick" data-m="31" data-p="2">v1.31.2</button>
+                  <button type="button" class="btn-version-quick" data-m="30" data-p="4">v1.30.4</button>
+                  <button type="button" class="btn-version-quick" data-m="37" data-p="0">v1.37.0 (Latest)</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="platform-steps-grid">
+              <!-- Step 1: System & Kernel Prep -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">1</span>
+                    <span>Host Networking &amp; Kernel Preparation</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="sudo swapoff -a&#10;sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab&#10;sudo modprobe overlay && sudo modprobe br_netfilter&#10;cat <<'EOF' | sudo tee /etc/sysctl.d/k8s.conf&#10;net.bridge.bridge-nf-call-iptables  = 1&#10;net.bridge.bridge-nf-call-ip6tables = 1&#10;net.ipv4.ip_forward                 = 1&#10;EOF&#10;sudo sysctl --system">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>sudo swapoff -a
+sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+sudo modprobe overlay &amp;&amp; sudo modprobe br_netfilter
+
+cat &lt;&lt;'EOF' | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward                 = 1
+EOF
+sudo sysctl --system</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 2: Configure APT Repo & Install (Dynamic v1.m.p) -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">2</span>
+                    <span>Install Kubelet, Kubeadm &amp; Kubectl (Dynamic v1.m.p)</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-target="code-kubeadm-repo">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code id="code-kubeadm-repo">sudo apt-get update &amp;&amp; sudo apt-get install -y apt-transport-https ca-certificates curl gpg
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update
+sudo apt-get install -y kubelet=1.32.0-* kubeadm=1.32.0-* kubectl=1.32.0-*
+sudo apt-mark hold kubelet kubeadm kubectl</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 3: Initialize Kubeadm (No kube-proxy) -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">3</span>
+                    <span>Initialize Kubeadm Cluster (Skipping kube-proxy)</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-target="code-kubeadm-init">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code id="code-kubeadm-init">sudo kubeadm init \
+  --kubernetes-version=v1.32.0 \
+  --pod-network-cidr=10.244.0.0/16 \
+  --skip-phases=addon/kube-proxy \
+  --ignore-preflight-errors=NumCPU,Mem
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+# Untaint control-plane so StraitKubeGateway CNI can schedule
+kubectl taint nodes --all node-role.kubernetes.io/control-plane- || true</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 4: Apply Gateway API CRDs -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">4</span>
+                    <span>Apply Gateway API v1.6.1 CRDs</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>kubectl apply --server-side --force-conflicts -f \
+  https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 5: Install StraitKubeGateway via Helm -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">5</span>
+                    <span>Install StraitKubeGateway via Helm</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway&#10;helm repo update&#10;helm install straitkubegateway straitkubegateway/straitkubegateway \&#10;  --namespace kube-system \&#10;  --set straitd.kubeProxyReplacement=true \&#10;  --set straitd.kubeProxyMode=none \&#10;  --set straitd.wireguard.enabled=true \&#10;  --wait --timeout 300s">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway
+helm repo update
+
+helm install straitkubegateway straitkubegateway/straitkubegateway \
+  --namespace kube-system \
+  --set straitd.kubeProxyReplacement=true \
+  --set straitd.kubeProxyMode=none \
+  --set straitd.wireguard.enabled=true \
+  --wait --timeout 300s</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 6: Verification -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">6</span>
+                    <span>Verify Bare-Metal Node &amp; Workload Health</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="kubectl wait --for=condition=Ready nodes --all --timeout=180s&#10;kubectl get nodes -o wide&#10;kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide&#10;kubectl get gatewayclasses,gateways,straitnetworks">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>kubectl wait --for=condition=Ready nodes --all --timeout=180s
+kubectl get nodes -o wide
+kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide
+kubectl get gatewayclasses,gateways,straitnetworks</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 3: Interactive Network Topology Visualizer -->
     <section id="topology" class="section">
       <div class="container">
         
