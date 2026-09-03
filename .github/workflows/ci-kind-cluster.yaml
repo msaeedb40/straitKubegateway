@@ -80,13 +80,9 @@ jobs:
       - name: Create Kind cluster
         uses: helm/kind-action@v1
         with:
+          version: v0.33.0
           cluster_name: ci-kind-test
           config: scripts/kind/kind-config.yaml
-
-      - name: Upgrade control plane and agent nodes to containerd 2.3.4 and runc 1.5.1
-        run: |
-          chmod +x scripts/kind/update-runtimes.sh
-          ./scripts/kind/update-runtimes.sh ci-kind-test
 
       - name: Load images into Kind cluster
         run: |
@@ -94,6 +90,11 @@ jobs:
           kind load docker-image sg-controller:ci-${{ github.sha }}   --name ci-kind-test
           kind load docker-image sg-cli:ci-${{ github.sha }}          --name ci-kind-test
           kind load docker-image ui:ci-${{ github.sha }}              --name ci-kind-test
+
+      - name: Upgrade control plane and agent nodes to containerd 2.3.4 and runc 1.5.1
+        run: |
+          chmod +x scripts/kind/update-runtimes.sh
+          ./scripts/kind/update-runtimes.sh ci-kind-test
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
