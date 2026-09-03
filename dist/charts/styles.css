@@ -1397,6 +1397,8 @@ input:checked + .toggle-slider::before {
   .phases-timeline {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
 /* ==========================================================================
    Platform Cluster Deployments (Kind, K3s, Minikube)
    ========================================================================== */
@@ -1558,6 +1560,7 @@ input:checked + .toggle-slider::before {
   text-align: center;
   outline: none;
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 .version-input::-webkit-outer-spin-button,
