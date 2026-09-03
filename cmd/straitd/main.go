@@ -133,6 +133,9 @@ func main() {
 	if err := cni.InstallConfig(cfg.cniConfDir, cfg.podCIDR, logger); err != nil {
 		logger.Warn("could not install CNI configuration", zap.Error(err))
 	}
+	if err := cni.EnsureBootstrapNAT(cfg.apiServerAddr, cfg.apiServerPort, cfg.podCIDR, logger); err != nil {
+		logger.Warn("could not configure bootstrap NAT", zap.Error(err))
+	}
 	identityAlloc := identity.NewAllocator()
 	dataplaneCompiler := compiler.New(logger)
 	routingMgr := routing.NewManager(logger, 0)

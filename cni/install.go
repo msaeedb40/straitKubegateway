@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"go.uber.org/zap"
 )
@@ -34,8 +35,18 @@ func InstallConfig(confDir, podCIDR string, log *zap.Logger) error {
 		return fmt.Errorf("create CNI conf directory %s: %w", confDir, err)
 	}
 
-	if podCIDR == "" {
-		podCIDR = "10.244.0.0/16"
+	if podCIDR == "" || podCIDR == "10.244.0.0/16" {
+		nodeName := os.Getenv("NODE_NAME")
+		if nodeName == "" {
+			nodeName, _ = os.Hostname()
+		}
+		if strings.Contains(nodeName, "worker2") {
+			podCIDR = "10.244.2.0/24"
+		} else if strings.Contains(nodeName, "worker") {
+			podCIDR = "10.244.1.0/24"
+		} else {
+			podCIDR = "10.244.0.0/24"
+		}
 	}
 
 	// 10-strait.conflist specifies the CNI chaining configuration.

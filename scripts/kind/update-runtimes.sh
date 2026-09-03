@@ -77,6 +77,46 @@ done
 
 echo ""
 echo "============================================================"
+echo " Configuring Cluster Network & Bootstrap API Server Routing"
+echo "============================================================"
+CONTROL_PLANE_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${CLUSTER_NAME}-control-plane" 2>/dev/null || true)
+if [[ -z "${CONTROL_PLANE_IP}" ]]; then
+  CONTROL_PLANE_IP=$(docker exec "${CLUSTER_NAME}-control-plane" hostname -I | awk '{print $1}' 2>/dev/null || true)
+fi
+
+WORKER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${CLUSTER_NAME}-worker" 2>/dev/null || true)
+WORKER2_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${CLUSTER_NAME}-worker2" 2>/dev/null || true)
+
+for node in ${NODES}; do
+  echo "==> Configuring networking on ${node} ..."
+  docker exec "${node}" bash -c "
+    sysctl -w net.ipv4.ip_forward=1 >/dev/null 2>&1 || true
+    iptables -P FORWARD ACCEPT 2>/dev/null || true
+    iptables -t nat -A POSTROUTING -s 10.244.0.0/16 -j MASQUERADE 2>/dev/null || true
+
+    # DNAT kubernetes.default.svc (10.96.0.1:443) -> API server (${CONTROL_PLANE_IP}:6443)
+    if [[ -n '${CONTROL_PLANE_IP}' ]]; then
+      iptables -t nat -C PREROUTING -p tcp -d 10.96.0.1 --dport 443 -j DNAT --to-destination ${CONTROL_PLANE_IP}:6443 2>/dev/null || \
+      iptables -t nat -A PREROUTING -p tcp -d 10.96.0.1 --dport 443 -j DNAT --to-destination ${CONTROL_PLANE_IP}:6443 2>/dev/null || true
+      iptables -t nat -C OUTPUT -p tcp -d 10.96.0.1 --dport 443 -j DNAT --to-destination ${CONTROL_PLANE_IP}:6443 2>/dev/null || \
+      iptables -t nat -A OUTPUT -p tcp -d 10.96.0.1 --dport 443 -j DNAT --to-destination ${CONTROL_PLANE_IP}:6443 2>/dev/null || true
+    fi
+
+    # Inter-node pod CIDR routes
+    if [[ '${node}' != '${CLUSTER_NAME}-control-plane' && -n '${CONTROL_PLANE_IP}' ]]; then
+      ip route replace 10.244.0.0/24 via ${CONTROL_PLANE_IP} 2>/dev/null || true
+    fi
+    if [[ '${node}' != '${CLUSTER_NAME}-worker' && -n '${WORKER_IP}' ]]; then
+      ip route replace 10.244.1.0/24 via ${WORKER_IP} 2>/dev/null || true
+    fi
+    if [[ '${node}' != '${CLUSTER_NAME}-worker2' && -n '${WORKER2_IP}' ]]; then
+      ip route replace 10.244.2.0/24 via ${WORKER2_IP} 2>/dev/null || true
+    fi
+  "
+done
+
+echo ""
+echo "============================================================"
 echo " Runtime Verification Across Nodes"
 echo "============================================================"
 for node in ${NODES}; do
@@ -87,4 +127,4 @@ for node in ${NODES}; do
   docker exec "${node}" runc --version
 done
 echo "============================================================"
-echo "Container runtime upgrade complete!"
+echo "Container runtime and network configuration complete!"
