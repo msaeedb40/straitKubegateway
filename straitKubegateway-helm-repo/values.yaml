@@ -99,8 +99,8 @@ sgController:
 # Gateway API v1.6.1 integration
 gatewayAPI:
   enabled: true
-  gatewayClassName: skgateway  
-  controllerName: straitkubegateway.io/skgateway
+  gatewayClassName: straitkubegateway
+  controllerName: gateway.straitkubegateway.io/skubegateway
 
 # Multi-cluster Transit Gateway configuration
 transit:

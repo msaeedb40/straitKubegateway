@@ -103,12 +103,12 @@ jobs:
 
       - name: Apply Gateway API CRDs v1.6.1
         run: |
-          kubectl apply --server-side -f \
+          kubectl apply --server-side --force-conflicts -f \
             https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml
 
       - name: Apply straitKubegateway CRDs
         run: |
-          kubectl apply --server-side -f straitKubegateway-helm-repo/crds/
+          kubectl apply --server-side --force-conflicts -f straitKubegateway-helm-repo/crds/
 
       - name: Wait for CRDs to be established
         run: |
@@ -124,7 +124,8 @@ jobs:
             crd/straitnetworks.straitkubegateway.io \
             crd/straitnetworkpolicies.straitkubegateway.io \
             crd/straitnodes.straitkubegateway.io \
-            crd/transitgateways.straitkubegateway.io
+            crd/transitgateways.straitkubegateway.io \
+            crd/transitsegmentattachments.straitkubegateway.io
 
       - name: Helm lint straitKubegateway chart
         run: helm lint straitKubegateway-helm-repo

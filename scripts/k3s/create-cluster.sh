@@ -25,6 +25,7 @@ log_info "Creating k3d cluster '${CLUSTER_NAME}' (${K3S_SERVERS} server(s), ${K3
 k3d cluster create "${CLUSTER_NAME}" \
   --servers "${K3S_SERVERS}" \
   --agents "${K3S_AGENTS}" \
+  --volume "/sys/fs/bpf:/sys/fs/bpf@server:*;agent:*" \
   --k3s-arg "--flannel-backend=none@server:*" \
   --k3s-arg "--disable-network-policy@server:*" \
   --k3s-arg "--disable=traefik@server:*" \

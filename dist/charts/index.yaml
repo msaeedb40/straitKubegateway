@@ -3,10 +3,10 @@ entries:
   straitkubegateway:
   - apiVersion: v2
     appVersion: 1.0.1
-    created: "2026-09-03T23:20:38.718230375+03:00"
+    created: "2026-09-03T23:25:13.714481737+03:00"
     description: A Helm chart for straitKubegateway Kubernetes-native transit gateway
       and CNI platform
-    digest: b320197eb78437c1df4da115bd5f24423b881350f929b7291c1d1c0523932237
+    digest: a4ff733b685d8675b770f01487a12913eafd3c2dd86a5cc9bfc41c7ff36c76ff
     home: https://github.com/msaeedb40/straitKubegateway.git
     icon: https://raw.githubusercontent.com/msaeedb40/straitKubegateway/main/logo/straitKubegateway.png
     keywords:
@@ -22,4 +22,4 @@ entries:
     urls:
     - https://msaeedb40.github.io/straitKubegateway/straitkubegateway-1.0.1.tgz
     version: 1.0.1
-generated: "2026-09-03T23:20:38.715328035+03:00"
+generated: "2026-09-03T23:25:13.711213801+03:00"

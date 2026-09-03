@@ -90,10 +90,13 @@ jobs:
 
       - name: Load images into Minikube cluster
         run: |
-          minikube image load straitd:ci-${{ github.sha }}
-          minikube image load sg-controller:ci-${{ github.sha }}
-          minikube image load sg-cli:ci-${{ github.sha }}
-          minikube image load ui:ci-${{ github.sha }}
+          for node in $(kubectl get nodes -o jsonpath='{.items[*].metadata.name}'); do
+            echo "Loading images into Minikube node: $node"
+            minikube image load --node "$node" straitd:ci-${{ github.sha }}
+            minikube image load --node "$node" sg-controller:ci-${{ github.sha }}
+            minikube image load --node "$node" sg-cli:ci-${{ github.sha }}
+            minikube image load --node "$node" ui:ci-${{ github.sha }}
+          done
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
@@ -102,12 +105,12 @@ jobs:
 
       - name: Apply Gateway API CRDs v1.6.1
         run: |
-          kubectl apply --server-side -f \
+          kubectl apply --server-side --force-conflicts -f \
             https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml
 
       - name: Apply straitKubegateway CRDs
         run: |
-          kubectl apply --server-side -f straitKubegateway-helm-repo/crds/
+          kubectl apply --server-side --force-conflicts -f straitKubegateway-helm-repo/crds/
 
       - name: Wait for CRDs to be established
         run: |
@@ -123,7 +126,8 @@ jobs:
             crd/straitnetworks.straitkubegateway.io \
             crd/straitnetworkpolicies.straitkubegateway.io \
             crd/straitnodes.straitkubegateway.io \
-            crd/transitgateways.straitkubegateway.io
+            crd/transitgateways.straitkubegateway.io \
+            crd/transitsegmentattachments.straitkubegateway.io
 
       - name: Helm lint straitKubegateway chart
         run: helm lint straitKubegateway-helm-repo
