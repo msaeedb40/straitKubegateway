@@ -43,9 +43,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: charts/package-lock.json
-      
-
+          cache-dependency-path: package-lock.json
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
