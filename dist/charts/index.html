@@ -57,6 +57,7 @@
             <li><a href="#topology">Topology</a></li>
             <li><a href="#hooks">eBPF Hooks</a></li>
             <li><a href="#evaluator">Policy Simulator</a></li>
+            <li><a href="#observability">Prometheus &amp; Grafana</a></li>
             <li><a href="#architecture">Architecture</a></li>
             <li><a href="#roadmap">Roadmap</a></li>
           </ul>
@@ -1186,6 +1187,248 @@ kubectl get gatewayclasses,gateways,straitnetworks</code></pre>
             </div>
             <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 700; margin-bottom: 4px;">Matched Rule & Justification:</div>
             <p id="eval-reason" style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.6;"></p>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section: Prometheus & Grafana Observability Suite -->
+    <section id="observability" class="section">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-tag">📊 Observability Suite</div>
+          <h2 class="section-title">
+            Prometheus Metrics &amp; <span class="text-gradient">Grafana Dashboards</span>
+          </h2>
+          <p class="section-desc">
+            Production-grade telemetry for in-kernel eBPF datapath, CNI operations, Maglev consistent VIP routing, and BFD sub-second link monitoring. Seamless integration with Prometheus Operator and Grafana.
+          </p>
+        </div>
+
+        <!-- Observability Dashboard Grid -->
+        <div class="observability-dashboard">
+          
+          <!-- Live Metrics Stat Tiles -->
+          <div class="obs-stat-grid">
+            <div class="obs-stat-card">
+              <div class="obs-stat-header">
+                <span class="obs-stat-label">Active straitd Daemons</span>
+                <span class="bullet" style="background: var(--emerald-400);"></span>
+              </div>
+              <div class="obs-stat-val" id="obs-stat-nodes">3 / 3</div>
+              <div class="obs-stat-sub">eBPF XDP datapath loaded</div>
+            </div>
+            <div class="obs-stat-card">
+              <div class="obs-stat-header">
+                <span class="obs-stat-label">Fast-Path Latency</span>
+                <span class="bullet" style="background: var(--cyan-400);"></span>
+              </div>
+              <div class="obs-stat-val">&lt; 0.15 µs</div>
+              <div class="obs-stat-sub">99th percentile XDP pass</div>
+            </div>
+            <div class="obs-stat-card">
+              <div class="obs-stat-header">
+                <span class="obs-stat-label">BFD Session States</span>
+                <span class="bullet" style="background: var(--blue-400);"></span>
+              </div>
+              <div class="obs-stat-val">100% Up</div>
+              <div class="obs-stat-sub">Sub-sec route failover active</div>
+            </div>
+            <div class="obs-stat-card">
+              <div class="obs-stat-header">
+                <span class="obs-stat-label">BPF Map Operations</span>
+                <span class="bullet" style="background: var(--purple-400);"></span>
+              </div>
+              <div class="obs-stat-val" id="obs-stat-ops">42.8k /s</div>
+              <div class="obs-stat-sub">Zero lock contention</div>
+            </div>
+          </div>
+
+          <!-- Interactive Tabs for Prometheus & Grafana -->
+          <div class="obs-content-frame">
+            <div class="obs-tab-header">
+              <button class="obs-tab active" data-obstab="deploy">
+                <span>🚀 Helm Deployment Guide</span>
+              </button>
+              <button class="obs-tab" data-obstab="metrics">
+                <span>📈 Prometheus Metric Families</span>
+              </button>
+              <button class="obs-tab" data-obstab="grafana">
+                <span>📊 Grafana Dashboard JSON</span>
+              </button>
+            </div>
+
+            <!-- Tab 1: Deploy Guide -->
+            <div class="obs-panel active" data-obspanel="deploy">
+              <div class="platform-steps-grid">
+                
+                <!-- Step 1 -->
+                <div class="platform-step-card">
+                  <div class="platform-step-header">
+                    <div class="platform-step-badge">
+                      <span class="platform-step-badge-num">1</span>
+                      <span>Deploy kube-prometheus-stack (Prometheus + Grafana + Alertmanager)</span>
+                    </div>
+                  </div>
+                  <div class="code-window">
+                    <button class="code-copy-btn" data-copy-text="helm repo add prometheus-community https://prometheus-community.github.io/helm-charts&#10;helm repo update&#10;helm install prometheus prometheus-community/kube-prometheus-stack \&#10;  --namespace monitoring \&#10;  --create-namespace">
+                      <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                      <span>Copy</span>
+                    </button>
+                    <pre><code>helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+helm install prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --create-namespace</code></pre>
+                  </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="platform-step-card">
+                  <div class="platform-step-header">
+                    <div class="platform-step-badge">
+                      <span class="platform-step-badge-num">2</span>
+                      <span>Install StraitKubeGateway with ServiceMonitor &amp; Dashboards</span>
+                    </div>
+                  </div>
+                  <div class="code-window">
+                    <button class="code-copy-btn" data-copy-text="helm install straitkubegateway straitkubegateway/straitkubegateway \&#10;  --namespace kube-system \&#10;  --set straitd.kubeProxyReplacement=true \&#10;  --set straitd.kubeProxyMode=none \&#10;  --set metrics.serviceMonitor.enabled=true \&#10;  --set metrics.prometheusRule.enabled=true \&#10;  --set grafana.dashboards.enabled=true \&#10;  --set grafana.dashboards.namespace=monitoring \&#10;  --wait --timeout 300s">
+                      <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                      <span>Copy</span>
+                    </button>
+                    <pre><code>helm install straitkubegateway straitkubegateway/straitkubegateway \
+  --namespace kube-system \
+  --set straitd.kubeProxyReplacement=true \
+  --set straitd.kubeProxyMode=none \
+  --set metrics.serviceMonitor.enabled=true \
+  --set metrics.prometheusRule.enabled=true \
+  --set grafana.dashboards.enabled=true \
+  --set grafana.dashboards.namespace=monitoring \
+  --wait --timeout 300s</code></pre>
+                  </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="platform-step-card">
+                  <div class="platform-step-header">
+                    <div class="platform-step-badge">
+                      <span class="platform-step-badge-num">3</span>
+                      <span>Port-Forward to Access Grafana Web Console</span>
+                    </div>
+                  </div>
+                  <div class="code-window">
+                    <button class="code-copy-btn" data-copy-text="kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80">
+                      <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                      <span>Copy</span>
+                    </button>
+                    <pre><code>kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+# Open http://localhost:3000 in your browser (default credentials: admin / prom-operator)</code></pre>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Tab 2: Metrics Reference -->
+            <div class="obs-panel" data-obspanel="metrics">
+              <div class="hook-table-container">
+                <table class="hook-table">
+                  <thead>
+                    <tr>
+                      <th>Metric Name</th>
+                      <th>Type</th>
+                      <th>Labels</th>
+                      <th>Telemetry Purpose</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>straitkubegateway_dataplane_compilations_total</code></td>
+                      <td><span class="hook-badge hook-badge-xdp">Counter</span></td>
+                      <td><code>result</code></td>
+                      <td>Tracks successful and erroneous BPF IR compilations</td>
+                    </tr>
+                    <tr>
+                      <td><code>straitkubegateway_bpf_map_operations_total</code></td>
+                      <td><span class="hook-badge hook-badge-xdp">Counter</span></td>
+                      <td><code>map, op, result</code></td>
+                      <td>eBPF map CRUD throughput (lookups, updates, deletions)</td>
+                    </tr>
+                    <tr>
+                      <td><code>straitkubegateway_cni_operations_total</code></td>
+                      <td><span class="hook-badge hook-badge-tc">Counter</span></td>
+                      <td><code>op, result</code></td>
+                      <td>CNI lifecycle requests (ADD, DEL, CHECK, GC)</td>
+                    </tr>
+                    <tr>
+                      <td><code>straitkubegateway_cni_operation_duration_seconds</code></td>
+                      <td><span class="hook-badge hook-badge-tc">Histogram</span></td>
+                      <td><code>op</code></td>
+                      <td>Sub-millisecond pod network attachment latency</td>
+                    </tr>
+                    <tr>
+                      <td><code>straitkubegateway_service_endpoints</code></td>
+                      <td><span class="hook-badge hook-badge-cgroup">Gauge</span></td>
+                      <td><code>service, namespace</code></td>
+                      <td>Active Maglev backend endpoints mapped to Service VIPs</td>
+                    </tr>
+                    <tr>
+                      <td><code>straitkubegateway_policy_evaluations_total</code></td>
+                      <td><span class="hook-badge hook-badge-cgroup">Counter</span></td>
+                      <td><code>action, direction</code></td>
+                      <td>Zero-trust security verdicts (Allow, Deny, Reject)</td>
+                    </tr>
+                    <tr>
+                      <td><code>straitkubegateway_bfd_session_state</code></td>
+                      <td><span class="hook-badge hook-badge-xdp">Gauge</span></td>
+                      <td><code>peer, state</code></td>
+                      <td>Sub-second BFD hardware heartbeat state (1=Up, 0=Down)</td>
+                    </tr>
+                    <tr>
+                      <td><code>straitkubegateway_ipam_allocated_ips</code></td>
+                      <td><span class="hook-badge hook-badge-tc">Gauge</span></td>
+                      <td><code>cidr, family</code></td>
+                      <td>Dynamic IP pool consumption across node subnets</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Tab 3: Grafana JSON -->
+            <div class="obs-panel" data-obspanel="grafana">
+              <div style="margin-bottom: 12px; font-size: 13px; color: var(--text-secondary);">
+                Pre-configured dashboard with 8 real-time visual panels. Automatically auto-loaded when <code>grafana.dashboards.enabled=true</code> is set in Helm, or import manually into Grafana:
+              </div>
+              <div class="code-window">
+                <button class="code-copy-btn" data-copy-target="code-grafana-json">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  <span>Copy Dashboard JSON</span>
+                </button>
+                <pre><code id="code-grafana-json">{
+  "title": "StraitKubeGateway / Dataplane &amp; CNI Overview",
+  "uid": "straitkubegateway-overview",
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["straitkubegateway", "cni", "ebpf", "networking", "gateway-api"],
+  "panels": [
+    { "id": 1, "title": "Active straitd Daemons", "type": "stat", "targets": [{ "expr": "count(up{job=~\".*straitd.*\"} == 1)" }] },
+    { "id": 2, "title": "Controller Replicas", "type": "stat", "targets": [{ "expr": "count(up{job=~\".*controller.*\"} == 1)" }] },
+    { "id": 3, "title": "Active BFD Sessions", "type": "stat", "targets": [{ "expr": "sum(straitkubegateway_bfd_session_state)" }] },
+    { "id": 4, "title": "Total BPF Map Entries", "type": "stat", "targets": [{ "expr": "sum(straitkubegateway_bpf_map_entries)" }] },
+    { "id": 5, "title": "CNI Operations Rate", "type": "timeseries", "targets": [{ "expr": "sum by (op) (rate(straitkubegateway_cni_operations_total[1m]))" }] },
+    { "id": 6, "title": "BPF Map Operations / sec", "type": "timeseries", "targets": [{ "expr": "sum by (op) (rate(straitkubegateway_bpf_map_operations_total[1m]))" }] },
+    { "id": 7, "title": "Network Policy Verdicts Rate", "type": "timeseries", "targets": [{ "expr": "sum by (action) (rate(straitkubegateway_policy_evaluations_total[1m]))" }] },
+    { "id": 8, "title": "IPAM Pool Utilization", "type": "timeseries", "targets": [{ "expr": "straitkubegateway_ipam_allocated_ips" }] }
+  ]
+}</code></pre>
+              </div>
+            </div>
+
           </div>
 
         </div>

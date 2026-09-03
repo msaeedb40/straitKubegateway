@@ -16,6 +16,27 @@ spec:
     {{- include "straitKubegateway-helm-repo.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: controller
 ---
+{{- if .Values.straitd.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "straitKubegateway-helm-repo.fullname" . }}-straitd
+  labels:
+    {{- include "straitKubegateway-helm-repo.labels" . | nindent 4 }}
+    app.kubernetes.io/component: node-agent
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - port: {{ .Values.straitd.metrics.port }}
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+  selector:
+    {{- include "straitKubegateway-helm-repo.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: node-agent
+{{- end }}
+---
 apiVersion: v1
 kind: Service
 metadata:

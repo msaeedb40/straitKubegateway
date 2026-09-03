@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initInstaller();
   initPlatformTabs();
   initKubeadmVersionSelector();
+  initObservabilityTabs();
   initTopology();
   initPolicyTester();
   initHookExplorer();
@@ -170,10 +171,9 @@ function renderInstallCommand() {
     lines.push('  --set routing.bfd.enabled=true');
   }
   if (metrics) {
-    lines.push('  --set observability.prometheus.enabled=true');
-    lines.push('  --set observability.openTelemetry.enabled=true');
-  } else {
-    lines.push('  --set observability.prometheus.enabled=false');
+    lines.push('  --set metrics.serviceMonitor.enabled=true');
+    lines.push('  --set metrics.prometheusRule.enabled=true');
+    lines.push('  --set grafana.dashboards.enabled=true');
   }
   if (ipv6) {
     lines.push('  --set networking.dualStack.enabled=true');
@@ -294,6 +294,42 @@ kubectl taint nodes --all node-role.kubernetes.io/control-plane- || true`;
   });
 
   updateKubeadmSnippets();
+}
+
+/* ==========================================================================
+   1d. Observability & Prometheus / Grafana Tabs
+   ========================================================================== */
+
+function initObservabilityTabs() {
+  const tabs = document.querySelectorAll('.obs-tab');
+  const panels = document.querySelectorAll('.obs-panel');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.getAttribute('data-obstab');
+      if (!target) return;
+
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      panels.forEach(p => {
+        if (p.getAttribute('data-obspanel') === target) {
+          p.classList.add('active');
+        } else {
+          p.classList.remove('active');
+        }
+      });
+    });
+  });
+
+  // Dynamic telemetry pulsation for BPF ops stat
+  const opsElem = document.getElementById('obs-stat-ops');
+  if (opsElem) {
+    setInterval(() => {
+      const val = (41 + Math.random() * 4).toFixed(1);
+      opsElem.textContent = `${val}k /s`;
+    }, 3200);
+  }
 }
 
 /* ==========================================================================

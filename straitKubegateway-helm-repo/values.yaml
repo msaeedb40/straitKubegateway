@@ -122,3 +122,23 @@ ui:
 secret:
   create: false
   data: {}
+
+# Observability, Prometheus Operator & Grafana
+metrics:
+  serviceMonitor:
+    enabled: false
+    interval: 15s
+    scrapeTimeout: 10s
+    labels:
+      release: prometheus
+  prometheusRule:
+    enabled: false
+    labels:
+      role: alert-rules
+
+grafana:
+  dashboards:
+    enabled: false
+    namespace: ""
+    labels:
+      grafana_dashboard: "1"
