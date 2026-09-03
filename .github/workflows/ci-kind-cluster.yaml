@@ -83,6 +83,11 @@ jobs:
           cluster_name: ci-kind-test
           config: scripts/kind/kind-config.yaml
 
+      - name: Upgrade control plane and agent nodes to containerd 2.3.4 and runc 1.5.1
+        run: |
+          chmod +x scripts/kind/update-runtimes.sh
+          ./scripts/kind/update-runtimes.sh ci-kind-test
+
       - name: Load images into Kind cluster
         run: |
           kind load docker-image straitd:ci-${{ github.sha }}         --name ci-kind-test

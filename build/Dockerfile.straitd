@@ -5,6 +5,8 @@ FROM golang:1.26-alpine AS builder
 ARG VERSION=dev
 ARG GIT_COMMIT=unknown
 ARG TARGETARCH
+ARG CONTAINERD_VERSION=2.3.4
+ARG RUNC_VERSION=1.5.1
 
 WORKDIR /src
 
@@ -40,6 +42,9 @@ RUN --mount=type=cache,target=/go/pkg/mod,id=straitd-gomod \
 FROM alpine:3.24 AS production
 
 ARG VERSION=dev
+ARG TARGETARCH
+ARG CONTAINERD_VERSION=2.3.4
+ARG RUNC_VERSION=1.5.1
 
 RUN apk add --no-cache \
     iproute2 \
@@ -47,6 +52,20 @@ RUN apk add --no-cache \
     wireguard-tools \
     ca-certificates \
     && rm -rf /var/cache/apk/*
+
+# Install containerd 2.3.4 and runc 1.5.1 for CRI compatibility
+RUN set -eux; \
+    ARCH="$(uname -m)"; \
+    case "${ARCH}" in \
+      x86_64)  ARCH=amd64 ;; \
+      aarch64) ARCH=arm64 ;; \
+    esac; \
+    wget -qO- "https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-linux-${ARCH}.tar.gz" \
+      | tar -xz -C /usr/local; \
+    wget -qO /usr/local/sbin/runc "https://github.com/opencontainers/runc/releases/download/v${RUNC_VERSION}/runc.${ARCH}"; \
+    chmod +x /usr/local/sbin/runc; \
+    containerd --version; \
+    runc --version
 
 COPY --from=builder /bin/straitd /usr/local/bin/straitd
 

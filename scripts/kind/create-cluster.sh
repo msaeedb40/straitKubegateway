@@ -33,9 +33,12 @@ EOF
 log_info "Creating Kind cluster '${CLUSTER_NAME}' ..."
 echo "${KIND_CONFIG}" | kind create cluster --config=-
 
+log_info "Upgrading container runtime (containerd 2.3.4, runc 1.5.1) across nodes..."
+"${SCRIPT_DIR}/update-runtimes.sh" "${CLUSTER_NAME}"
+
 log_info "Verifying cluster is ready ..."
 kubectl cluster-info --context "kind-${CLUSTER_NAME}"
-kubectl get nodes
+kubectl get nodes -o wide
 
-log_success "Kind cluster '${CLUSTER_NAME}' is ready."
+log_success "Kind cluster '${CLUSTER_NAME}' is ready with containerd 2.3.4 and runc 1.5.1."
 log_info "Next step: run ./install.sh to deploy straitKubegateway."

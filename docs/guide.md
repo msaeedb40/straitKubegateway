@@ -11,7 +11,7 @@ This guide covers deploying, configuring, upgrading, uninstalling, and testing *
 | **Kubernetes** | v1.30+ with API server accessible on `:6443` |
 | **Linux Kernel** | 6.7+ (NetKit, TCX, XDP, cgroup v2), 6.12 LTS recommended |
 | **Helm** | v3.14+ |
-| **Container Runtime** | containerd 1.7+ or CRI-O 1.30+ |
+| **Container Runtime** | containerd 2.3.4+ (with runc 1.5.1+) or CRI-O 1.30+ |
 | **Architecture** | `amd64` or `arm64` |
 | **Cluster Access** | `kubectl` configured with `cluster-admin` privileges |
 
