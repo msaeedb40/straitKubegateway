@@ -51,6 +51,10 @@ ui/node_modules/
 ui/dist/
 ui/.angular/
 
+
+# github page
+dist/charts/node_modules
+
 # OS
 Thumbs.db
 .Spotlight-V100
