@@ -20,6 +20,10 @@ straitd:
   kubeProxyMode: "none"
   disableDefaultCNI: true
 
+  # Upstream API server override for bootstrap DNAT (auto-discovered from kubelet.conf or NODE_NAME if empty)
+  apiServerHost: ""
+  apiServerPort: 6443
+
   # bpffs mount point on host
   bpffs:
     hostPath: /sys/fs/bpf

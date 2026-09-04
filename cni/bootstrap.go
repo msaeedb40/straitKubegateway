@@ -62,42 +62,91 @@ func discoverAPIServer(host string, port int) (string, int) {
 		return resolveHost(host), port
 	}
 
-	// Try reading /etc/kubernetes/kubelet.conf for the upstream API server URL
-	if f, err := os.Open("/etc/kubernetes/kubelet.conf"); err == nil {
-		defer f.Close()
-		scanner := bufio.NewScanner(f)
-		for scanner.Scan() {
-			line := strings.TrimSpace(scanner.Text())
-			if strings.HasPrefix(line, "server:") {
-				rawURL := strings.TrimSpace(strings.TrimPrefix(line, "server:"))
-				if u, parseErr := url.Parse(rawURL); parseErr == nil {
-					h, p, splitErr := net.SplitHostPort(u.Host)
-					if splitErr == nil {
-						var parsedPort int
-						fmt.Sscanf(p, "%d", &parsedPort)
-						return resolveHost(h), parsedPort
-					}
-					return resolveHost(u.Hostname()), 6443
-				}
+	// Try reading kubeconfig files for the upstream API server URL
+	kubeConfigFiles := []string{
+		"/etc/kubernetes/kubelet.conf",
+		"/etc/kubernetes/admin.conf",
+		"/host/etc/kubernetes/kubelet.conf",
+		"/var/lib/kubelet/kubeconfig",
+	}
+
+	for _, kf := range kubeConfigFiles {
+		if f, err := os.Open(kf); err == nil {
+			parsedHost, parsedPort, found := parseAPIServerFromKubeconfig(f)
+			_ = f.Close()
+			if found {
+				return resolveHost(parsedHost), parsedPort
 			}
-		}
-		if scanErr := scanner.Err(); scanErr != nil {
-			_ = scanErr
 		}
 	}
 
-	// Try common control plane hostnames in Kind
-	for _, candidate := range []string{"ci-kind-test-control-plane", "straitkubegateway-control-plane", "kind-control-plane"} {
-		if ips, err := net.LookupHost(candidate); err == nil && len(ips) > 0 {
-			return ips[0], 6443
+	// Dynamically derive control plane candidate names
+	var candidates []string
+
+	if nodeName := os.Getenv("NODE_NAME"); nodeName != "" {
+		if strings.Contains(nodeName, "-control-plane") {
+			candidates = append(candidates, nodeName)
+		} else if idx := strings.Index(nodeName, "-worker"); idx != -1 {
+			candidates = append(candidates, nodeName[:idx]+"-control-plane")
+		} else if idx := strings.LastIndex(nodeName, "-"); idx != -1 {
+			candidates = append(candidates, nodeName[:idx]+"-control-plane")
+		}
+	}
+
+	if clusterName := os.Getenv("CLUSTER_NAME"); clusterName != "" {
+		candidates = append(candidates, clusterName+"-control-plane")
+	}
+
+	// Common well-known Kind control plane hostnames
+	candidates = append(candidates,
+		"ci-kind-test-control-plane",
+		"straitkubegateway-control-plane",
+		"kind-control-plane",
+		"cluster0-control-plane",
+		"kubernetes.default.svc",
+	)
+
+	for _, candidate := range candidates {
+		if resolved := resolveHost(candidate); resolved != candidate && resolved != "10.96.0.1" {
+			return resolved, 6443
 		}
 	}
 
 	return host, port
 }
 
+func parseAPIServerFromKubeconfig(f *os.File) (string, int, bool) {
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if strings.HasPrefix(line, "server:") {
+			rawURL := strings.TrimSpace(strings.TrimPrefix(line, "server:"))
+			if u, parseErr := url.Parse(rawURL); parseErr == nil {
+				h, p, splitErr := net.SplitHostPort(u.Host)
+				if splitErr == nil {
+					var parsedPort int
+					fmt.Sscanf(p, "%d", &parsedPort)
+					return h, parsedPort, true
+				}
+				return u.Hostname(), 6443, true
+			}
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return "", 0, false
+	}
+	return "", 0, false
+}
+
 func resolveHost(host string) string {
 	if ips, err := net.LookupHost(host); err == nil && len(ips) > 0 {
+		// Prefer IPv4 addresses for iptables NAT compatibility
+		for _, ip := range ips {
+			parsed := net.ParseIP(ip)
+			if parsed != nil && parsed.To4() != nil {
+				return ip
+			}
+		}
 		return ips[0]
 	}
 	return host
