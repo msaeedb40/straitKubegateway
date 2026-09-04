@@ -207,6 +207,128 @@ docker-push: ## Push all Docker images to registry
 	docker push $(REGISTRY)/ui:$(IMAGE_TAG)
 
 # ============================================================================
+# Kind & Local Deployment
+# ============================================================================
+
+KIND_CLUSTER ?= cluster0
+
+.PHONY: kind-load
+kind-load: ## Build and load all images (straitd, sg-controller, sg-cli, ui) into Kind cluster
+	docker build -f build/Dockerfile.sg-controller -t $(REGISTRY)/sg-controller:$(IMAGE_TAG) .
+	docker build -f build/Dockerfile.straitd -t $(REGISTRY)/straitd:$(IMAGE_TAG) .
+	docker build -f build/Dockerfile.sg-cli -t $(REGISTRY)/sg-cli:$(IMAGE_TAG) .
+	docker build -f build/Dockerfile.ui -t $(REGISTRY)/ui:$(IMAGE_TAG) .
+	kind load docker-image $(REGISTRY)/sg-controller:$(IMAGE_TAG) --name $(KIND_CLUSTER)
+	kind load docker-image $(REGISTRY)/straitd:$(IMAGE_TAG) --name $(KIND_CLUSTER)
+	kind load docker-image $(REGISTRY)/sg-cli:$(IMAGE_TAG) --name $(KIND_CLUSTER)
+	kind load docker-image $(REGISTRY)/ui:$(IMAGE_TAG) --name $(KIND_CLUSTER)
+
+.PHONY: kind-deploy
+kind-deploy: kind-load ## Build, load into Kind, and deploy via Helm
+	$(HELM) upgrade --install straitkubegateway $(HELM_DIR) \
+		--namespace kube-system \
+		--create-namespace \
+		--set kubeProxyReplacement=true \
+		--set disableDefaultCNI=true \
+		--set straitd.image.tag=$(IMAGE_TAG) \
+		--set straitd.image.pullPolicy=IfNotPresent \
+		--set sgController.image.tag=$(IMAGE_TAG) \
+		--set sgController.image.pullPolicy=IfNotPresent \
+		--set ui.image.tag=$(IMAGE_TAG) \
+		--set ui.image.pullPolicy=IfNotPresent \
+		--wait --timeout=15m
+
+# ============================================================================
+# Minikube Deployment
+# ============================================================================
+
+MINIKUBE_PROFILE ?= minikube
+
+.PHONY: minikube-load
+minikube-load: ## Build and load all images into Minikube cluster
+	docker build -f build/Dockerfile.sg-controller -t $(REGISTRY)/sg-controller:$(IMAGE_TAG) .
+	docker build -f build/Dockerfile.straitd -t $(REGISTRY)/straitd:$(IMAGE_TAG) .
+	docker build -f build/Dockerfile.sg-cli -t $(REGISTRY)/sg-cli:$(IMAGE_TAG) .
+	docker build -f build/Dockerfile.ui -t $(REGISTRY)/ui:$(IMAGE_TAG) .
+	minikube image load $(REGISTRY)/sg-controller:$(IMAGE_TAG) -p $(MINIKUBE_PROFILE)
+	minikube image load $(REGISTRY)/straitd:$(IMAGE_TAG) -p $(MINIKUBE_PROFILE)
+	minikube image load $(REGISTRY)/sg-cli:$(IMAGE_TAG) -p $(MINIKUBE_PROFILE)
+	minikube image load $(REGISTRY)/ui:$(IMAGE_TAG) -p $(MINIKUBE_PROFILE)
+
+.PHONY: minikube-deploy
+minikube-deploy: minikube-load ## Build, load into Minikube, and deploy via Helm
+	$(HELM) upgrade --install straitkubegateway $(HELM_DIR) \
+		--namespace kube-system \
+		--create-namespace \
+		--set kubeProxyReplacement=true \
+		--set disableDefaultCNI=true \
+		--set straitd.image.tag=$(IMAGE_TAG) \
+		--set straitd.image.pullPolicy=IfNotPresent \
+		--set sgController.image.tag=$(IMAGE_TAG) \
+		--set sgController.image.pullPolicy=IfNotPresent \
+		--set ui.image.tag=$(IMAGE_TAG) \
+		--set ui.image.pullPolicy=IfNotPresent \
+		--wait --timeout=15m
+
+# ============================================================================
+# K3s / k3d Deployment
+# ============================================================================
+
+K3D_CLUSTER ?= straitkubegateway
+
+.PHONY: k3d-load
+k3d-load: ## Build and load all images into k3d cluster
+	docker build -f build/Dockerfile.sg-controller -t $(REGISTRY)/sg-controller:$(IMAGE_TAG) .
+	docker build -f build/Dockerfile.straitd -t $(REGISTRY)/straitd:$(IMAGE_TAG) .
+	docker build -f build/Dockerfile.sg-cli -t $(REGISTRY)/sg-cli:$(IMAGE_TAG) .
+	docker build -f build/Dockerfile.ui -t $(REGISTRY)/ui:$(IMAGE_TAG) .
+	k3d image import $(REGISTRY)/sg-controller:$(IMAGE_TAG) --cluster $(K3D_CLUSTER)
+	k3d image import $(REGISTRY)/straitd:$(IMAGE_TAG) --cluster $(K3D_CLUSTER)
+	k3d image import $(REGISTRY)/sg-cli:$(IMAGE_TAG) --cluster $(K3D_CLUSTER)
+	k3d image import $(REGISTRY)/ui:$(IMAGE_TAG) --cluster $(K3D_CLUSTER)
+
+.PHONY: k3d-deploy
+k3d-deploy: k3d-load ## Build, load into k3d, and deploy via Helm
+	$(HELM) upgrade --install straitkubegateway $(HELM_DIR) \
+		--namespace kube-system \
+		--create-namespace \
+		--set kubeProxyReplacement=true \
+		--set disableDefaultCNI=true \
+		--set straitd.image.tag=$(IMAGE_TAG) \
+		--set straitd.image.pullPolicy=IfNotPresent \
+		--set sgController.image.tag=$(IMAGE_TAG) \
+		--set sgController.image.pullPolicy=IfNotPresent \
+		--set ui.image.tag=$(IMAGE_TAG) \
+		--set ui.image.pullPolicy=IfNotPresent \
+		--wait --timeout=15m
+
+.PHONY: k3s-load
+k3s-load: ## Build and import images directly into local k3s containerd
+	docker build -f build/Dockerfile.sg-controller -t $(REGISTRY)/sg-controller:$(IMAGE_TAG) .
+	docker build -f build/Dockerfile.straitd -t $(REGISTRY)/straitd:$(IMAGE_TAG) .
+	docker build -f build/Dockerfile.sg-cli -t $(REGISTRY)/sg-cli:$(IMAGE_TAG) .
+	docker build -f build/Dockerfile.ui -t $(REGISTRY)/ui:$(IMAGE_TAG) .
+	docker save $(REGISTRY)/sg-controller:$(IMAGE_TAG) | sudo k3s ctr images import -
+	docker save $(REGISTRY)/straitd:$(IMAGE_TAG) | sudo k3s ctr images import -
+	docker save $(REGISTRY)/sg-cli:$(IMAGE_TAG) | sudo k3s ctr images import -
+	docker save $(REGISTRY)/ui:$(IMAGE_TAG) | sudo k3s ctr images import -
+
+.PHONY: k3s-deploy
+k3s-deploy: k3s-load ## Build, import into local k3s, and deploy via Helm
+	$(HELM) upgrade --install straitkubegateway $(HELM_DIR) \
+		--namespace kube-system \
+		--create-namespace \
+		--set kubeProxyReplacement=true \
+		--set disableDefaultCNI=true \
+		--set straitd.image.tag=$(IMAGE_TAG) \
+		--set straitd.image.pullPolicy=IfNotPresent \
+		--set sgController.image.tag=$(IMAGE_TAG) \
+		--set sgController.image.pullPolicy=IfNotPresent \
+		--set ui.image.tag=$(IMAGE_TAG) \
+		--set ui.image.pullPolicy=IfNotPresent \
+		--wait --timeout=15m
+
+# ============================================================================
 # Helm
 # ============================================================================
 
