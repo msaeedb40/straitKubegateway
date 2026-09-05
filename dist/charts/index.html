@@ -1,0 +1,2262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StraitKubeGateway | Official Helm Charts Repository</title>
+  <meta name="description" content="Official Helm chart repository for StraitKubeGateway: Kubernetes-native eBPF Transit Gateway, CNI plugin, and Multi-Cluster Service Mesh.">
+  <meta name="keywords" content="straitkubegateway, kubernetes, helm, ebpf, cni, gateway-api, wireguard, bgp, netkit, linux-kernel">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2322d3ee'><polygon points='12 2 2 7 12 12 22 7 12 2'/><polyline points='2 17 12 22 22 17'/><polyline points='2 12 12 17 22 12'/></svg>">
+  
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS v4 Browser Engine -->
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  
+  <!-- Bespoke Design System Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Ambient Backdrop Lights & Dynamic Grid -->
+  <div class="ambient-container">
+    <div class="ambient-glow-top"></div>
+    <div class="ambient-glow-bottom"></div>
+    <div class="ambient-grid"></div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <header>
+    <div class="header-top-accent"></div>
+    <nav id="navbar">
+      <div id="scroll-progress" class="scroll-progress-bar"></div>
+      <div class="container">
+        <div class="nav-wrapper">
+          
+          <!-- Brand Logo -->
+          <a href="#" class="nav-brand" aria-label="StraitKubeGateway Home">
+            <div class="brand-logo-frame">
+              <div class="brand-logo-inner">
+                <img src="logo.png" alt="StraitKubeGateway Emblem">
+              </div>
+            </div>
+            <div>
+              <div class="brand-title">
+                <span>StraitKubeGateway</span>
+                <span class="badge-helm">HELM v1.0.1</span>
+              </div>
+              <div class="brand-sub">
+                <span class="brand-sub-dot"></span>
+                <span>In-Kernel eBPF CNI &amp; Transit Gateway</span>
+              </div>
+            </div>
+          </a>
+
+          <!-- Nav Anchors (Desktop) -->
+          <ul class="nav-links">
+            <li><a href="#installer" class="nav-link">Install</a></li>
+            <li><a href="#platforms" class="nav-link">Platforms</a></li>
+            <li><a href="#topology" class="nav-link">Topology</a></li>
+            <li><a href="#hooks" class="nav-link">eBPF Hooks</a></li>
+            <li><a href="#evaluator" class="nav-link">Policy Sim</a></li>
+            <li><a href="#cli" class="nav-link">CLI Tool</a></li>
+            <li><a href="#observability" class="nav-link">Observability</a></li>
+            <li><a href="#architecture" class="nav-link">Architecture</a></li>
+            <li><a href="#roadmap" class="nav-link">Roadmap</a></li>
+          </ul>
+
+          <!-- Call to Action & Mobile Toggle -->
+          <div class="nav-cta-group">
+            <button id="cmd-palette-btn" class="nav-search-trigger" aria-label="Open search command palette">
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <span>Search</span>
+              <kbd>⌘K</kbd>
+            </button>
+
+            <button class="btn btn-secondary btn-sm code-copy-btn btn-helm-copy" data-copy-text="helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway&#10;helm repo update" title="Copy Helm repo command" aria-label="Copy Helm repository command">
+              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+              <span>helm repo add</span>
+            </button>
+
+            <a href="https://github.com/msaeedb40/straitKubegateway" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" aria-label="GitHub Repository">
+              <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+              </svg>
+              <span>GitHub</span>
+            </a>
+            <a href="index.yaml" target="_blank" class="btn btn-primary btn-sm" aria-label="Helm index.yaml">
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+              </svg>
+              <span>index.yaml</span>
+            </a>
+            <button id="nav-toggle" class="nav-toggle-btn" aria-label="Toggle Navigation Menu" aria-expanded="false">
+              <svg class="hamburger-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+              </svg>
+              <svg class="close-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Mobile Navigation Drawer -->
+      <div id="mobile-drawer" class="mobile-drawer">
+        <div class="mobile-drawer-inner">
+          <ul class="mobile-nav-links">
+            <li><a href="#installer" class="mobile-nav-link">⚡ Install &amp; Configure</a></li>
+            <li><a href="#platforms" class="mobile-nav-link">☸️ Platforms (Kind, K3s, Minikube, Kubeadm)</a></li>
+            <li><a href="#topology" class="mobile-nav-link">🌐 Transit &amp; Mesh Topology</a></li>
+            <li><a href="#hooks" class="mobile-nav-link">⚡ In-Kernel eBPF Hooks</a></li>
+            <li><a href="#evaluator" class="mobile-nav-link">🛡️ Policy Simulator</a></li>
+            <li><a href="#cli" class="mobile-nav-link">💻 sg-cli Command Line</a></li>
+            <li><a href="#observability" class="mobile-nav-link">📊 Prometheus &amp; Grafana</a></li>
+            <li><a href="#architecture" class="mobile-nav-link">🏗️ Core Architecture</a></li>
+            <li><a href="#roadmap" class="mobile-nav-link">🗺️ Project Roadmap</a></li>
+          </ul>
+          <div class="mobile-drawer-cta">
+            <button class="btn btn-secondary btn-sm code-copy-btn" data-copy-text="helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway&#10;helm repo update" style="width: 100%; justify-content: center;">
+              📋 Copy helm repo add
+            </button>
+            <a href="https://github.com/msaeedb40/straitKubegateway" target="_blank" class="btn btn-secondary btn-sm" style="width: 100%; justify-content: center;">
+              GitHub Repository
+            </a>
+            <a href="index.yaml" target="_blank" class="btn btn-primary btn-sm" style="width: 100%; justify-content: center;">
+              View index.yaml
+            </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Interactive Command Palette Modal (⌘K) -->
+    <div id="cmd-palette-modal" class="cmd-modal-backdrop" aria-hidden="true">
+      <div class="cmd-modal-card" role="dialog" aria-modal="true" aria-label="Command Palette">
+        <div class="cmd-modal-search">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input type="text" id="cmd-modal-input" placeholder="Search sections, platforms, or commands..." autocomplete="off">
+          <kbd class="cmd-modal-esc">ESC</kbd>
+        </div>
+        <div class="cmd-modal-results" id="cmd-modal-results">
+          <div class="cmd-group-label">Documentation &amp; Configuration</div>
+          <a href="#installer" class="cmd-item" data-title="Install Configurator Helm Quickstart">
+            <span class="cmd-icon">⚡</span>
+            <div class="cmd-item-info">
+              <div class="cmd-item-title">Helm Configurator &amp; Quickstart</div>
+              <div class="cmd-item-desc">Interactive flags generator and preset profiles</div>
+            </div>
+            <span class="cmd-key">#installer</span>
+          </a>
+          <a href="#platforms" class="cmd-item" data-title="Platforms Kind K3s Minikube Kubeadm">
+            <span class="cmd-icon">☸️</span>
+            <div class="cmd-item-info">
+              <div class="cmd-item-title">Platform Clusters (Kind, K3s, Minikube, Kubeadm)</div>
+              <div class="cmd-item-desc">Local developer clusters and bare-metal v1.m.p</div>
+            </div>
+            <span class="cmd-key">#platforms</span>
+          </a>
+          <a href="#topology" class="cmd-item" data-title="Topology Multi-Cluster Transit Mesh">
+            <span class="cmd-icon">🌐</span>
+            <div class="cmd-item-info">
+              <div class="cmd-item-title">Transit Network Topology Visualizer</div>
+              <div class="cmd-item-desc">Hub-and-spoke backbone and peer-to-peer mesh routing</div>
+            </div>
+            <span class="cmd-key">#topology</span>
+          </a>
+          <a href="#hooks" class="cmd-item" data-title="eBPF Hooks XDP TC Cgroup SockOps">
+            <span class="cmd-icon">⚡</span>
+            <div class="cmd-item-info">
+              <div class="cmd-item-title">In-Kernel eBPF Attachment Points</div>
+              <div class="cmd-item-desc">XDP packet engine, TC classifier, and Cgroup socket hooks</div>
+            </div>
+            <span class="cmd-key">#hooks</span>
+          </a>
+          <a href="#evaluator" class="cmd-item" data-title="Policy Simulator Zero-Trust Security Firewall">
+            <span class="cmd-icon">🛡️</span>
+            <div class="cmd-item-info">
+              <div class="cmd-item-title">Identity Policy Simulator</div>
+              <div class="cmd-item-desc">Real-time packet evaluation and segment authorization</div>
+            </div>
+            <span class="cmd-key">#evaluator</span>
+          </a>
+          <a href="#cli" class="cmd-item" data-title="CLI sg-cli Terminal Command Tool Status Endpoint Policy Gateway Transit BGP WireGuard">
+            <span class="cmd-icon">💻</span>
+            <div class="cmd-item-info">
+              <div class="cmd-item-title">sg-cli Terminal &amp; Control Center</div>
+              <div class="cmd-item-desc">CLI management tool, policy tracing, and transit troubleshooting</div>
+            </div>
+            <span class="cmd-key">#cli</span>
+          </a>
+          <a href="#observability" class="cmd-item" data-title="Observability Prometheus Grafana ServiceMonitor">
+            <span class="cmd-icon">📊</span>
+            <div class="cmd-item-info">
+              <div class="cmd-item-title">Prometheus &amp; Grafana Observability</div>
+              <div class="cmd-item-desc">kube-prometheus-stack (88.m.p) &amp; dashboards</div>
+            </div>
+            <span class="cmd-key">#observability</span>
+          </a>
+          <a href="#architecture" class="cmd-item" data-title="Architecture Engine Maglev BPF Core">
+            <span class="cmd-icon">🏗️</span>
+            <div class="cmd-item-info">
+              <div class="cmd-item-title">Core Architecture Pillars</div>
+              <div class="cmd-item-desc">Zero-overhead kernel routing, identity isolation, and DSR</div>
+            </div>
+            <span class="cmd-key">#architecture</span>
+          </a>
+          <a href="#roadmap" class="cmd-item" data-title="Roadmap Phases Milestones">
+            <span class="cmd-icon">🗺️</span>
+            <div class="cmd-item-info">
+              <div class="cmd-item-title">Release Roadmap &amp; Phases</div>
+              <div class="cmd-item-desc">Milestones for GA release and hardware offload</div>
+            </div>
+            <span class="cmd-key">#roadmap</span>
+          </a>
+        </div>
+        <div class="cmd-modal-footer">
+          <span><kbd>↑</kbd> <kbd>↓</kbd> to navigate</span>
+          <span><kbd>↵</kbd> to select</span>
+          <span><kbd>ESC</kbd> to close</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section id="hero">
+      <div class="container">
+        <div class="hero-content">
+          
+          <!-- Live Status Pill -->
+          <div class="hero-status-pill">
+            <span class="pulse-indicator"></span>
+            <span>Official Helm Repository Active</span>
+            <span style="opacity: 0.3;">•</span>
+            <span style="color: var(--cyan-300); font-family: var(--font-mono);">v1.0.1</span>
+            <span style="opacity: 0.3;">•</span>
+            <span style="color: var(--text-muted);">Kubernetes 1.28+</span>
+          </div>
+
+          <!-- Official Hero Logo Showcase -->
+          <div class="hero-logo-showcase">
+            <div class="hero-logo-card">
+              <img src="logo.png" alt="StraitKubeGateway Core Emblem">
+            </div>
+          </div>
+
+          <!-- Main Title -->
+          <h1 class="hero-headline">
+            <span class="hero-headline-gradient">Kernel-Accelerated</span><br>
+            Kubernetes Networking
+          </h1>
+
+          <!-- Value Proposition -->
+          <p class="hero-subhead">
+            Deploy <strong>StraitKubeGateway</strong> with Helm: in-kernel eBPF dataplane, complete kube-proxy replacement via consistent Maglev hashing, native NetKit CNI, and cross-cluster transit routing across 32-bit isolated segments.
+          </p>
+
+          <!-- Badges Stream -->
+          <div class="hero-badges-stream">
+            <div class="hero-badge-item">
+              <span class="bullet" style="background: var(--cyan-400);"></span>
+              <span>Linux Kernel 6.7+ CO-RE</span>
+            </div>
+            <div class="hero-badge-item">
+              <span class="bullet" style="background: var(--emerald-400);"></span>
+              <span>Zero Kube-Proxy Overhead</span>
+            </div>
+            <div class="hero-badge-item">
+              <span class="bullet" style="background: var(--blue-400);"></span>
+              <span>Gateway API v1.6.1 Ready</span>
+            </div>
+            <div class="hero-badge-item">
+              <span class="bullet" style="background: var(--indigo-400);"></span>
+              <span>NetKit Zero-Copy CNI</span>
+            </div>
+            <div class="hero-badge-item">
+              <span class="bullet" style="background: var(--purple-400);"></span>
+              <span>WireGuard & IPsec Mesh</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="hero-cta-bar">
+            <a href="#installer" class="btn btn-primary btn-lg">
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+              <span>Interactive Configurator</span>
+            </a>
+            <a href="straitkubegateway-1.0.1.tgz" class="btn btn-secondary btn-lg" download>
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              <span>Download .tgz Archive</span>
+            </a>
+            <a href="#topology" class="btn btn-secondary btn-lg">
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+              <span>Explore Topology</span>
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Metrics Strip -->
+    <section class="metrics-strip" aria-label="Key Performance Indicators">
+      <div class="container">
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <div class="metric-number">&lt; 0.15 µs</div>
+            <div class="metric-caption">XDP Fast-Path Latency</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-number">100%</div>
+            <div class="metric-caption">Kube-Proxy Bypassed</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-number">32-Bit</div>
+            <div class="metric-caption">Segment Isolation</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-number">v1.6.1</div>
+            <div class="metric-caption">Gateway API Ready</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-number">Kernel 6.7+</div>
+            <div class="metric-caption">CO-RE Architecture</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-number">Sub-Sec</div>
+            <div class="metric-caption">BFD Route Failover</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 1: Interactive Installation Configurator -->
+    <section id="installer" class="section">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-tag">🚀 Helm Deployment</div>
+          <h2 class="section-title">
+            Interactive <span class="text-gradient">Installation Configurator</span>
+          </h2>
+          <p class="section-desc">
+            Select an operational preset or fine-tune feature switches to dynamically generate your tailored Helm deployment commands.
+          </p>
+        </div>
+
+        <div class="installer-dashboard">
+          
+          <!-- Topbar with Preset Selector -->
+          <div class="installer-topbar">
+            <div>
+              <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">Operational Presets</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">One-click cluster profile selection</div>
+            </div>
+            <div class="tab-pill-group">
+              <button class="tab-pill active" data-preset="quickstart">⚡ Quickstart</button>
+              <button class="tab-pill" data-preset="production">🛡️ Production Mesh</button>
+              <button class="tab-pill" data-preset="transit">🌐 Transit Core</button>
+              <button class="tab-pill" data-preset="kind">🐙 Kind</button>
+              <button class="tab-pill" data-preset="k3s">⚡ K3s</button>
+              <button class="tab-pill" data-preset="minikube">🚀 Minikube</button>
+              <button class="tab-pill" data-preset="kubeadm">⚙️ Kubeadm</button>
+              <button class="tab-pill" data-preset="edge">📦 Minimal Edge</button>
+            </div>
+          </div>
+
+          <!-- Configuration Grid -->
+          <div class="installer-grid">
+            
+            <!-- Left: Toggles & Options -->
+            <div class="installer-options-pane">
+              <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--cyan-300); margin-bottom: 16px;">
+                Kernel & Dataplane Capabilities
+              </div>
+
+              <!-- Switch: WireGuard -->
+              <label class="switch-card" for="opt-wireguard">
+                <div class="switch-content">
+                  <span class="switch-icon">🔒</span>
+                  <div>
+                    <div class="switch-title">WireGuard Mesh Encryption</div>
+                    <div class="switch-desc">Kernel-level node-to-node & pod-to-pod crypto</div>
+                  </div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="opt-wireguard" class="installer-toggle">
+                  <span class="toggle-slider"></span>
+                </div>
+              </label>
+
+              <!-- Switch: Gateway API -->
+              <label class="switch-card" for="opt-gwapi">
+                <div class="switch-content">
+                  <span class="switch-icon">🚪</span>
+                  <div>
+                    <div class="switch-title">Gateway API v1.6.1</div>
+                    <div class="switch-desc">HTTPRoute, TCPRoute, UDPRoute, TLSRoute</div>
+                  </div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="opt-gwapi" class="installer-toggle" checked>
+                  <span class="toggle-slider"></span>
+                </div>
+              </label>
+
+              <!-- Switch: Transit Gateway -->
+              <label class="switch-card" for="opt-transit">
+                <div class="switch-content">
+                  <span class="switch-icon">🔀</span>
+                  <div>
+                    <div class="switch-title">Multi-Cluster Transit Hub</div>
+                    <div class="switch-desc">Segment 0 backbone & 32-bit segment routing</div>
+                  </div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="opt-transit" class="installer-toggle">
+                  <span class="toggle-slider"></span>
+                </div>
+              </label>
+
+              <!-- Switch: BGP / BFD -->
+              <label class="switch-card" for="opt-bgp">
+                <div class="switch-content">
+                  <span class="switch-icon">📡</span>
+                  <div>
+                    <div class="switch-title">BGP-4 & Sub-Second BFD</div>
+                    <div class="switch-desc">Dynamic route advertisement to ToR switches</div>
+                  </div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="opt-bgp" class="installer-toggle">
+                  <span class="toggle-slider"></span>
+                </div>
+              </label>
+
+              <!-- Switch: Prometheus & OTel -->
+              <label class="switch-card" for="opt-metrics">
+                <div class="switch-content">
+                  <span class="switch-icon">📊</span>
+                  <div>
+                    <div class="switch-title">Prometheus & OpenTelemetry</div>
+                    <div class="switch-desc">eBPF flow export, drop tracing, and hub metrics</div>
+                  </div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="opt-metrics" class="installer-toggle" checked>
+                  <span class="toggle-slider"></span>
+                </div>
+              </label>
+
+              <!-- Switch: Dual-Stack IPv6 -->
+              <label class="switch-card" for="opt-ipv6">
+                <div class="switch-content">
+                  <span class="switch-icon">🌐</span>
+                  <div>
+                    <div class="switch-title">Dual-Stack IPv4 / IPv6</div>
+                    <div class="switch-desc">Full IPv6 overlay & translation datapath</div>
+                  </div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="opt-ipv6" class="installer-toggle">
+                  <span class="toggle-slider"></span>
+                </div>
+              </label>
+
+              <!-- Switch: DSR Load Balancing -->
+              <label class="switch-card" for="opt-dsr">
+                <div class="switch-content">
+                  <span class="switch-icon">⚡</span>
+                  <div>
+                    <div class="switch-title">Direct Server Return (DSR)</div>
+                    <div class="switch-desc">Bypass return trip hops for maximum throughput</div>
+                  </div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="opt-dsr" class="installer-toggle">
+                  <span class="toggle-slider"></span>
+                </div>
+              </label>
+            </div>
+
+            <!-- Right: Terminal Pane -->
+            <div class="installer-terminal-pane">
+              
+              <!-- Step 1 -->
+              <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                  <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--cyan-300);">
+                    Step 1: Add Helm Repository
+                  </span>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway&#10;helm repo update">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway
+helm repo update</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 2: Dynamic Install Command -->
+              <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                  <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--cyan-300);">
+                    Step 2: Install StraitKubeGateway
+                  </span>
+                  <span style="font-size: 10px; font-family: var(--font-mono); color: var(--emerald-400);">dynamic flags sync</span>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-target="code-install-cmd">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code id="code-install-cmd">helm install straitkubegateway straitkubegateway/straitkubegateway \
+  --namespace kube-system \
+  --create-namespace \
+  --set kubeProxyReplacement=true \
+  --set disableDefaultCNI=true</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 3: Verify Status -->
+              <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                  <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--cyan-300);">
+                    Step 3: Verify Deployment
+                  </span>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide</code></pre>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 2: Local Cluster Deployments (Kind, K3s, Minikube) -->
+    <section id="platforms" class="section">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-tag">☸️ Cluster Environments</div>
+          <h2 class="section-title">
+            Deploy on <span class="text-gradient">Kind, K3s, Minikube & Kubeadm</span>
+          </h2>
+          <p class="section-desc">
+            Production-grade eBPF CNI and Gateway API networking on local engines and bare-metal nodes. Step-by-step setup guides, cluster initialization manifests, and verified Helm deployment flags.
+          </p>
+        </div>
+
+        <div class="platform-container">
+          
+          <!-- Platform Tabs -->
+          <div class="platform-tab-header">
+            <button class="platform-tab active" data-platform="kind" aria-label="Kind Kubernetes in Docker Deployment">
+              <div class="platform-tab-icon">🐙</div>
+              <div>
+                <div class="platform-tab-name">Kind</div>
+                <div class="platform-tab-sub">Kubernetes in Docker (Multi-Node)</div>
+              </div>
+            </button>
+            <button class="platform-tab" data-platform="k3s" aria-label="K3s via k3d Deployment">
+              <div class="platform-tab-icon">⚡</div>
+              <div>
+                <div class="platform-tab-name">K3s (via k3d)</div>
+                <div class="platform-tab-sub">Lightweight Rancher Engine</div>
+              </div>
+            </button>
+            <button class="platform-tab" data-platform="minikube" aria-label="Minikube Cluster Deployment">
+              <div class="platform-tab-icon">🚀</div>
+              <div>
+                <div class="platform-tab-name">Minikube</div>
+                <div class="platform-tab-sub">Docker / KVM / Hyperkit Engine</div>
+              </div>
+            </button>
+            <button class="platform-tab" data-platform="kubeadm" aria-label="Kubeadm Bare-Metal and VM Deployment">
+              <div class="platform-tab-icon">⚙️</div>
+              <div>
+                <div class="platform-tab-name">Kubeadm</div>
+                <div class="platform-tab-sub">Bare-Metal / VM (v1.m.p)</div>
+              </div>
+            </button>
+          </div>
+
+          <!-- Kind Panel -->
+          <div class="platform-panel active" data-panel="kind">
+            <div class="platform-callout">
+              <div class="platform-callout-icon">💡</div>
+              <div>
+                <div class="platform-callout-title">Kind Dataplane Architecture Invariant</div>
+                <div class="platform-callout-desc">
+                  Kind clusters require disabling <code>kindnet</code> (<code>disableDefaultCNI: true</code>), disabling kube-proxy (<code>kubeProxyMode: "none"</code>), and mounting the host's <code>/sys/fs/bpf</code> filesystem into container nodes with bidirectional mount propagation so StraitKubeGateway's <code>straitd</code> node agent can pin eBPF maps.
+                </div>
+              </div>
+            </div>
+
+            <div class="platform-steps-grid">
+              <!-- Step 1: Cluster Config -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">1</span>
+                    <span>Create Kind Cluster Config & Bootstrap</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="cat <<'EOF' > kind-config.yaml&#10;kind: Cluster&#10;apiVersion: kind.x-k8s.io/v1alpha4&#10;networking:&#10;  disableDefaultCNI: true&#10;  kubeProxyMode: 'none'&#10;nodes:&#10;  - role: control-plane&#10;    extraMounts:&#10;      - hostPath: /sys/fs/bpf&#10;        containerPath: /sys/fs/bpf&#10;        propagation: Bidirectional&#10;  - role: worker&#10;    extraMounts:&#10;      - hostPath: /sys/fs/bpf&#10;        containerPath: /sys/fs/bpf&#10;        propagation: Bidirectional&#10;EOF&#10;kind create cluster --name straitkubegateway --config kind-config.yaml">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>cat &lt;&lt;'EOF' &gt; kind-config.yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  disableDefaultCNI: true
+  kubeProxyMode: "none"
+nodes:
+  - role: control-plane
+    extraMounts:
+      - hostPath: /sys/fs/bpf
+        containerPath: /sys/fs/bpf
+        propagation: Bidirectional
+  - role: worker
+    extraMounts:
+      - hostPath: /sys/fs/bpf
+        containerPath: /sys/fs/bpf
+        propagation: Bidirectional
+EOF
+kind create cluster --name straitkubegateway --config kind-config.yaml</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 2: Gateway API CRDs -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">2</span>
+                    <span>Apply Gateway API v1.6.1 CRDs</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>kubectl apply --server-side --force-conflicts -f \
+  https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 3: Helm Install -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">3</span>
+                    <span>Install StraitKubeGateway via Helm</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway&#10;helm repo update&#10;helm install straitkubegateway straitkubegateway/straitkubegateway \&#10;  --namespace kube-system \&#10;  --set straitd.kubeProxyReplacement=true \&#10;  --set straitd.kubeProxyMode=none \&#10;  --set straitd.image.pullPolicy=IfNotPresent \&#10;  --set sgController.image.pullPolicy=IfNotPresent \&#10;  --wait --timeout 300s">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway
+helm repo update
+
+helm install straitkubegateway straitkubegateway/straitkubegateway \
+  --namespace kube-system \
+  --set straitd.kubeProxyReplacement=true \
+  --set straitd.kubeProxyMode=none \
+  --set straitd.image.pullPolicy=IfNotPresent \
+  --set sgController.image.pullPolicy=IfNotPresent \
+  --wait --timeout 300s</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 4: Verification -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">4</span>
+                    <span>Verify Node Status & Dataplane</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="kubectl wait --for=condition=Ready nodes --all --timeout=120s&#10;kubectl get nodes -o wide&#10;kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide&#10;kubectl get gatewayclasses,gateways,straitnetworks">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>kubectl wait --for=condition=Ready nodes --all --timeout=120s
+kubectl get nodes -o wide
+kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide
+kubectl get gatewayclasses,gateways,straitnetworks</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- K3s Panel -->
+          <div class="platform-panel" data-panel="k3s">
+            <div class="platform-callout">
+              <div class="platform-callout-icon">💡</div>
+              <div>
+                <div class="platform-callout-title">K3s Dataplane Architecture Invariant</div>
+                <div class="platform-callout-desc">
+                  K3s by default packages Flannel and its own kube-proxy. When running via <code>k3d</code>, pass <code>--flannel-backend=none</code>, <code>--disable-kube-proxy</code>, <code>--disable=traefik</code>, <code>--disable=servicelb</code>, and mount <code>/sys/fs/bpf</code> into all server and agent nodes so that StraitKubeGateway handles all VIP translation and CNI routing in eBPF.
+                </div>
+              </div>
+            </div>
+
+            <div class="platform-steps-grid">
+              <!-- Step 1: k3d Cluster Creation -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">1</span>
+                    <span>Create K3s Cluster via k3d</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="k3d cluster create straitkubegateway \&#10;  --servers 1 \&#10;  --agents 2 \&#10;  --k3s-arg '--flannel-backend=none@server:*' \&#10;  --k3s-arg '--disable-network-policy@server:*' \&#10;  --k3s-arg '--disable=traefik@server:*' \&#10;  --k3s-arg '--disable=servicelb@server:*' \&#10;  --k3s-arg '--disable-kube-proxy@server:*' \&#10;  --volume /sys/fs/bpf:/sys/fs/bpf@server:*;agent:* \&#10;  --no-lb \&#10;  --wait">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>k3d cluster create straitkubegateway \
+  --servers 1 \
+  --agents 2 \
+  --k3s-arg "--flannel-backend=none@server:*" \
+  --k3s-arg "--disable-network-policy@server:*" \
+  --k3s-arg "--disable=traefik@server:*" \
+  --k3s-arg "--disable=servicelb@server:*" \
+  --k3s-arg "--disable-kube-proxy@server:*" \
+  --volume /sys/fs/bpf:/sys/fs/bpf@server:*;agent:* \
+  --no-lb \
+  --wait</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 2: Gateway API CRDs -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">2</span>
+                    <span>Apply Gateway API v1.6.1 CRDs</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>kubectl apply --server-side --force-conflicts -f \
+  https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 3: Helm Install -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">3</span>
+                    <span>Install StraitKubeGateway via Helm</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway&#10;helm repo update&#10;helm install straitkubegateway straitkubegateway/straitkubegateway \&#10;  --namespace kube-system \&#10;  --set straitd.kubeProxyReplacement=true \&#10;  --set straitd.kubeProxyMode=none \&#10;  --set straitd.image.pullPolicy=IfNotPresent \&#10;  --set sgController.image.pullPolicy=IfNotPresent \&#10;  --wait --timeout 300s">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway
+helm repo update
+
+helm install straitkubegateway straitkubegateway/straitkubegateway \
+  --namespace kube-system \
+  --set straitd.kubeProxyReplacement=true \
+  --set straitd.kubeProxyMode=none \
+  --set straitd.image.pullPolicy=IfNotPresent \
+  --set sgController.image.pullPolicy=IfNotPresent \
+  --wait --timeout 300s</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 4: Verification -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">4</span>
+                    <span>Verify Node Status & Dataplane</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="kubectl wait --for=condition=Ready nodes --all --timeout=120s&#10;kubectl get nodes -o wide&#10;kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide&#10;kubectl get gatewayclasses,gateways,straitnetworks">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>kubectl wait --for=condition=Ready nodes --all --timeout=120s
+kubectl get nodes -o wide
+kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide
+kubectl get gatewayclasses,gateways,straitnetworks</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Minikube Panel -->
+          <div class="platform-panel" data-panel="minikube">
+            <div class="platform-callout">
+              <div class="platform-callout-icon">💡</div>
+              <div>
+                <div class="platform-callout-title">Minikube Dataplane Architecture Invariant</div>
+                <div class="platform-callout-desc">
+                  Minikube clusters must be initialized with <code>--cni=false</code> and <code>--extra-config=kubeadm.skip-phases=addon/kube-proxy</code> so that kubeadm does not deploy kindnet/bridge CNI or iptables kube-proxy. StraitKubeGateway will schedule onto the uninitialized nodes, initialize NetKit/veth interfaces, and set nodes to <code>Ready</code>.
+                </div>
+              </div>
+            </div>
+
+            <div class="platform-steps-grid">
+              <!-- Step 1: Minikube Start -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">1</span>
+                    <span>Start Minikube with CNI & Kube-Proxy Disabled</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="minikube start \&#10;  --driver=docker \&#10;  --nodes=2 \&#10;  --cni=false \&#10;  --extra-config=kubeadm.skip-phases=addon/kube-proxy \&#10;  --cpus=2 \&#10;  --memory=4096m">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>minikube start \
+  --driver=docker \
+  --nodes=2 \
+  --cni=false \
+  --extra-config=kubeadm.skip-phases=addon/kube-proxy \
+  --cpus=2 \
+  --memory=4096m</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 2: Gateway API CRDs -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">2</span>
+                    <span>Apply Gateway API v1.6.1 CRDs</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>kubectl apply --server-side --force-conflicts -f \
+  https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 3: Helm Install -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">3</span>
+                    <span>Install StraitKubeGateway via Helm</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway&#10;helm repo update&#10;helm install straitkubegateway straitkubegateway/straitkubegateway \&#10;  --namespace kube-system \&#10;  --set straitd.kubeProxyReplacement=true \&#10;  --set straitd.kubeProxyMode=none \&#10;  --set straitd.image.pullPolicy=IfNotPresent \&#10;  --set sgController.image.pullPolicy=IfNotPresent \&#10;  --wait --timeout 300s">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway
+helm repo update
+
+helm install straitkubegateway straitkubegateway/straitkubegateway \
+  --namespace kube-system \
+  --set straitd.kubeProxyReplacement=true \
+  --set straitd.kubeProxyMode=none \
+  --set straitd.image.pullPolicy=IfNotPresent \
+  --set sgController.image.pullPolicy=IfNotPresent \
+  --wait --timeout 300s</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 4: Verification -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">4</span>
+                    <span>Verify Node Status & Dataplane</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="kubectl wait --for=condition=Ready nodes --all --timeout=180s&#10;kubectl get nodes -o wide&#10;kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>kubectl wait --for=condition=Ready nodes --all --timeout=180s
+kubectl get nodes -o wide
+kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Kubeadm Panel -->
+          <div class="platform-panel" data-panel="kubeadm">
+            <div class="platform-callout">
+              <div class="platform-callout-icon">💡</div>
+              <div>
+                <div class="platform-callout-title">Kubeadm Dataplane Architecture Invariant</div>
+                <div class="platform-callout-desc">
+                  Bare-metal and VM clusters initialized via Kubeadm must skip the kube-proxy addon phase (<code>--skip-phases=addon/kube-proxy</code>). StraitKubeGateway's in-kernel eBPF dataplane provides complete, zero-overhead Service VIP routing, ClusterIP/NodePort/LoadBalancer translation, and full CNI networking without iptables or IPVS.
+                </div>
+              </div>
+            </div>
+
+            <!-- Version Selector Component -->
+            <div class="version-selector-bar">
+              <div class="version-selector-title">
+                <div class="version-selector-icon">🏷️</div>
+                <div>
+                  <div style="font-weight: 700; color: var(--text-primary); font-size: 13.5px;">Kubernetes Version Selector (v1.m.p)</div>
+                  <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Enter minor (m) &amp; patch (p) to dynamically configure pkgs.k8s.io repository &amp; kubeadm init</div>
+                </div>
+              </div>
+              <div class="version-inputs-group">
+                <div class="version-input-pill">
+                  <span class="version-prefix">v1 .</span>
+                  <input type="number" id="kubeadm-minor" class="version-input" value="32" min="26" max="37" aria-label="Minor Version (m)">
+                  <span class="version-dot">.</span>
+                  <input type="number" id="kubeadm-patch" class="version-input" value="0" min="0" max="99" aria-label="Patch Version (p)">
+                </div>
+                <div class="version-presets-pills">
+                  <button type="button" class="btn-version-quick active" data-m="32" data-p="0">v1.32.0 (LTS)</button>
+                  <button type="button" class="btn-version-quick" data-m="31" data-p="2">v1.31.2</button>
+                  <button type="button" class="btn-version-quick" data-m="30" data-p="4">v1.30.4</button>
+                  <button type="button" class="btn-version-quick" data-m="37" data-p="0">v1.37.0 (Latest)</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="platform-steps-grid">
+              <!-- Step 1: System & Kernel Prep -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">1</span>
+                    <span>Host Networking &amp; Kernel Preparation</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="sudo swapoff -a&#10;sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab&#10;sudo modprobe overlay && sudo modprobe br_netfilter&#10;cat <<'EOF' | sudo tee /etc/sysctl.d/k8s.conf&#10;net.bridge.bridge-nf-call-iptables  = 1&#10;net.bridge.bridge-nf-call-ip6tables = 1&#10;net.ipv4.ip_forward                 = 1&#10;EOF&#10;sudo sysctl --system">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code>sudo swapoff -a
+sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+sudo modprobe overlay &amp;&amp; sudo modprobe br_netfilter
+
+cat &lt;&lt;'EOF' | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward                 = 1
+EOF
+sudo sysctl --system</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 2: Install CRI containerd v2.3.4 -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">2</span>
+                    <span>Install Container Runtime Interface (containerd v2.3.4)</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="curl -LO https://github.com/containerd/containerd/releases/download/v2.3.4/containerd-2.3.4-linux-amd64.tar.gz&#10;sudo tar Cxzvf /usr/local containerd-2.3.4-linux-amd64.tar.gz&#10;curl -LO https://raw.githubusercontent.com/containerd/containerd/main/containerd.service&#10;sudo mkdir -p /usr/local/lib/systemd/system/&#10;sudo mv containerd.service /usr/local/lib/systemd/system/&#10;sudo mkdir -p /etc/containerd&#10;containerd config default | sudo tee /etc/containerd/config.toml&#10;sudo sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code># Download &amp; unpack containerd v2.3.4
+curl -LO https://github.com/containerd/containerd/releases/download/v2.3.4/containerd-2.3.4-linux-amd64.tar.gz
+sudo tar Cxzvf /usr/local containerd-2.3.4-linux-amd64.tar.gz
+
+# Install systemd service unit
+curl -LO https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
+sudo mkdir -p /usr/local/lib/systemd/system/
+sudo mv containerd.service /usr/local/lib/systemd/system/
+
+# Configure containerd with SystemdCgroup enabled
+sudo mkdir -p /etc/containerd
+containerd config default | sudo tee /etc/containerd/config.toml
+sudo sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 3: Install runc v1.5.1 & Configure crictl -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">3</span>
+                    <span>Install runc (v1.5.1) &amp; Configure crictl (v1.36.0)</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="curl -LO https://github.com/opencontainers/runc/releases/download/v1.5.1/runc.amd64&#10;sudo install -m 755 runc.amd64 /usr/local/sbin/runc&#10;curl -LO https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.36.0/crictl-v1.36.0-linux-amd64.tar.gz&#10;sudo tar zxvf crictl-v1.36.0-linux-amd64.tar.gz -C /usr/local/bin&#10;sudo crictl config runtime-endpoint unix:///var/run/containerd/containerd.sock&#10;sudo systemctl daemon-reload&#10;sudo systemctl enable --now containerd&#10;sudo systemctl status containerd --no-pager">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code># Download &amp; install runc v1.5.1
+curl -LO https://github.com/opencontainers/runc/releases/download/v1.5.1/runc.amd64
+sudo install -m 755 runc.amd64 /usr/local/sbin/runc
+
+# Download &amp; configure crictl v1.36.0 for containerd
+curl -LO https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.36.0/crictl-v1.36.0-linux-amd64.tar.gz
+sudo tar zxvf crictl-v1.36.0-linux-amd64.tar.gz -C /usr/local/bin
+sudo crictl config runtime-endpoint unix:///var/run/containerd/containerd.sock
+
+# Reload systemd and enable containerd CRI
+sudo systemctl daemon-reload
+sudo systemctl enable --now containerd
+
+# Verify containerd service status and crictl
+sudo systemctl status containerd --no-pager
+sudo crictl info</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 4: Install CNI Plugins & StraitKubeGateway CNI Setup -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">4</span>
+                    <span>Install Reference CNI Plugins &amp; CNI Configuration</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="CNI_PLUGINS_VERSION=&quot;v1.6.2&quot;&#10;sudo mkdir -p /opt/cni/bin&#10;curl -LO &quot;https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGINS_VERSION}/cni-plugins-linux-amd64-${CNI_PLUGINS_VERSION}.tgz&quot;&#10;sudo tar -Cxzvf /opt/cni/bin &quot;cni-plugins-linux-amd64-${CNI_PLUGINS_VERSION}.tgz&quot;&#10;sudo mkdir -p /etc/cni/net.d">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code># Download &amp; install standard CNI plugins (ptp, host-local, loopback, portmap)
+CNI_PLUGINS_VERSION="v1.6.2"
+sudo mkdir -p /opt/cni/bin
+curl -LO "https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGINS_VERSION}/cni-plugins-linux-amd64-${CNI_PLUGINS_VERSION}.tgz"
+sudo tar -Cxzvf /opt/cni/bin "cni-plugins-linux-amd64-${CNI_PLUGINS_VERSION}.tgz"
+
+# Create StraitKubeGateway CNI configuration directory
+sudo mkdir -p /etc/cni/net.d
+# (straitd automatically manages 10-strait.conflist and attaches eBPF hooks)</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 5: Configure APT Repo & Install (Dynamic v1.m.p) -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">5</span>
+                    <span>Install Kubelet, Kubeadm &amp; Kubectl (Dynamic v1.m.p)</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-target="code-kubeadm-repo">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code id="code-kubeadm-repo">sudo apt-get update &amp;&amp; sudo apt-get install -y apt-transport-https ca-certificates curl gpg
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update
+sudo apt-get install -y kubelet=1.32.0-* kubeadm=1.32.0-* kubectl=1.32.0-*
+sudo apt-mark hold kubelet kubeadm kubectl</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 6: Initialize Control Plane & Prepare Kubeconfig (Dynamic v1.m.p) -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">6</span>
+                    <span>Initialize Control Plane &amp; Configure Kubeconfig</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-target="code-kubeadm-init">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code id="code-kubeadm-init">sudo kubeadm init \
+  --kubernetes-version=v1.32.0 \
+  --pod-network-cidr=10.18.0.0/16 \
+  --apiserver-advertise-address=192.168.56.3 \
+  --skip-phases=addon/kube-proxy \
+  --node-name master \
+  --ignore-preflight-errors=NumCPU,Mem
+
+# Prepare kubeconfig for kubectl
+sudo chmod 755 /etc/kubernetes/admin.conf
+export KUBECONFIG=/etc/kubernetes/admin.conf
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+# Untaint control-plane so StraitKubeGateway CNI can schedule
+kubectl taint nodes --all node-role.kubernetes.io/control-plane- || true</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 7: Join Worker Nodes to the Cluster -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">7</span>
+                    <span>Join Worker Nodes to the Cluster (Multi-Node)</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="# Run on each worker node:&#10;sudo kubeadm join 192.168.56.3:6443 --token <token> --discovery-token-ca-cert-hash sha256:<hash>&#10;&#10;# Regenerate join command on master if needed:&#10;kubeadm token create --print-join-command">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code># Run on each worker node to join the cluster:
+sudo kubeadm join 192.168.56.3:6443 \
+  --token &lt;token&gt; \
+  --discovery-token-ca-cert-hash sha256:&lt;hash&gt;
+
+# In case you need to regenerate the join command on the master node:
+kubeadm token create --print-join-command</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 8: Apply Gateway API CRDs & Install StraitKubeGateway -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">8</span>
+                    <span>Apply Gateway API CRDs &amp; Install StraitKubeGateway via Helm</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml&#10;helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway&#10;helm repo update&#10;helm install straitkubegateway straitkubegateway/straitkubegateway \&#10;  --namespace kube-system \&#10;  --set straitd.kubeProxyReplacement=true \&#10;  --set straitd.kubeProxyMode=none \&#10;  --set straitd.wireguard.enabled=true \&#10;  --wait --timeout 300s">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code># 1. Apply Gateway API v1.6.1 CRDs
+kubectl apply --server-side --force-conflicts -f \
+  https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml
+
+# 2. Deploy StraitKubeGateway eBPF CNI &amp; Transit Gateway
+helm repo add straitkubegateway https://msaeedb40.github.io/straitKubegateway
+helm repo update
+
+helm install straitkubegateway straitkubegateway/straitkubegateway \
+  --namespace kube-system \
+  --set straitd.kubeProxyReplacement=true \
+  --set straitd.kubeProxyMode=none \
+  --set straitd.wireguard.enabled=true \
+  --wait --timeout 300s</code></pre>
+                </div>
+              </div>
+
+              <!-- Step 9: Verification -->
+              <div class="platform-step-card">
+                <div class="platform-step-header">
+                  <div class="platform-step-badge">
+                    <span class="platform-step-badge-num">9</span>
+                    <span>Verify Bare-Metal Node &amp; Workload Health</span>
+                  </div>
+                </div>
+                <div class="code-window">
+                  <button class="code-copy-btn" data-copy-text="kubectl wait --for=condition=Ready nodes --all --timeout=180s&#10;kubectl get nodes -o wide&#10;kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide&#10;kubectl get gatewayclasses,gateways,straitnetworks&#10;sg-cli status&#10;sg-cli node">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <pre><code># 1. Check Kubernetes Node &amp; Pod health
+kubectl wait --for=condition=Ready nodes --all --timeout=180s
+kubectl get nodes -o wide
+kubectl get pods -n kube-system -l app.kubernetes.io/name=straitkubegateway -o wide
+kubectl get gatewayclasses,gateways,straitnetworks
+
+# 2. Inspect with sg-cli management tool
+sg-cli status
+sg-cli node</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 3: Interactive Network Topology Visualizer -->
+    <section id="topology" class="section">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-tag">🌐 Network Topology</div>
+          <h2 class="section-title">
+            Multi-Cluster <span class="text-gradient">Transit & Mesh Routing</span>
+          </h2>
+          <p class="section-desc">
+            Explore topological interconnect models with 32-bit segment isolation, encrypted transit backbones, and direct peer-to-peer data paths.
+          </p>
+        </div>
+
+        <div class="topology-stage">
+          <div class="topology-controls">
+            <div>
+              <h3 id="topo-title" style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">Hub-and-Spoke Topology (Segment 0 Backbone)</h3>
+              <p id="topo-desc" style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px;">Cluster-B acts as Central Gateway on Segment 0 with strict traffic isolation.</p>
+            </div>
+            <div class="tab-pill-group">
+              <button class="tab-pill active" data-topo="hubspoke">Hub & Spoke (Segment 0)</button>
+              <button class="tab-pill" data-topo="peertopeer">Peer-to-Peer WireGuard</button>
+              <button class="tab-pill" data-topo="segmentrouting">Segment Route Policy</button>
+            </div>
+          </div>
+
+          <!-- Dynamic SVG Canvas -->
+          <svg id="topo-canvas" class="topology-svg-canvas" viewBox="0 0 900 400" aria-label="Interactive Network Topology Diagram"></svg>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 3: eBPF Dataplane Hook Explorer -->
+    <section id="hooks" class="section">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-tag">⚡ Linux Kernel In-Depth</div>
+          <h2 class="section-title">
+            eBPF Dataplane <span class="text-gradient">Hook Explorer</span>
+          </h2>
+          <p class="section-desc">
+            Examine how StraitKubeGateway attaches program hooks directly in the Linux 6.7+ networking stack to eliminate conntrack, iptables, and bridge bottlenecks.
+          </p>
+        </div>
+
+        <div class="glass-card" style="margin-bottom: 24px;">
+          <!-- Hook Selection Tabs -->
+          <div class="tab-pill-group" style="margin-bottom: 24px;">
+            <button class="tab-pill active" data-hook="xdp">XDP (Ingress)</button>
+            <button class="tab-pill" data-hook="netkit">NetKit (Pod Namespace)</button>
+            <button class="tab-pill" data-hook="tcx">TCX (Traffic Control)</button>
+            <button class="tab-pill" data-hook="sockops">sockops (Socket Acceleration)</button>
+            <button class="tab-pill" data-hook="lsm">BPF LSM (Security)</button>
+          </div>
+
+          <!-- Dynamic Hook Inspection Card -->
+          <div class="hook-detail-grid">
+            <div>
+              <div class="hook-detail-item-title">Hook Point</div>
+              <div id="hook-detail-name" class="hook-detail-item-val" style="color: var(--cyan-300);">XDP (eXpress Data Path)</div>
+            </div>
+            <div>
+              <div class="hook-detail-item-title">Execution Layer</div>
+              <div id="hook-detail-layer" class="hook-detail-item-val" style="color: var(--blue-400); font-family: var(--font-mono);">NIC Driver / Kernel Ingress</div>
+            </div>
+            <div>
+              <div class="hook-detail-item-title">Latency & Performance</div>
+              <div id="hook-detail-perf" class="hook-detail-item-val" style="color: var(--emerald-400); font-family: var(--font-mono);">Sub-microsecond (&lt; 0.15 µs)</div>
+            </div>
+          </div>
+
+          <div style="padding: 16px 20px; background: rgba(255, 255, 255, 0.02); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <div class="hook-detail-item-title">Mechanics & Purpose</div>
+            <p id="hook-detail-purpose" style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; margin-top: 6px;">
+              Earliest packet processing before sk_buff allocation. Performs L3/L4 DDoS mitigation, packet filtration, and wire-rate forwarding.
+            </p>
+          </div>
+        </div>
+
+        <!-- Comparative Hook Architecture Table -->
+        <div class="hook-table-container">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Hook</th>
+                <th>Kernel Layer</th>
+                <th>Primary Functionality</th>
+                <th>Packet Memory Model</th>
+                <th>Hardware Offload</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong style="color: var(--cyan-300); font-family: var(--font-mono);">XDP</strong></td>
+                <td>NIC Driver Ingress</td>
+                <td>Early packet filter, DDoS mitigation, Maglev hash redirection</td>
+                <td>Raw <code>xdp_buff</code></td>
+                <td><span style="color: var(--emerald-400); font-weight: 700;">Native / SmartNIC</span></td>
+              </tr>
+              <tr>
+                <td><strong style="color: var(--blue-400); font-family: var(--font-mono);">NetKit</strong></td>
+                <td>Pod Container Interface</td>
+                <td>Container-to-host zero-copy forwarding replacing veth</td>
+                <td>Direct BPF redirection</td>
+                <td><span style="color: var(--cyan-300); font-weight: 700;">In-Kernel Zero-Copy</span></td>
+              </tr>
+              <tr>
+                <td><strong style="color: var(--indigo-400); font-family: var(--font-mono);">TCX</strong></td>
+                <td>Host Interface Ingress / Egress</td>
+                <td>Kube-proxy replacement, NAT44/64, tunnel encapsulation</td>
+                <td>Kernel <code>sk_buff</code></td>
+                <td><span style="color: var(--emerald-400); font-weight: 700;">TC Offload Ready</span></td>
+              </tr>
+              <tr>
+                <td><strong style="color: var(--purple-400); font-family: var(--font-mono);">sockops</strong></td>
+                <td>L4 Transport / TCP Socket</td>
+                <td>Sockmap redirection between co-located pods on same node</td>
+                <td>Socket Buffer Bypass</td>
+                <td><span style="color: var(--amber-400); font-weight: 700;">Host CPU Accelerated</span></td>
+              </tr>
+              <tr>
+                <td><strong style="color: var(--rose-400); font-family: var(--font-mono);">BPF LSM</strong></td>
+                <td>Security Subsystem</td>
+                <td>Zero-trust socket verification and policy enforcement</td>
+                <td>Kernel Security Hooks</td>
+                <td><span style="color: var(--emerald-400); font-weight: 700;">Deterministic</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 4: Interactive Zero-Trust Policy Evaluator Simulator -->
+    <section id="evaluator" class="section">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-tag">🛡️ Stateful Firewall</div>
+          <h2 class="section-title">
+            Identity-Based <span class="text-gradient">Policy Simulator</span>
+          </h2>
+          <p class="section-desc">
+            Simulate real-time in-kernel eBPF packet evaluation across pod identity namespaces and 32-bit segment boundaries.
+          </p>
+        </div>
+
+        <div class="glass-card" style="max-width: 860px; margin: 0 auto;">
+          <div class="eval-grid">
+            
+            <div class="form-group">
+              <label class="form-label" for="eval-src-ns">Source Namespace</label>
+              <select id="eval-src-ns" class="form-select">
+                <option value="frontend">frontend</option>
+                <option value="default">default</option>
+                <option value="secure">secure</option>
+                <option value="monitoring">monitoring</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="eval-dst-ns">Destination Namespace</label>
+              <select id="eval-dst-ns" class="form-select">
+                <option value="production">production</option>
+                <option value="secure">secure</option>
+                <option value="analytics">analytics</option>
+                <option value="database">database</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="eval-proto">Protocol</label>
+              <select id="eval-proto" class="form-select">
+                <option value="TCP">TCP</option>
+                <option value="UDP">UDP</option>
+                <option value="ICMP">ICMP</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="eval-port">Destination Port</label>
+              <input type="number" id="eval-port" class="form-input" value="80" min="1" max="65535">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="eval-segment">Segment ID</label>
+              <select id="eval-segment" class="form-select">
+                <option value="0">0 (Core Backbone)</option>
+                <option value="10">10 (Payment Segment)</option>
+                <option value="20">20 (Analytics Segment)</option>
+                <option value="isolated">isolated (Unattached)</option>
+              </select>
+            </div>
+
+          </div>
+
+          <button id="btn-eval-policy" class="btn btn-primary" style="width: 100%;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            <span>Simulate eBPF Dataplane Evaluation</span>
+          </button>
+
+          <!-- Dynamic Result Card -->
+          <div id="eval-result" class="eval-result-box">
+            <div class="eval-result-header">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 700;">Verdict:</span>
+                <span id="eval-verdict" style="font-weight: 800; font-family: var(--font-mono); font-size: 1.25rem;">ALLOW</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 11px; color: var(--text-muted);">Evaluation Latency:</span>
+                <span id="eval-latency" style="font-family: var(--font-mono); font-size: 0.95rem; color: var(--cyan-300);">0.22 µs</span>
+              </div>
+            </div>
+            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 700; margin-bottom: 4px;">Matched Rule & Justification:</div>
+            <p id="eval-reason" style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.6;"></p>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section: sg-cli Terminal & Management Tool -->
+    <section id="cli" class="section">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-tag">💻 Terminal Control Center</div>
+          <h2 class="section-title">
+            <span class="text-gradient">sg-cli</span>: Command-Line Management Tool
+          </h2>
+          <p class="section-desc">
+            The official command-line toolkit for inspecting node networking, tracing zero-trust policy evaluations, managing transit segments, and live kernel troubleshooting.
+          </p>
+        </div>
+
+        <!-- Quick Install Bar -->
+        <div class="cli-quick-install glass-card" style="margin-bottom: 28px;">
+          <div class="cli-install-info">
+            <div class="cli-install-badge">INSTALL sg-cli (amd64 / arm64)</div>
+            <div style="font-size: 13px; color: var(--text-secondary);">Automated installer script with platform auto-detection for Linux (amd64, arm64) &amp; macOS:</div>
+          </div>
+          <div class="code-window" style="margin-top: 12px;">
+            <button class="code-copy-btn" data-copy-text="curl -fsSL https://raw.githubusercontent.com/msaeedb40/straitKubegateway/developer/scripts/sg-cli/install.sh | bash">
+              <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              <span>Copy</span>
+            </button>
+            <pre><code># 1. One-Line Auto Installer (Detects Linux/macOS &amp; amd64/arm64)
+curl -fsSL https://raw.githubusercontent.com/msaeedb40/straitKubegateway/developer/scripts/sg-cli/install.sh | bash
+
+# 2. Or run directly from cloned repository:
+./scripts/sg-cli/install.sh
+
+# 3. Direct Download (Linux amd64)
+# curl -fsSL https://github.com/msaeedb40/straitKubegateway/releases/latest/download/sg-cli-linux-amd64 -o /usr/local/bin/sg-cli &amp;&amp; sudo chmod +x /usr/local/bin/sg-cli
+
+# 4. Direct Download (Linux arm64 / Apple Silicon / Graviton)
+# curl -fsSL https://github.com/msaeedb40/straitKubegateway/releases/latest/download/sg-cli-linux-arm64 -o /usr/local/bin/sg-cli &amp;&amp; sudo chmod +x /usr/local/bin/sg-cli
+
+# 5. Or build via Go Toolchain
+# go install github.com/msaeedb40/straitKubegateway/cmd/sg-cli@latest</code></pre>
+          </div>
+        </div>
+
+        <!-- Interactive Terminal Playground -->
+        <div class="cli-playground-grid">
+          
+          <!-- Command Category Selector -->
+          <div class="cli-cmd-palette">
+            <div class="cli-palette-title">Interactive Commands</div>
+            <div class="cli-btn-list">
+              <button class="cli-cmd-btn active" data-clicmd="status">
+                <span class="cli-cmd-icon">⚡</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli status</span>
+                  <span class="cli-cmd-sub">Cluster &amp; datapath health</span>
+                </div>
+              </button>
+              <button class="cli-cmd-btn" data-clicmd="node">
+                <span class="cli-cmd-icon">🖥️</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli node</span>
+                  <span class="cli-cmd-sub">Host networking &amp; interfaces</span>
+                </div>
+              </button>
+              <button class="cli-cmd-btn" data-clicmd="endpoint">
+                <span class="cli-cmd-icon">📦</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli endpoint</span>
+                  <span class="cli-cmd-sub">Pod IPs &amp; BPF security identities</span>
+                </div>
+              </button>
+              <button class="cli-cmd-btn" data-clicmd="policy">
+                <span class="cli-cmd-icon">🛡️</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli policy trace</span>
+                  <span class="cli-cmd-sub">Live packet authorization trace</span>
+                </div>
+              </button>
+              <button class="cli-cmd-btn" data-clicmd="gateway">
+                <span class="cli-cmd-icon">🚪</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli gateway</span>
+                  <span class="cli-cmd-sub">Gateway API &amp; HTTPRoute rules</span>
+                </div>
+              </button>
+              <button class="cli-cmd-btn" data-clicmd="transit">
+                <span class="cli-cmd-icon">🌐</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli transit</span>
+                  <span class="cli-cmd-sub">Multi-cluster transit segments</span>
+                </div>
+              </button>
+              <button class="cli-cmd-btn" data-clicmd="bgp">
+                <span class="cli-cmd-icon">📡</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli bgp</span>
+                  <span class="cli-cmd-sub">BGP neighbor peering &amp; routes</span>
+                </div>
+              </button>
+              <button class="cli-cmd-btn" data-clicmd="wireguard">
+                <span class="cli-cmd-icon">🔒</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli wireguard</span>
+                  <span class="cli-cmd-sub">Encrypted mesh &amp; handshakes</span>
+                </div>
+              </button>
+              <button class="cli-cmd-btn" data-clicmd="config">
+                <span class="cli-cmd-icon">⚙️</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli config</span>
+                  <span class="cli-cmd-sub">Runtime engine configuration</span>
+                </div>
+              </button>
+              <button class="cli-cmd-btn" data-clicmd="version">
+                <span class="cli-cmd-icon">🏷️</span>
+                <div class="cli-cmd-meta">
+                  <span class="cli-cmd-name">sg-cli version</span>
+                  <span class="cli-cmd-sub">Architecture &amp; Go build</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Terminal Output Screen -->
+          <div class="cli-terminal-screen">
+            <div class="cli-terminal-bar">
+              <div class="cli-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-yellow"></span>
+                <span class="dot dot-green"></span>
+              </div>
+              <div class="cli-title-text" id="cli-terminal-title">bash — sg-cli status</div>
+              <button class="cli-terminal-copy-btn" id="cli-copy-btn" title="Copy command and output">
+                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <span>Copy Output</span>
+              </button>
+            </div>
+            <div class="cli-terminal-body">
+              <div class="cli-prompt-line">
+                <span class="cli-prompt-user">user@k8s-node</span><span class="cli-prompt-colon">:</span><span class="cli-prompt-dir">~</span><span class="cli-prompt-dollar">$</span>
+                <span class="cli-prompt-cmd" id="cli-prompt-command">sg-cli status</span>
+              </div>
+              <pre class="cli-prompt-output" id="cli-prompt-output">straitKubegateway Cluster Status:
+  CNI Dataplane:      Ready
+  Service LB:         Ready (kube-proxy replacement: true)
+  NetworkPolicy:      Active (LSM/cgroup hooks)
+  Gateway API v1.6.1: Active
+  Transit Gateway:    Segment 0 (Backbone)
+  WireGuard:          Operational (Mesh encryption active)
+  Active Daemons:     3 / 3 nodes synchronized</pre>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Comprehensive CLI Command Reference Table -->
+        <div class="cli-table-card glass-card" style="margin-top: 32px;">
+          <div class="cli-table-header">
+            <div style="font-weight: 700; color: var(--text-primary); font-size: 15px;">Complete sg-cli Command Reference</div>
+            <div style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">18 built-in commands for cluster lifecycle, security, and networking management</div>
+          </div>
+          <div class="hook-table-container">
+            <table class="hook-table">
+              <thead>
+                <tr>
+                  <th>Command</th>
+                  <th>Arguments &amp; Flags</th>
+                  <th>Primary Purpose</th>
+                  <th>Category</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>sg-cli status</code></td>
+                  <td><code>--verbose, -v</code></td>
+                  <td>Show complete health of CNI, LB, BPF hooks, WireGuard &amp; Transit Gateway</td>
+                  <td><span class="badge-tag">Observability</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli node</code></td>
+                  <td><code>--name &lt;node-name&gt;</code></td>
+                  <td>Inspect host networking state, NetKit interfaces, and PodCIDR allocations</td>
+                  <td><span class="badge-tag">Infrastructure</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli endpoint</code></td>
+                  <td><code>--namespace, --pod</code></td>
+                  <td>List pod endpoints, veth/NetKit peer links, and allocated BPF security IDs</td>
+                  <td><span class="badge-tag">Networking</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli policy</code></td>
+                  <td><code>--name, --namespace</code></td>
+                  <td>List compiled eBPF LPM maps, security identities, and policy rules</td>
+                  <td><span class="badge-tag">Security</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli policy trace</code></td>
+                  <td><code>--src-pod, --dst-pod, --port, --protocol</code></td>
+                  <td>Trace live packet evaluation across zero-trust policies and segment isolation</td>
+                  <td><span class="badge-tag">Security</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli gateway</code></td>
+                  <td><code>--name, --namespace</code></td>
+                  <td>Inspect Gateway API resources, listeners, and HTTPRoute bindings</td>
+                  <td><span class="badge-tag">Ingress</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli transit</code></td>
+                  <td><code>--segment &lt;id&gt;</code></td>
+                  <td>Manage multi-cluster transit segments, backbone peering, and attachments</td>
+                  <td><span class="badge-tag">Multi-Cluster</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli bgp</code></td>
+                  <td><code>advertised-routes, received-routes</code></td>
+                  <td>Inspect BGP neighbor sessions, advertised prefixes, and EVPN routes</td>
+                  <td><span class="badge-tag">Routing</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli wireguard</code></td>
+                  <td><code>peers</code></td>
+                  <td>Inspect WireGuard interface status, public keys, and last handshake timestamp</td>
+                  <td><span class="badge-tag">Encryption</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli ipsec</code></td>
+                  <td><code>policies</code></td>
+                  <td>Inspect IPsec Security Associations (SA) and Linux XFRM security policies</td>
+                  <td><span class="badge-tag">Encryption</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli cluster</code></td>
+                  <td><code>--name &lt;cluster-name&gt;</code></td>
+                  <td>Manage federated Kubernetes clusters and inter-cluster peering</td>
+                  <td><span class="badge-tag">Multi-Cluster</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli config</code></td>
+                  <td><code>set &lt;key&gt; &lt;val&gt;</code></td>
+                  <td>View and modify runtime engine configuration dynamically</td>
+                  <td><span class="badge-tag">Management</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli export</code></td>
+                  <td><code>--policies-only</code></td>
+                  <td>Export running cluster networking and security policies to declarative YAML</td>
+                  <td><span class="badge-tag">Backup</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli import</code></td>
+                  <td><code>&lt;file.yaml&gt;</code></td>
+                  <td>Import and reconcile declarative networking configuration from file</td>
+                  <td><span class="badge-tag">Backup</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli install</code></td>
+                  <td><code>--namespace, --set</code></td>
+                  <td>Direct in-cluster installation helper for StraitKubeGateway components</td>
+                  <td><span class="badge-tag">Lifecycle</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli upgrade</code></td>
+                  <td><code>--namespace</code></td>
+                  <td>Perform rolling upgrade of StraitKubeGateway DaemonSet and Controller</td>
+                  <td><span class="badge-tag">Lifecycle</span></td>
+                </tr>
+                <tr>
+                  <td><code>sg-cli version</code></td>
+                  <td>—</td>
+                  <td>Display compiled version, Go runtime, target OS/Arch, and git commit SHA</td>
+                  <td><span class="badge-tag">System</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section: Prometheus & Grafana Observability Suite -->
+    <section id="observability" class="section">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-tag">📊 Observability Suite</div>
+          <h2 class="section-title">
+            Prometheus Metrics &amp; <span class="text-gradient">Grafana Dashboards</span>
+          </h2>
+          <p class="section-desc">
+            Production-grade telemetry for in-kernel eBPF datapath, CNI operations, Maglev consistent VIP routing, and BFD sub-second link monitoring. Seamless integration with Prometheus Operator and Grafana.
+          </p>
+        </div>
+
+        <!-- Observability Dashboard Grid -->
+        <div class="observability-dashboard">
+          
+          <!-- Live Metrics Stat Tiles -->
+          <div class="obs-stat-grid">
+            <div class="obs-stat-card">
+              <div class="obs-stat-header">
+                <span class="obs-stat-label">Active straitd Daemons</span>
+                <span class="bullet" style="background: var(--emerald-400);"></span>
+              </div>
+              <div class="obs-stat-val" id="obs-stat-nodes">3 / 3</div>
+              <div class="obs-stat-sub">eBPF XDP datapath loaded</div>
+            </div>
+            <div class="obs-stat-card">
+              <div class="obs-stat-header">
+                <span class="obs-stat-label">Fast-Path Latency</span>
+                <span class="bullet" style="background: var(--cyan-400);"></span>
+              </div>
+              <div class="obs-stat-val">&lt; 0.15 µs</div>
+              <div class="obs-stat-sub">99th percentile XDP pass</div>
+            </div>
+            <div class="obs-stat-card">
+              <div class="obs-stat-header">
+                <span class="obs-stat-label">BFD Session States</span>
+                <span class="bullet" style="background: var(--blue-400);"></span>
+              </div>
+              <div class="obs-stat-val">100% Up</div>
+              <div class="obs-stat-sub">Sub-sec route failover active</div>
+            </div>
+            <div class="obs-stat-card">
+              <div class="obs-stat-header">
+                <span class="obs-stat-label">BPF Map Operations</span>
+                <span class="bullet" style="background: var(--purple-400);"></span>
+              </div>
+              <div class="obs-stat-val" id="obs-stat-ops">42.8k /s</div>
+              <div class="obs-stat-sub">Zero lock contention</div>
+            </div>
+          </div>
+
+          <!-- Interactive Tabs for Prometheus & Grafana -->
+          <div class="obs-content-frame">
+            <div class="obs-tab-header">
+              <button class="obs-tab active" data-obstab="deploy">
+                <span>🚀 Helm Deployment Guide</span>
+              </button>
+              <button class="obs-tab" data-obstab="metrics">
+                <span>📈 Prometheus Metric Families</span>
+              </button>
+              <button class="obs-tab" data-obstab="grafana">
+                <span>📊 Grafana Dashboard JSON</span>
+              </button>
+            </div>
+
+            <!-- Tab 1: Deploy Guide -->
+            <div class="obs-panel active" data-obspanel="deploy">
+
+              <!-- Prometheus Stack Version Selector (88.m.p) -->
+              <div class="version-selector-bar" style="margin-bottom: 24px;">
+                <div class="version-selector-title">
+                  <div class="version-selector-icon">📈</div>
+                  <div>
+                    <div style="font-weight: 700; color: var(--text-primary); font-size: 13.5px;">kube-prometheus-stack Version Selector (88.m.p)</div>
+                    <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Enter minor (m) &amp; patch (p) to dynamically configure prometheus-community Helm install version</div>
+                  </div>
+                </div>
+                <div class="version-inputs-group">
+                  <div class="version-input-pill">
+                    <span class="version-prefix">88 .</span>
+                    <input type="number" id="prom-minor" class="version-input" value="6" min="0" max="99" aria-label="Prometheus Minor Version (m)">
+                    <span class="version-dot">.</span>
+                    <input type="number" id="prom-patch" class="version-input" value="4" min="0" max="99" aria-label="Prometheus Patch Version (p)">
+                  </div>
+                  <div class="version-presets-pills">
+                    <button type="button" class="btn-prom-version-quick active" data-prom-m="6" data-prom-p="4">88.6.4 (Latest)</button>
+                    <button type="button" class="btn-prom-version-quick" data-prom-m="6" data-prom-p="0">88.6.0</button>
+                    <button type="button" class="btn-prom-version-quick" data-prom-m="5" data-prom-p="4">88.5.4</button>
+                    <button type="button" class="btn-prom-version-quick" data-prom-m="4" data-prom-p="0">88.4.0</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="platform-steps-grid">
+                
+                <!-- Step 1 -->
+                <div class="platform-step-card">
+                  <div class="platform-step-header">
+                    <div class="platform-step-badge">
+                      <span class="platform-step-badge-num">1</span>
+                      <span>Deploy kube-prometheus-stack (Dynamic 88.m.p)</span>
+                    </div>
+                  </div>
+                  <div class="code-window">
+                    <button class="code-copy-btn" data-copy-target="code-prom-install">
+                      <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                      <span>Copy</span>
+                    </button>
+                    <pre><code id="code-prom-install">helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+helm install prometheus prometheus-community/kube-prometheus-stack \
+  --version 88.6.4 \
+  --namespace monitoring \
+  --create-namespace</code></pre>
+                  </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="platform-step-card">
+                  <div class="platform-step-header">
+                    <div class="platform-step-badge">
+                      <span class="platform-step-badge-num">2</span>
+                      <span>Install StraitKubeGateway with ServiceMonitor &amp; Dashboards</span>
+                    </div>
+                  </div>
+                  <div class="code-window">
+                    <button class="code-copy-btn" data-copy-text="helm install straitkubegateway straitkubegateway/straitkubegateway \&#10;  --namespace kube-system \&#10;  --set straitd.kubeProxyReplacement=true \&#10;  --set straitd.kubeProxyMode=none \&#10;  --set metrics.serviceMonitor.enabled=true \&#10;  --set metrics.prometheusRule.enabled=true \&#10;  --set grafana.dashboards.enabled=true \&#10;  --set grafana.dashboards.namespace=monitoring \&#10;  --wait --timeout 300s">
+                      <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                      <span>Copy</span>
+                    </button>
+                    <pre><code>helm install straitkubegateway straitkubegateway/straitkubegateway \
+  --namespace kube-system \
+  --set straitd.kubeProxyReplacement=true \
+  --set straitd.kubeProxyMode=none \
+  --set metrics.serviceMonitor.enabled=true \
+  --set metrics.prometheusRule.enabled=true \
+  --set grafana.dashboards.enabled=true \
+  --set grafana.dashboards.namespace=monitoring \
+  --wait --timeout 300s</code></pre>
+                  </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="platform-step-card">
+                  <div class="platform-step-header">
+                    <div class="platform-step-badge">
+                      <span class="platform-step-badge-num">3</span>
+                      <span>Port-Forward &amp; Access Grafana Web Console</span>
+                    </div>
+                  </div>
+                  <div class="code-window">
+                    <button class="code-copy-btn" data-copy-text="kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80&#10;# Retrieve admin password:&#10;kubectl get secret --namespace monitoring prometheus-grafana -o jsonpath='{.data.admin-password}' | base64 --decode ; echo">
+                      <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                      <span>Copy</span>
+                    </button>
+                    <pre><code>kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+# Open http://localhost:3000 in your browser (User: admin)
+# Retrieve Grafana admin password:
+kubectl get secret --namespace monitoring prometheus-grafana \
+  -o jsonpath="{.data.admin-password}" | base64 --decode ; echo</code></pre>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Tab 2: Metrics Reference -->
+            <div class="obs-panel" data-obspanel="metrics">
+              <div class="hook-table-container">
+                <table class="hook-table">
+                  <thead>
+                    <tr>
+                      <th>Metric Name</th>
+                      <th>Type</th>
+                      <th>Labels</th>
+                      <th>Telemetry Purpose</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>straitkubegateway_dataplane_compilations_total</code></td>
+                      <td><span class="hook-badge hook-badge-xdp">Counter</span></td>
+                      <td><code>result</code></td>
+                      <td>Tracks successful and erroneous BPF IR compilations</td>
+                    </tr>
+                    <tr>
+                      <td><code>straitkubegateway_bpf_map_operations_total</code></td>
+                      <td><span class="hook-badge hook-badge-xdp">Counter</span></td>
+                      <td><code>map, op, result</code></td>
+                      <td>eBPF map CRUD throughput (lookups, updates, deletions)</td>
+                    </tr>
+                    <tr>
+                      <td><code>straitkubegateway_cni_operations_total</code></td>
+                      <td><span class="hook-badge hook-badge-tc">Counter</span></td>
+                      <td><code>op, result</code></td>
+                      <td>CNI lifecycle requests (ADD, DEL, CHECK, GC)</td>
+                    </tr>
+                    <tr>
+                      <td><code>straitkubegateway_cni_operation_duration_seconds</code></td>
+                      <td><span class="hook-badge hook-badge-tc">Histogram</span></td>
+                      <td><code>op</code></td>
+                      <td>Sub-millisecond pod network attachment latency</td>
+                    </tr>
+                    <tr>
+                      <td><code>straitkubegateway_service_endpoints</code></td>
+                      <td><span class="hook-badge hook-badge-cgroup">Gauge</span></td>
+                      <td><code>service, namespace</code></td>
+                      <td>Active Maglev backend endpoints mapped to Service VIPs</td>
+                    </tr>
+                    <tr>
+                      <td><code>straitkubegateway_policy_evaluations_total</code></td>
+                      <td><span class="hook-badge hook-badge-cgroup">Counter</span></td>
+                      <td><code>action, direction</code></td>
+                      <td>Zero-trust security verdicts (Allow, Deny, Reject)</td>
+                    </tr>
+                    <tr>
+                      <td><code>straitkubegateway_bfd_session_state</code></td>
+                      <td><span class="hook-badge hook-badge-xdp">Gauge</span></td>
+                      <td><code>peer, state</code></td>
+                      <td>Sub-second BFD hardware heartbeat state (1=Up, 0=Down)</td>
+                    </tr>
+                    <tr>
+                      <td><code>straitkubegateway_ipam_allocated_ips</code></td>
+                      <td><span class="hook-badge hook-badge-tc">Gauge</span></td>
+                      <td><code>cidr, family</code></td>
+                      <td>Dynamic IP pool consumption across node subnets</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Tab 3: Grafana JSON -->
+            <div class="obs-panel" data-obspanel="grafana">
+              <div style="margin-bottom: 12px; font-size: 13px; color: var(--text-secondary);">
+                Pre-configured dashboard with 8 real-time visual panels. Automatically auto-loaded when <code>grafana.dashboards.enabled=true</code> is set in Helm, or import manually into Grafana:
+              </div>
+              <div class="code-window">
+                <button class="code-copy-btn" data-copy-target="code-grafana-json">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  <span>Copy Dashboard JSON</span>
+                </button>
+                <pre><code id="code-grafana-json">{
+  "title": "StraitKubeGateway / Dataplane &amp; CNI Overview",
+  "uid": "straitkubegateway-overview",
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["straitkubegateway", "cni", "ebpf", "networking", "gateway-api"],
+  "panels": [
+    { "id": 1, "title": "Active straitd Daemons", "type": "stat", "targets": [{ "expr": "count(up{job=~\".*straitd.*\"} == 1)" }] },
+    { "id": 2, "title": "Controller Replicas", "type": "stat", "targets": [{ "expr": "count(up{job=~\".*controller.*\"} == 1)" }] },
+    { "id": 3, "title": "Active BFD Sessions", "type": "stat", "targets": [{ "expr": "sum(straitkubegateway_bfd_session_state)" }] },
+    { "id": 4, "title": "Total BPF Map Entries", "type": "stat", "targets": [{ "expr": "sum(straitkubegateway_bpf_map_entries)" }] },
+    { "id": 5, "title": "CNI Operations Rate", "type": "timeseries", "targets": [{ "expr": "sum by (op) (rate(straitkubegateway_cni_operations_total[1m]))" }] },
+    { "id": 6, "title": "BPF Map Operations / sec", "type": "timeseries", "targets": [{ "expr": "sum by (op) (rate(straitkubegateway_bpf_map_operations_total[1m]))" }] },
+    { "id": 7, "title": "Network Policy Verdicts Rate", "type": "timeseries", "targets": [{ "expr": "sum by (action) (rate(straitkubegateway_policy_evaluations_total[1m]))" }] },
+    { "id": 8, "title": "IPAM Pool Utilization", "type": "timeseries", "targets": [{ "expr": "straitkubegateway_ipam_allocated_ips" }] }
+  ]
+}</code></pre>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 5: Architecture Pillars -->
+    <section id="architecture" class="section">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-tag">🏗️ Core Architecture</div>
+          <h2 class="section-title">
+            Engineered for <span class="text-gradient">Zero Overhead</span>
+          </h2>
+          <p class="section-desc">
+            Six architectural pillars delivering uncompromised throughput, hardware offload capabilities, and zero cloud-vendor lock-in.
+          </p>
+        </div>
+
+        <div class="features-grid">
+          
+          <!-- Pillar 1 -->
+          <div class="glass-card">
+            <div class="feature-header">
+              <div class="feature-icon-bubble" style="background: rgba(34, 211, 238, 0.12); color: var(--cyan-300);">
+                ⚡
+              </div>
+              <div>
+                <h3 class="feature-heading">Native eBPF Dataplane</h3>
+              </div>
+            </div>
+            <p class="feature-body">
+              XDP, TCX, and NetKit hooks in Linux kernel 6.7+ bypass conntrack and iptables bottlenecks completely, operating with zero-copy buffer handoffs.
+            </p>
+            <div class="feature-tag-list">
+              <span class="tag-pill" style="color: var(--cyan-300); background: rgba(34, 211, 238, 0.08); border-color: rgba(34, 211, 238, 0.2);">XDP</span>
+              <span class="tag-pill" style="color: var(--cyan-300); background: rgba(34, 211, 238, 0.08); border-color: rgba(34, 211, 238, 0.2);">TCX</span>
+              <span class="tag-pill" style="color: var(--cyan-300); background: rgba(34, 211, 238, 0.08); border-color: rgba(34, 211, 238, 0.2);">BPF CO-RE</span>
+            </div>
+          </div>
+
+          <!-- Pillar 2 -->
+          <div class="glass-card">
+            <div class="feature-header">
+              <div class="feature-icon-bubble" style="background: rgba(52, 211, 153, 0.12); color: var(--emerald-400);">
+                ⚖️
+              </div>
+              <div>
+                <h3 class="feature-heading">Kube-Proxy Replacement</h3>
+              </div>
+            </div>
+            <p class="feature-body">
+              Full Maglev consistent hashing with lookup tables for NodePort, ClusterIP, and LoadBalancer services with Direct Server Return (DSR).
+            </p>
+            <div class="feature-tag-list">
+              <span class="tag-pill" style="color: var(--emerald-400); background: rgba(52, 211, 153, 0.08); border-color: rgba(52, 211, 153, 0.2);">Maglev-128</span>
+              <span class="tag-pill" style="color: var(--emerald-400); background: rgba(52, 211, 153, 0.08); border-color: rgba(52, 211, 153, 0.2);">DSR Mode</span>
+              <span class="tag-pill" style="color: var(--emerald-400); background: rgba(52, 211, 153, 0.08); border-color: rgba(52, 211, 153, 0.2);">Zero-Conntrack</span>
+            </div>
+          </div>
+
+          <!-- Pillar 3 -->
+          <div class="glass-card">
+            <div class="feature-header">
+              <div class="feature-icon-bubble" style="background: rgba(96, 165, 250, 0.12); color: var(--blue-400);">
+                🌐
+              </div>
+              <div>
+                <h3 class="feature-heading">Multi-Cluster Transit Hub</h3>
+              </div>
+            </div>
+            <p class="feature-body">
+              Segment 0 backbone gateway facilitating cross-cluster routing with 32-bit segment IDs (0 to 4,294,967,295) for strict multi-tenant isolation.
+            </p>
+            <div class="feature-tag-list">
+              <span class="tag-pill" style="color: var(--blue-400); background: rgba(96, 165, 250, 0.08); border-color: rgba(96, 165, 250, 0.2);">Segment Routing</span>
+              <span class="tag-pill" style="color: var(--blue-400); background: rgba(96, 165, 250, 0.08); border-color: rgba(96, 165, 250, 0.2);">Multi-Mesh</span>
+              <span class="tag-pill" style="color: var(--blue-400); background: rgba(96, 165, 250, 0.08); border-color: rgba(96, 165, 250, 0.2);">BGP Peering</span>
+            </div>
+          </div>
+
+          <!-- Pillar 4 -->
+          <div class="glass-card">
+            <div class="feature-header">
+              <div class="feature-icon-bubble" style="background: rgba(129, 140, 248, 0.12); color: var(--indigo-400);">
+                🛡️
+              </div>
+              <div>
+                <h3 class="feature-heading">Built-in NetKit CNI</h3>
+              </div>
+            </div>
+            <p class="feature-body">
+              CNI Spec 1.1+ compliant pod allocation utilizing Linux NetKit interfaces to eliminate traditional veth context switches and copy cycles.
+            </p>
+            <div class="feature-tag-list">
+              <span class="tag-pill" style="color: var(--indigo-400); background: rgba(129, 140, 248, 0.08); border-color: rgba(129, 140, 248, 0.2);">NetKit veth</span>
+              <span class="tag-pill" style="color: var(--indigo-400); background: rgba(129, 140, 248, 0.08); border-color: rgba(129, 140, 248, 0.2);">Dynamic IPAM</span>
+              <span class="tag-pill" style="color: var(--indigo-400); background: rgba(129, 140, 248, 0.08); border-color: rgba(129, 140, 248, 0.2);">Dual-Stack</span>
+            </div>
+          </div>
+
+          <!-- Pillar 5 -->
+          <div class="glass-card">
+            <div class="feature-header">
+              <div class="feature-icon-bubble" style="background: rgba(192, 132, 252, 0.12); color: var(--purple-400);">
+                🔒
+              </div>
+              <div>
+                <h3 class="feature-heading">Zero-Trust Encryption</h3>
+              </div>
+            </div>
+            <p class="feature-body">
+              Automatic WireGuard and IPsec encryption for pod-to-pod and node-to-node links, combined with stateful eBPF identity NetworkPolicies.
+            </p>
+            <div class="feature-tag-list">
+              <span class="tag-pill" style="color: var(--purple-400); background: rgba(192, 132, 252, 0.08); border-color: rgba(192, 132, 252, 0.2);">WireGuard</span>
+              <span class="tag-pill" style="color: var(--purple-400); background: rgba(192, 132, 252, 0.08); border-color: rgba(192, 132, 252, 0.2);">IPsec</span>
+              <span class="tag-pill" style="color: var(--purple-400); background: rgba(192, 132, 252, 0.08); border-color: rgba(192, 132, 252, 0.2);">LSM Hooks</span>
+            </div>
+          </div>
+
+          <!-- Pillar 6 -->
+          <div class="glass-card">
+            <div class="feature-header">
+              <div class="feature-icon-bubble" style="background: rgba(251, 191, 36, 0.12); color: var(--amber-400);">
+                🧭
+              </div>
+              <div>
+                <h3 class="feature-heading">Gateway API v1.6.1 Ready</h3>
+              </div>
+            </div>
+            <p class="feature-body">
+              First-class controllers for GatewayClass, Gateway, HTTPRoute, TCPRoute, UDPRoute, GRPCRoute, and TLSRoute with weighted traffic splitting.
+            </p>
+            <div class="feature-tag-list">
+              <span class="tag-pill" style="color: var(--amber-400); background: rgba(251, 191, 36, 0.08); border-color: rgba(251, 191, 36, 0.2);">GatewayClass</span>
+              <span class="tag-pill" style="color: var(--amber-400); background: rgba(251, 191, 36, 0.08); border-color: rgba(251, 191, 36, 0.2);">HTTPRoute</span>
+              <span class="tag-pill" style="color: var(--amber-400); background: rgba(251, 191, 36, 0.08); border-color: rgba(251, 191, 36, 0.2);">TLSRoute</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 6: Build Phases & Technical Roadmap -->
+    <section id="roadmap" class="section">
+      <div class="container">
+        
+        <div class="section-header">
+          <div class="section-tag">🗺️ Project Lifecycle</div>
+          <h2 class="section-title">
+            Production <span class="text-gradient">Release Roadmap</span>
+          </h2>
+          <p class="section-desc">
+            Progressive implementation phases from low-level Linux CO-RE kernel compilation to multi-cloud enterprise transit fabrics.
+          </p>
+        </div>
+
+        <div class="phases-timeline">
+          
+          <div class="phase-card">
+            <div>
+              <div class="phase-badge" style="background: rgba(34, 211, 238, 0.12); color: var(--cyan-300); border: 1px solid rgba(34, 211, 238, 0.3);">
+                01
+              </div>
+              <h3 class="phase-title">Core Dataplane & CNI</h3>
+              <p class="phase-desc">
+                Kernel 6.7+ NetKit veth replacement, XDP/TCX packet filters, and dynamic IPAM pod interface provisioning.
+              </p>
+            </div>
+            <span style="font-size: 11px; font-family: var(--font-mono); color: var(--emerald-400); font-weight: 700;">✓ Completed (v1.0.0)</span>
+          </div>
+
+          <div class="phase-card">
+            <div>
+              <div class="phase-badge" style="background: rgba(52, 211, 153, 0.12); color: var(--emerald-400); border: 1px solid rgba(52, 211, 153, 0.3);">
+                02
+              </div>
+              <h3 class="phase-title">Transit Hub & BGP</h3>
+              <p class="phase-desc">
+                Segment 0 backbone routing, 32-bit segment attachment policies, and sub-second BFD route peering.
+              </p>
+            </div>
+            <span style="font-size: 11px; font-family: var(--font-mono); color: var(--emerald-400); font-weight: 700;">✓ Completed (v1.0.1)</span>
+          </div>
+
+          <div class="phase-card">
+            <div>
+              <div class="phase-badge" style="background: rgba(96, 165, 250, 0.12); color: var(--blue-400); border: 1px solid rgba(96, 165, 250, 0.3);">
+                03
+              </div>
+              <h3 class="phase-title">WireGuard Mesh Crypto</h3>
+              <p class="phase-desc">
+                In-kernel peer-to-peer overlay encryption, dynamic key exchange, and hardware cryptographic offload.
+              </p>
+            </div>
+            <span style="font-size: 11px; font-family: var(--font-mono); color: var(--cyan-300); font-weight: 700;">⚡ Active Development</span>
+          </div>
+
+          <div class="phase-card">
+            <div>
+              <div class="phase-badge" style="background: rgba(192, 132, 252, 0.12); color: var(--purple-400); border: 1px solid rgba(192, 132, 252, 0.3);">
+                04
+              </div>
+              <h3 class="phase-title">Enterprise Observability</h3>
+              <p class="phase-desc">
+                OpenTelemetry eBPF flow tracer, Prometheus exporter, and WebAssembly UI management plane.
+              </p>
+            </div>
+            <span style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); font-weight: 700;">🔮 Planned Next</span>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer id="footer">
+    <div class="container">
+      
+      <div class="footer-top">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="brand-logo-frame" style="width: 36px; height: 36px;">
+            <div class="brand-logo-inner">
+              <img src="logo.png" alt="StraitKubeGateway Logo">
+            </div>
+          </div>
+          <div>
+            <span style="font-weight: 800; color: var(--text-primary); font-size: 1rem;">StraitKubeGateway</span>
+            <span style="font-size: 11px; color: var(--text-muted); display: block;">Open Source Kubernetes eBPF Transit Gateway</span>
+          </div>
+        </div>
+
+        <ul class="footer-nav">
+          <li><a href="https://github.com/msaeedb40/straitKubegateway" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+          <li><a href="https://github.com/msaeedb40/straitKubegateway/tree/main/docs" target="_blank" rel="noopener noreferrer">Documentation</a></li>
+          <li><a href="index.yaml" target="_blank">index.yaml</a></li>
+          <li><a href="straitkubegateway-1.0.1.tgz" download>Download .tgz</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          Licensed under Apache License 2.0. Copyright &copy; 2026 StraitKubeGateway Contributors.
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan-300);">
+          Chart Repository: msaeedb40.github.io/straitKubegateway
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Application Logic (Presets, Topology SVG, Simulator, Hooks, Copy) -->
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-name: ci-kind-cluster
+name: ci-vm-kubeadm
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
     branches:
       - main
       - developer
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -18,8 +19,8 @@ permissions:
   contents: read
 
 jobs:
-  kind-smoke-test:
-    name: Kind Cluster Smoke Test
+  kubeadm-smoke-test:
+    name: VM Kubeadm Host Smoke Test
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
@@ -77,24 +78,73 @@ jobs:
           load: true
           tags: ui:ci-${{ github.sha }}
 
-      - name: Create Kind cluster
-        uses: helm/kind-action@v1
-        with:
-          version: v0.33.0
-          cluster_name: ci-kind-test
-          config: scripts/kind/kind-config.yaml
-
-      - name: Load images into Kind cluster
+      - name: Prepare VM host networking and kernel settings
         run: |
-          kind load docker-image straitd:ci-${{ github.sha }}         --name ci-kind-test
-          kind load docker-image sg-controller:ci-${{ github.sha }}   --name ci-kind-test
-          kind load docker-image sg-cli:ci-${{ github.sha }}          --name ci-kind-test
-          kind load docker-image ui:ci-${{ github.sha }}              --name ci-kind-test
+          sudo swapoff -a
+          sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 
-      - name: Upgrade control plane and agent nodes to containerd 2.3.4 and runc 1.5.1
+          cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+          overlay
+          br_netfilter
+          EOF
+
+          sudo modprobe overlay
+          sudo modprobe br_netfilter
+
+          cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+          net.bridge.bridge-nf-call-iptables  = 1
+          net.bridge.bridge-nf-call-ip6tables = 1
+          net.ipv4.ip_forward                 = 1
+          EOF
+
+          sudo sysctl --system
+
+      - name: Configure containerd CRI for Kubernetes
         run: |
-          chmod +x scripts/kind/update-runtimes.sh
-          ./scripts/kind/update-runtimes.sh ci-kind-test
+          sudo mkdir -p /etc/containerd
+          sudo containerd config default | sudo tee /etc/containerd/config.toml > /dev/null
+          sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+          sudo systemctl restart containerd
+          sudo systemctl status containerd --no-pager
+
+      - name: Install kubeadm, kubelet, and kubectl
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apt-transport-https ca-certificates curl gpg
+
+          sudo mkdir -p /etc/apt/keyrings
+          sudo rm -f /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+          curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.37/deb/Release.key | sudo gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+          echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.37/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+          sudo apt-get update
+          sudo apt-get install -y kubelet kubeadm kubectl
+          sudo apt-mark hold kubelet kubeadm kubectl
+
+      - name: Initialize single-node kubeadm cluster (no kube-proxy)
+        run: |
+          sudo kubeadm init \
+            --pod-network-cidr=10.244.0.0/16 \
+            --skip-phases=addon/kube-proxy \
+            --ignore-preflight-errors=NumCPU,Mem
+
+          mkdir -p $HOME/.kube
+          sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+          sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+          # Remove control-plane taint so straitKubegateway and workloads can schedule on single node
+          kubectl taint nodes --all node-role.kubernetes.io/control-plane- || true
+
+      - name: Import built images into containerd k8s.io namespace
+        run: |
+          echo "Importing images into containerd k8s.io namespace..."
+          docker save straitd:ci-${{ github.sha }}       | sudo ctr -n k8s.io images import -
+          docker save sg-controller:ci-${{ github.sha }} | sudo ctr -n k8s.io images import -
+          docker save sg-cli:ci-${{ github.sha }}        | sudo ctr -n k8s.io images import -
+          docker save ui:ci-${{ github.sha }}            | sudo ctr -n k8s.io images import -
+
+          sudo ctr -n k8s.io images list | grep -E "straitd|sg-controller|sg-cli|ui"
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
@@ -103,12 +153,12 @@ jobs:
 
       - name: Apply Gateway API CRDs v1.6.1
         run: |
-          kubectl apply --server-side -f \
+          kubectl apply --server-side --force-conflicts -f \
             https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml
 
       - name: Apply straitKubegateway CRDs
         run: |
-          kubectl apply --server-side -f straitKubegateway-helm-repo/crds/
+          kubectl apply --server-side --force-conflicts -f straitKubegateway-helm-repo/crds/
 
       - name: Wait for CRDs to be established
         run: |
@@ -124,7 +174,8 @@ jobs:
             crd/straitnetworks.straitkubegateway.io \
             crd/straitnetworkpolicies.straitkubegateway.io \
             crd/straitnodes.straitkubegateway.io \
-            crd/transitgateways.straitkubegateway.io
+            crd/transitgateways.straitkubegateway.io \
+            crd/transitsegmentattachments.straitkubegateway.io
 
       - name: Helm lint straitKubegateway chart
         run: helm lint straitKubegateway-helm-repo
@@ -151,9 +202,9 @@ jobs:
             --timeout=15m \
             --wait
 
-      - name: Verify cluster nodes and workloads
+      - name: Verify cluster node and workloads
         run: |
-          echo "Waiting for all cluster nodes to become Ready..."
+          echo "Waiting for host node to become Ready..."
           kubectl wait --for=condition=Ready nodes --all --timeout=180s || true
           kubectl get nodes -o wide
           echo "Waiting for CoreDNS pods to become Ready..."
@@ -205,3 +256,7 @@ jobs:
           kubectl logs -n kube-system -l app.kubernetes.io/component=controller --all-containers=true --tail=200 || true
           echo "=== Logs of straitd ==="
           kubectl logs -n kube-system -l app.kubernetes.io/component=node-agent --all-containers=true --tail=200 || true
+          echo "=== Host Kernel dmesg (eBPF) ==="
+          dmesg -T | grep -i -E "ebpf|bpf|strait|cni" | tail -n 100 || true
+          echo "=== Kubelet Status & Logs ==="
+          sudo journalctl -u kubelet -n 100 --no-pager || true

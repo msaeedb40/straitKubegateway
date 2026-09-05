@@ -20,6 +20,10 @@ straitd:
   kubeProxyMode: "none"
   disableDefaultCNI: true
 
+  # Upstream API server override for bootstrap DNAT (auto-discovered from kubelet.conf or NODE_NAME if empty)
+  apiServerHost: ""
+  apiServerPort: 6443
+
   # bpffs mount point on host
   bpffs:
     hostPath: /sys/fs/bpf
@@ -99,8 +103,8 @@ sgController:
 # Gateway API v1.6.1 integration
 gatewayAPI:
   enabled: true
-  gatewayClassName: skgateway  
-  controllerName: straitkubegateway.io/skgateway
+  gatewayClassName: straitkubegateway
+  controllerName: gateway.straitkubegateway.io/skubegateway
 
 # Multi-cluster Transit Gateway configuration
 transit:
@@ -110,10 +114,10 @@ transit:
 
 # Dashboard / UI
 ui:
-  enabled: false
+  enabled: true
   image:
     repository: ghcr.io/straitkubegateway/ui
-    tag: sg-ui
+    tag: ui
   service:
     type: ClusterIP
     port: 80
@@ -122,3 +126,23 @@ ui:
 secret:
   create: false
   data: {}
+
+# Observability, Prometheus Operator & Grafana
+metrics:
+  serviceMonitor:
+    enabled: false
+    interval: 15s
+    scrapeTimeout: 10s
+    labels:
+      release: prometheus
+  prometheusRule:
+    enabled: false
+    labels:
+      role: alert-rules
+
+grafana:
+  dashboards:
+    enabled: false
+    namespace: ""
+    labels:
+      grafana_dashboard: "1"

@@ -1,0 +1,51 @@
+{{- if .Values.metrics.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "straitKubegateway-helm-repo.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "straitKubegateway-helm-repo.labels" . | nindent 4 }}
+    {{- with .Values.metrics.prometheusRule.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+    - name: straitkubegateway.rules
+      rules:
+        - alert: StraitKubeGatewayDaemonDown
+          expr: absent(up{job=~".*straitd.*"} == 1)
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "StraitKubeGateway Node Agent (straitd) is down"
+            description: "No straitd pods are reporting metrics, eBPF dataplane monitoring lost."
+
+        - alert: StraitKubeGatewayControllerDown
+          expr: absent(up{job=~".*controller.*"} == 1)
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "StraitKubeGateway Controller Manager is down"
+            description: "Controller manager pod is unavailable, Gateway API reconciliation halted."
+
+        - alert: StraitKubeGatewayBFDSessionDown
+          expr: straitkubegateway_bfd_session_state == 0
+          for: 30s
+          labels:
+            severity: critical
+          annotations:
+            summary: "BFD session down to peer"
+            description: "Sub-second BFD link failure detected. Routes withdrawn."
+
+        - alert: StraitKubeGatewayIPAMPoolNearExhaustion
+          expr: (straitkubegateway_ipam_allocated_ips / straitkubegateway_ipam_pool_capacity) > 0.85
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "IPAM pool capacity near exhaustion (> 85%)"
+            description: "IPAM CIDR pool is above 85% utilization."
+{{- end }}

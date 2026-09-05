@@ -1,4 +1,4 @@
-name: ci-kind-cluster
+name: ci-k3s-cluster
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
     branches:
       - main
       - developer
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -18,8 +19,8 @@ permissions:
   contents: read
 
 jobs:
-  kind-smoke-test:
-    name: Kind Cluster Smoke Test
+  k3s-smoke-test:
+    name: K3s Cluster Smoke Test
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
@@ -77,24 +78,23 @@ jobs:
           load: true
           tags: ui:ci-${{ github.sha }}
 
-      - name: Create Kind cluster
-        uses: helm/kind-action@v1
-        with:
-          version: v0.33.0
-          cluster_name: ci-kind-test
-          config: scripts/kind/kind-config.yaml
-
-      - name: Load images into Kind cluster
+      - name: Install k3d
         run: |
-          kind load docker-image straitd:ci-${{ github.sha }}         --name ci-kind-test
-          kind load docker-image sg-controller:ci-${{ github.sha }}   --name ci-kind-test
-          kind load docker-image sg-cli:ci-${{ github.sha }}          --name ci-kind-test
-          kind load docker-image ui:ci-${{ github.sha }}              --name ci-kind-test
+          curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+          k3d version
 
-      - name: Upgrade control plane and agent nodes to containerd 2.3.4 and runc 1.5.1
+      - name: Create K3s cluster (via k3d)
         run: |
-          chmod +x scripts/kind/update-runtimes.sh
-          ./scripts/kind/update-runtimes.sh ci-kind-test
+          chmod +x scripts/k3s/create-cluster.sh
+          CLUSTER_NAME=ci-k3s-test ./scripts/k3s/create-cluster.sh
+          kubectl config use-context k3d-ci-k3s-test
+
+      - name: Load images into K3s cluster
+        run: |
+          k3d image import straitd:ci-${{ github.sha }}         --cluster ci-k3s-test
+          k3d image import sg-controller:ci-${{ github.sha }}   --cluster ci-k3s-test
+          k3d image import sg-cli:ci-${{ github.sha }}          --cluster ci-k3s-test
+          k3d image import ui:ci-${{ github.sha }}              --cluster ci-k3s-test
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
@@ -103,12 +103,12 @@ jobs:
 
       - name: Apply Gateway API CRDs v1.6.1
         run: |
-          kubectl apply --server-side -f \
+          kubectl apply --server-side --force-conflicts -f \
             https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml
 
       - name: Apply straitKubegateway CRDs
         run: |
-          kubectl apply --server-side -f straitKubegateway-helm-repo/crds/
+          kubectl apply --server-side --force-conflicts -f straitKubegateway-helm-repo/crds/
 
       - name: Wait for CRDs to be established
         run: |
@@ -124,7 +124,8 @@ jobs:
             crd/straitnetworks.straitkubegateway.io \
             crd/straitnetworkpolicies.straitkubegateway.io \
             crd/straitnodes.straitkubegateway.io \
-            crd/transitgateways.straitkubegateway.io
+            crd/transitgateways.straitkubegateway.io \
+            crd/transitsegmentattachments.straitkubegateway.io
 
       - name: Helm lint straitKubegateway chart
         run: helm lint straitKubegateway-helm-repo
@@ -205,3 +206,9 @@ jobs:
           kubectl logs -n kube-system -l app.kubernetes.io/component=controller --all-containers=true --tail=200 || true
           echo "=== Logs of straitd ==="
           kubectl logs -n kube-system -l app.kubernetes.io/component=node-agent --all-containers=true --tail=200 || true
+
+      - name: Teardown K3s cluster
+        if: always()
+        run: |
+          chmod +x scripts/k3s/delete-cluster.sh
+          CLUSTER_NAME=ci-k3s-test ./scripts/k3s/delete-cluster.sh || k3d cluster delete ci-k3s-test || true

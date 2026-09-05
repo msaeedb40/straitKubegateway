@@ -7,9 +7,9 @@ on:
     branches: ["main", "developer"]
     paths:
       - 'straitKubegateway-helm-repo/**'
+      - 'dist/charts/**'
       - 'scripts/publish-helm-repo.sh'
       - '.github/workflows/static.yml'
-      - '.github/static.yml'
   release:
     types: [published]
   # Allows manual triggers from GitHub Actions UI
@@ -43,10 +43,20 @@ jobs:
         with:
           version: v4.0.0
 
+
       - name: Build Chart Repository and Tailwind CSS v4 Static Landing Page
         run: |
           chmod +x scripts/publish-helm-repo.sh
           ./scripts/publish-helm-repo.sh dist/charts
+
+      - name: Verify generated repository
+        run: |
+          test -f dist/charts/index.html
+          test -f dist/charts/index.yaml
+          test -f dist/charts/.nojekyll
+
+          echo "Generated files:"
+          find dist/charts -maxdepth 2 -type f | sort
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

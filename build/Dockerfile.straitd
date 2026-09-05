@@ -8,18 +8,7 @@ ARG TARGETARCH
 
 WORKDIR /src
 
-RUN apk add --no-cache \
-    clang \
-    llvm \
-    lld \
-    bpftool \
-    libbpf-dev \
-    elfutils-dev \
-    linux-headers \
-    make \
-    gcc \
-    musl-dev \
-    git
+RUN apk add --no-cache git
 
 # Cache Go module downloads separately from source
 COPY go.mod go.sum ./

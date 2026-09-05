@@ -108,6 +108,30 @@ The `straitd` daemon exposes Prometheus metrics on port `:9090` at the `/metrics
 | `straitkubegateway_ipam_allocated_ips` | Gauge | `cidr`, `family` | Allocated IPs per pool |
 | `straitkubegateway_ipam_pool_capacity` | Gauge | `cidr`, `family` | Total capacity per pool |
 
+### 2.1 Deploying Prometheus & Grafana with Helm
+
+To deploy the Prometheus Operator stack alongside StraitKubeGateway:
+
+```bash
+# 1. Add Prometheus Community Helm repository
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+# 2. Install kube-prometheus-stack with pinned chart version
+helm install prometheus prometheus-community/kube-prometheus-stack \
+  --version 88.6.4 \
+  --namespace monitoring \
+  --create-namespace
+
+# 3. Deploy StraitKubeGateway with ServiceMonitors and Dashboards enabled
+helm install straitkubegateway straitkubegateway/straitkubegateway \
+  --namespace kube-system \
+  --set metrics.serviceMonitor.enabled=true \
+  --set metrics.prometheusRule.enabled=true \
+  --set grafana.dashboards.enabled=true \
+  --set grafana.dashboards.namespace=monitoring
+```
+
 ---
 
 ## 3. Health & Readiness Probes
