@@ -87,7 +87,7 @@ jobs:
           cpus: 2
           memory: 3500m
           nodes: 2
-          start-args: '--cni=false --extra-config=kubeadm.skip-phases=addon/kube-proxy'
+          start-args: '--extra-config=kubeadm.skip-phases=addon/kube-proxy'
           wait: apiserver
 
       - name: Load images into Minikube cluster
