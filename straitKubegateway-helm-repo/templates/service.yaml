@@ -36,6 +36,7 @@ spec:
     {{- include "straitKubegateway-helm-repo.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: node-agent
 {{- end }}
+{{- if .Values.ui.enabled }}
 ---
 apiVersion: v1
 kind: Service
@@ -54,3 +55,4 @@ spec:
   selector:
     {{- include "straitKubegateway-helm-repo.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: ui
+{{- end }}

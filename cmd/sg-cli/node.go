@@ -10,8 +10,9 @@ import (
 )
 
 var nodeCmd = &cobra.Command{
-	Use:   "node",
-	Short: "Manage and inspect node networking status",
+	Use:     "node",
+	Aliases: []string{"nodes"},
+	Short:   "Manage and inspect node networking status",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Nodes:")
 		fmt.Printf("  %-20s %-18s %-15s %s\n", "NODE", "POD CIDR", "INTERNAL IP", "STATUS")

@@ -114,10 +114,10 @@ transit:
 
 # Dashboard / UI
 ui:
-  enabled: false
+  enabled: true
   image:
     repository: ghcr.io/straitkubegateway/ui
-    tag: sg-ui
+    tag: ui
   service:
     type: ClusterIP
     port: 80

@@ -52,6 +52,7 @@ func init() {
 	rootCmd.AddCommand(installCmd)
 	rootCmd.AddCommand(upgradeCmd)
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(uiCmd)
 }
 
 func main() {
